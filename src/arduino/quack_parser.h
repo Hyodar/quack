@@ -2,7 +2,13 @@
 #ifndef QUACK_PARSER_H_
 #define QUACK_PARSER_H_
 
-#include "utils.h"
+/*****************************************************************************
+ * quack_parser.h:
+ *  Parses a string and sends the commands to the CommandManager.
+ * 
+*****************************************************************************/
+
+#include "quack_utils.h"
 #include "command_manager.h"
 
 class QuackParser {

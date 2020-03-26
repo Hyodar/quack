@@ -2,6 +2,12 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
+/*****************************************************************************
+ * quack_utils.h:
+ *  Some utilities for a better code.
+ * 
+*****************************************************************************/
+
 typedef __INT8_TYPE__  i8;
 typedef __INT16_TYPE__ i16;
 typedef __INT32_TYPE__ i32;

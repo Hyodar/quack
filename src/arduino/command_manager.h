@@ -2,8 +2,14 @@
 #ifndef COMMAND_MANAGER_H_
 #define COMMAND_MANAGER_H_
 
-#include "config.h"
-#include "utils.h"
+/*****************************************************************************
+ * command_manager.h:
+ *  Simple class to receive and determine what each command does.
+ * 
+*****************************************************************************/
+
+#include "quack_config.h"
+#include "quack_utils.h"
 
 class CommandManager {
 

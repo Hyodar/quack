@@ -2,7 +2,7 @@
 #include "quack_parser.h"
 
 #include "quack_codes.h"
-#include "config.h"
+#include "quack_config.h"
 
 #ifdef PARSER_DEBUGGING
 #include <cstdio>

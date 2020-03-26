@@ -2,6 +2,12 @@
 #ifndef QUACK_CODES_H_
 #define QUACK_CODES_H_
 
+/*****************************************************************************
+ * quack_codes.h:
+ *  Numeric codes for some definitions throughout the code.
+ * 
+*****************************************************************************/
+
 #define LOCALE_US               78
 #define LOCALE_BR               79
 

@@ -2,7 +2,7 @@
 #include "command_manager.h"
 
 #include "quack_codes.h"
-#include "config.h"
+#include "quack_config.h"
 
 #ifdef TESTING_WITHOUT_KEYBOARD
 #include <cstdio>
@@ -213,8 +213,9 @@ CommandManager::repeat(const u32 param) {
 #ifdef TESTING_WITHOUT_KEYBOARD
     printf("[COMMANDS] Repeating next command for %d times\n", param);
 #else
-    repeatNum = param;
+
 #endif
+    repeatNum = param;
 }
 
 void
