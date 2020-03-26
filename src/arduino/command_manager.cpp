@@ -2,6 +2,7 @@
 #include "command_manager.h"
 
 #include "quack_codes.h"
+#include "usb_hid_keys.h"
 #include "quack_config.h"
 
 #ifdef TESTING_WITHOUT_KEYBOARD
@@ -164,15 +165,46 @@ CommandManager::display(const u8* param, const u16 len) const {
 }
 
 #ifdef TESTING_WITHOUT_KEYBOARD
-u8 translateKey[][12] = {
-    "ENTER",        "MENU",         "DELETE",   "HOME",         "INSERT",
-    "PAGEUP",       "PAGEDOWN",     "UPARROW",  "DOWNARROW",    "LEFTARROW",
-    "RIGHTARROW",   "TAB",          "END",      "ESCAPE",       "F1",
-    "F2",           "F3",           "F4",       "F5",           "F6",
-    "F7",           "F8",           "F9",       "F10",          "F11",
-    "F12",          "SPACE",        "PAUSE",    "CAPSLOCK",     "NUMLOCK",
-    "PRINTSCREEN",  "SCROLLLOCK",   "CTRL",     "SHIFT",        "ALT",
-    "GUI",
+u8 translateKey[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+
+u8 translateMod[][13] = {
+"UTF8_AHEAD",
+"CTRL",
+"SHIFT",
+"ALT",
+"GUI",
+"ENTER",
+"MENU",
+"DELETE",
+"HOME",
+"INSERT",
+"PAGEUP",
+"PAGEDOWN",
+"UPARROW",
+"DOWNARROW",
+"LEFTARROW",
+"RIGHTARROW",
+"TAB",
+"END",
+"ESCAPE",
+"F1",
+"F2",
+"F3",
+"F4",
+"F5",
+"F6",
+"F7",
+"F8",
+"F9",
+"F10",
+"F11",
+"F12",
+"SPACE",
+"PAUSE",
+"CAPSLOCK",
+"NUMLOCK",
+"PRINTSCREEN",
+"SCROLLLOCK",
 };
 #endif
 
@@ -181,9 +213,19 @@ CommandManager::keys(const u8* param, const u16 len) const {
 #ifdef TESTING_WITHOUT_KEYBOARD
     printf("[COMMANDS] Pressing keys: "); 
     for(u16 i = 0; i < len - 1; i++) {
-        printf("%s, ", translateKey[param[i] - KEYCODE_ENTER]);
+        if(param[i] < KEY_0) {
+            printf("%c, ", translateKey[param[i] - KEY_A]);
+        }
+        else {
+            printf("%s, ", translateMod[param[i] - KEYCODE_UTF8_AHEAD]);
+        }
     }
-    printf("%s\n", translateKey[param[len-1] - KEYCODE_ENTER]);
+    if(param[len - 1] < KEY_0) {
+        printf("%c\n", translateKey[param[len - 1] - KEY_A]);
+    }
+    else {
+        printf("%s\n", translateMod[param[len - 1] - KEYCODE_UTF8_AHEAD]);
+    }
 #else
 
 #endif

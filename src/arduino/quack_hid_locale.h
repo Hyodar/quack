@@ -1,10 +1,10 @@
 
-#ifndef HID_LOCALE_H_
-#define HID_LOCALE_H_
+#ifndef QUACK_HID_LOCALE_H_
+#define QUACK_HID_LOCALE_H_
 
 #include "quack_utils.h"
 
-struct HIDLocale {
+struct QuackHIDLocale {
     u8* ascii;
     u8 asciiLen;
 

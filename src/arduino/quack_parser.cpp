@@ -25,6 +25,9 @@ QuackParser::parseU32(const u8* str, u16 len) {
     return n;
 }
 
+// parse(str, len) is built to be able to parse multiple lines at once,
+// if necessary
+
 void
 QuackParser::parse(u8* str, const u16 len) {
     u16 cursor = 0;

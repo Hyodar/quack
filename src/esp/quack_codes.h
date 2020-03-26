@@ -8,11 +8,9 @@
  * 
 *****************************************************************************/
 
-#define LOCALE_US               78
-#define LOCALE_BR               79
+// Commands ======================
 
-// Removed on JS parser
-// #define COMMAND_REM          33
+// REM is not here because it's removed on the JS parser
 
 #define COMMAND_NONE            33
 
@@ -30,68 +28,59 @@
 
 #define IS_COMMAND_PARAM_INT(comm) comm >= COMMAND_DELAY
 
-// Keys
-#define KEYCODE_ENTER           42
-#define KEYCODE_MENU            43
-#define KEYCODE_DELETE          44
-#define KEYCODE_HOME            45
-#define KEYCODE_INSERT          46
-#define KEYCODE_PAGEUP          47
-#define KEYCODE_PAGEDOWN        48
-#define KEYCODE_UPARROW         49
-#define KEYCODE_DOWNARROW       50
-#define KEYCODE_LEFTARROW       51
-#define KEYCODE_RIGHTARROW      52
-#define KEYCODE_TAB             53
-#define KEYCODE_END             54
-#define KEYCODE_ESCAPE          55
-#define KEYCODE_F1              56
-#define KEYCODE_F2              57
-#define KEYCODE_F3              58
-#define KEYCODE_F4              59
-#define KEYCODE_F5              60
-#define KEYCODE_F6              61
-#define KEYCODE_F7              62
-#define KEYCODE_F8              63
-#define KEYCODE_F9              64
-#define KEYCODE_F10             65
-#define KEYCODE_F11             66
-#define KEYCODE_F12             67
-#define KEYCODE_SPACE           68
-#define KEYCODE_PAUSE           69
-#define KEYCODE_CAPSLOCK        70
-#define KEYCODE_NUMLOCK         71
-#define KEYCODE_PRINTSCREEN     72
-#define KEYCODE_SCROLLLOCK      73
-#define KEYCODE_CTRL            74
-#define KEYCODE_SHIFT           75
-#define KEYCODE_ALT             76
-#define KEYCODE_GUI             77
-#define KEYCODE_A               78
-#define KEYCODE_B               79
-#define KEYCODE_C               80
-#define KEYCODE_D               81
-#define KEYCODE_E               82
-#define KEYCODE_F               83
-#define KEYCODE_G               84
-#define KEYCODE_H               85
-#define KEYCODE_I               86
-#define KEYCODE_J               87
-#define KEYCODE_K               88
-#define KEYCODE_L               89
-#define KEYCODE_M               90
-#define KEYCODE_N               91
-#define KEYCODE_O               92
-#define KEYCODE_P               93
-#define KEYCODE_Q               94
-#define KEYCODE_R               95
-#define KEYCODE_S               96
-#define KEYCODE_T               97
-#define KEYCODE_U               98
-#define KEYCODE_V               99
-#define KEYCODE_W               100
-#define KEYCODE_X               101
-#define KEYCODE_Y               102
-#define KEYCODE_Z               103
+// Keys ==========================
+
+// UTF8_AHEAD is used to mark that the next character is a utf8 character,
+// so it'll read the next 4 bytes as a utf8 character and not as 4 charac-
+// ters
+
+#define KEYCODE_UTF8_AHEAD      0xb8
+
+#define KEYCODE_CTRL            0xb9
+#define KEYCODE_SHIFT           0xba
+#define KEYCODE_ALT             0xbb
+#define KEYCODE_GUI             0xbc
+
+#define KEYCODE_ENTER           0xbd
+#define KEYCODE_MENU            0xbe
+#define KEYCODE_DELETE          0xbf
+#define KEYCODE_HOME            0xc0
+#define KEYCODE_INSERT          0xc1
+#define KEYCODE_PAGEUP          0xc2
+#define KEYCODE_PAGEDOWN        0xc3
+#define KEYCODE_UPARROW         0xc4
+#define KEYCODE_DOWNARROW       0xc5
+#define KEYCODE_LEFTARROW       0xc6
+#define KEYCODE_RIGHTARROW      0xc7
+#define KEYCODE_TAB             0xc8
+#define KEYCODE_END             0xc9
+#define KEYCODE_ESCAPE          0xca
+#define KEYCODE_F1              0xcb
+#define KEYCODE_F2              0xcc
+#define KEYCODE_F3              0xcd
+#define KEYCODE_F4              0xce
+#define KEYCODE_F5              0xcf
+#define KEYCODE_F6              0xd0
+#define KEYCODE_F7              0xd1
+#define KEYCODE_F8              0xd2
+#define KEYCODE_F9              0xd3
+#define KEYCODE_F10             0xd4
+#define KEYCODE_F11             0xd5
+#define KEYCODE_F12             0xd6
+#define KEYCODE_SPACE           0xd7
+#define KEYCODE_PAUSE           0xd8
+#define KEYCODE_CAPSLOCK        0xd9
+#define KEYCODE_NUMLOCK         0xda
+#define KEYCODE_PRINTSCREEN     0xdb
+#define KEYCODE_SCROLLLOCK      0xdc
+
+// Locales ========================
+
+#define LOCALE_US               105
+#define LOCALE_BR               106
+
+// HID ============================
+
+#define HID_SEND_ID             2
 
 #endif
