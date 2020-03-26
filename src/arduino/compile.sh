@@ -1,0 +1,1 @@
+g++ command_manager.cpp quack_parser.cpp main.cpp -o quack.out
