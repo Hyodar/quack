@@ -9,6 +9,8 @@
 *****************************************************************************/
 
 // #define SPI_ENABLED
+// #define HID_ENABLED
+// #define ARDUINO_ENABLED
 
 #define TESTING_WITHOUT_KEYBOARD
 #define PARSER_DEBUGGING

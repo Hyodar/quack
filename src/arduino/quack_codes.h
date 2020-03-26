@@ -67,5 +67,31 @@
 #define KEYCODE_SHIFT           75
 #define KEYCODE_ALT             76
 #define KEYCODE_GUI             77
+#define KEYCODE_A               78
+#define KEYCODE_B               79
+#define KEYCODE_C               80
+#define KEYCODE_D               81
+#define KEYCODE_E               82
+#define KEYCODE_F               83
+#define KEYCODE_G               84
+#define KEYCODE_H               85
+#define KEYCODE_I               86
+#define KEYCODE_J               87
+#define KEYCODE_K               88
+#define KEYCODE_L               89
+#define KEYCODE_M               90
+#define KEYCODE_N               91
+#define KEYCODE_O               92
+#define KEYCODE_P               93
+#define KEYCODE_Q               94
+#define KEYCODE_R               95
+#define KEYCODE_S               96
+#define KEYCODE_T               97
+#define KEYCODE_U               98
+#define KEYCODE_V               99
+#define KEYCODE_W               100
+#define KEYCODE_X               101
+#define KEYCODE_Y               102
+#define KEYCODE_Z               103
 
 #endif
