@@ -194,7 +194,7 @@ CommandManager::keys(const u8* param, const u16 len) {
             }
             else {
 #ifdef TESTING_WITHOUT_KEYBOARD
-                printf("%c, \n", translateKey[param[i]]);
+                printf("%c, \n", translateKey[param[i] - translateKey[0]]);
 #endif
                 quackKeyboard.pressKey(param[i]);
             }

@@ -109,7 +109,7 @@ QuackKeyboard::addHIDModifier(const u8 keycode) {
 void
 QuackKeyboard::pressKey(const u8 keycode) {
 #ifdef KEYBOARD_DEBUGGING
-    printf("[KEYBOARD] Pressing key%d", keycode);
+    printf("[KEYBOARD] Pressing key: %d\n", keycode);
 #endif
     if(keycode < quackHIDLocale->asciiLen) {
         u8 modifiers = pgm_read_byte(quackHIDLocale->ascii + keycode * 2);

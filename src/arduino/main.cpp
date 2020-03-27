@@ -7,7 +7,8 @@ int
 main(void) {
     QuackParser quackParser;
 
-    quackParser.parse(DECLARE_STR("&1000\n#abcde\n(10\n%\x05\n"));
+    //quackParser.parse(DECLARE_STR("&1000\n#abcde\n(10\n%\x05\n"));
+    quackParser.parse(DECLARE_STR("&1000\n#abcde\n%a\n"));
 
     return 0;
 }
