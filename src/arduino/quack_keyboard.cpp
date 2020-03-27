@@ -1,8 +1,16 @@
 
 #include "quack_config.h"
 #include "quack_utils.h"
+#include "quack_codes.h"
 #include "quack_hid.h"
+
+#include "locale_us.h"
+
 #include "quack_keyboard.h"
+
+#ifdef KEYBOARD_DEBUGGING
+#include <cstdio>
+#endif
 
 #ifdef ARDUINO_ENABLED
 const u8 keyboardDescriptor[] PROGMEM {
@@ -46,20 +54,114 @@ QuackKeyboard::QuackKeyboard() : quackHIDLocale{&locale_us} {
     HID().AppendDescriptor(&node);
 }
 
+void
 QuackKeyboard::setLocale(QuackHIDLocale* _quackHIDLocale) {
     quackHIDLocale = _quackHIDLocale;
 }
 
-void QuackKeyboard::send() {
+void
+QuackKeyboard::send() {
+#ifdef KEYBOARD_DEBUGGING
+    printf("[KEYBOARD] Sending report. Report description: {\n");
+    printf("\tkeys: [");
+    for(u8 i = 0; i < 6; i++) {
+        printf("%d, ", quackReport.keys[i]);
+    }
+    printf("],\n");
+    printf("\tmodifiers: [");
+    for(u8 i = 0; i < 8; i++) {
+        printf("%d, ", (quackReport.modifiers & (1 << i)) >> i);
+    }
+    printf("]\n}\n");
+#endif
+
     HID().SendReport(HID_SEND_ID, (u8*) &quackReport, sizeof(QuackReport));
 }
 
-void QuackKeyboard::release() {
+void
+QuackKeyboard::release() {
+#ifdef KEYBOARD_DEBUGGING
+    printf("[KEYBOARD] Releasing keys.\n");
+#endif
     quackReport.clear();
     send();
 }
 
-void QuackKeyboard::press(u8 quack_keycode) {
-    
+void
+QuackKeyboard::addHIDKey(const u8 keycode, const u8 modifier) {
+    for(u8 i = 0; i < 6; i++) {
+        if(NOT quackReport.keys[i]) {
+            quackReport.modifiers |= modifier;
+            quackReport.keys[i] = keycode;
+            send();
+            return;
+        }
+    }
+}
+
+void
+QuackKeyboard::addHIDModifier(const u8 keycode) {
+    quackReport.modifiers |= keycode;
+
+    send();
+}
+
+void
+QuackKeyboard::pressKey(const u8 keycode) {
+#ifdef KEYBOARD_DEBUGGING
+    printf("[KEYBOARD] Pressing key%d", keycode);
+#endif
+    if(keycode < quackHIDLocale->asciiLen) {
+        u8 modifiers = pgm_read_byte(quackHIDLocale->ascii + keycode * 2);
+        u8 key = pgm_read_byte(quackHIDLocale->ascii + keycode * 2 + 1);
+
+        addHIDKey(key, modifiers);
+    }
+}
+
+void
+QuackKeyboard::pressFKey(const u8 fkey_code) {
+#ifdef KEYBOARD_DEBUGGING
+    printf("[KEYBOARD] Pressing F%d", fkey_code);
+#endif
+    addHIDKey(KEY_F1 + fkey_code - 1);
+}
+
+// extra can be either a modifier or a special key, like PRINTSCREEN
+void
+QuackKeyboard::pressExtra(const u8 extra_code) {
+    // modifier
+    if(extra_code <= KEYCODE_GUI) {
+        addHIDModifier(extra_code - KEYCODE_CTRL + KEY_MOD_LCTRL);
+    }
+    else {
+        if(extra_code <= KEYCODE_SPACE) {
+            addHIDKey(extra_code - KEYCODE_ENTER + KEY_ENTER);
+        }
+        else if(extra_code <= KEYCODE_PAGEUP) {
+            addHIDKey(extra_code - KEYCODE_PRINTSCREEN + KEY_SYSRQ);
+        }
+        else if(extra_code <= KEYCODE_NUMLOCK) {
+            addHIDKey(extra_code - KEYCODE_END + KEY_END);
+        }
+        else {
+            if(extra_code == KEYCODE_CAPSLOCK) {
+                addHIDKey(KEY_CAPSLOCK);
+            }
+            else {
+                addHIDKey(KEY_PROPS);
+            }
+        }
+    }
+#ifdef KEYBOARD_DEBUGGING
+
+#endif
+}
+
+void
+QuackKeyboard::pressUTF8(const u32 utf8_char) {
+#ifdef KEYBOARD_DEBUGGING
+
+#endif
 }
 

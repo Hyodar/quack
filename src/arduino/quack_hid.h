@@ -17,11 +17,11 @@ struct HIDSubDescriptor {
 
 struct HID {
     void AppendDescriptor(HIDSubDescriptor* h) { 
-        printf("[HID] Appending descriptor\n");
+        printf("[HID] Appending descriptor.\n");
     }
 
     void SendReport(u8 id, const void* data, u32 len) {
-        printf("[HID] Sending report\n");
+        printf("[HID] Sending report.\n");
     }
 };
 

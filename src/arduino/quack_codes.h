@@ -30,49 +30,72 @@
 
 // Keys ==========================
 
-// UTF8_AHEAD is used to mark that the next character is a utf8 character,
-// so it'll read the next 4 bytes as a utf8 character and not as 4 charac-
-// ters
+#define BYTES_TO_UINT(byte_ptr) *((u32*) byte_ptr)
 
-#define KEYCODE_UTF8_AHEAD      0xb8
+// means the next 4 bytes are a utf8 character
+#define KEYCODE_UTF8_AHEAD      0x03
 
-#define KEYCODE_CTRL            0xb9
-#define KEYCODE_SHIFT           0xba
-#define KEYCODE_ALT             0xbb
-#define KEYCODE_GUI             0xbc
+// means the next byte is a F key number
+#define KEYCODE_F_KEY           0x02
 
-#define KEYCODE_ENTER           0xbd
-#define KEYCODE_MENU            0xbe
-#define KEYCODE_DELETE          0xbf
-#define KEYCODE_HOME            0xc0
-#define KEYCODE_INSERT          0xc1
-#define KEYCODE_PAGEUP          0xc2
-#define KEYCODE_PAGEDOWN        0xc3
-#define KEYCODE_UPARROW         0xc4
-#define KEYCODE_DOWNARROW       0xc5
-#define KEYCODE_LEFTARROW       0xc6
-#define KEYCODE_RIGHTARROW      0xc7
-#define KEYCODE_TAB             0xc8
-#define KEYCODE_END             0xc9
-#define KEYCODE_ESCAPE          0xca
-#define KEYCODE_F1              0xcb
-#define KEYCODE_F2              0xcc
-#define KEYCODE_F3              0xcd
-#define KEYCODE_F4              0xce
-#define KEYCODE_F5              0xcf
-#define KEYCODE_F6              0xd0
-#define KEYCODE_F7              0xd1
-#define KEYCODE_F8              0xd2
-#define KEYCODE_F9              0xd3
-#define KEYCODE_F10             0xd4
-#define KEYCODE_F11             0xd5
-#define KEYCODE_F12             0xd6
-#define KEYCODE_SPACE           0xd7
-#define KEYCODE_PAUSE           0xd8
-#define KEYCODE_CAPSLOCK        0xd9
-#define KEYCODE_NUMLOCK         0xda
-#define KEYCODE_PRINTSCREEN     0xdb
-#define KEYCODE_SCROLLLOCK      0xdc
+// 0x05 a 0x08
+#define KEYCODE_CTRL            0x05
+#define KEYCODE_SHIFT           0x06
+#define KEYCODE_ALT             0x07
+#define KEYCODE_GUI             0x08
+
+#define KEYCODE_ENTER           0x0b
+#define KEYCODE_ESCAPE          0x0c
+#define KEYCODE_DELETE          0x0d
+#define KEYCODE_TAB             0x0e
+#define KEYCODE_SPACE           0x0f
+
+#define KEYCODE_PRINTSCREEN     0x10
+#define KEYCODE_SCROLLLOCK      0x11
+#define KEYCODE_PAUSE           0x12
+#define KEYCODE_INSERT          0x13
+#define KEYCODE_HOME            0x14
+#define KEYCODE_PAGEUP          0x15
+
+#define KEYCODE_END             0x16
+#define KEYCODE_PAGEDOWN        0x17
+#define KEYCODE_RIGHTARROW      0x18
+#define KEYCODE_LEFTARROW       0x19
+#define KEYCODE_DOWNARROW       0x1a
+#define KEYCODE_UPARROW         0x1b
+#define KEYCODE_NUMLOCK         0x1c
+
+#define KEYCODE_CAPSLOCK        0x1d
+
+#define KEYCODE_MENU            0x1e
+
+#define BYTE_TO_FKEY(byte) (byte << 3)
+#define FKEY_TO_BYTE(byte) (byte >> 3)
+
+#define KEYCODE_FKEY1             BYTE_TO_FKEY(0x01)
+#define KEYCODE_FKEY2             BYTE_TO_FKEY(0x02)
+#define KEYCODE_FKEY3             BYTE_TO_FKEY(0x03)
+#define KEYCODE_FKEY4             BYTE_TO_FKEY(0x04)
+#define KEYCODE_FKEY5             BYTE_TO_FKEY(0x05)
+#define KEYCODE_FKEY6             BYTE_TO_FKEY(0x06)
+#define KEYCODE_FKEY7             BYTE_TO_FKEY(0x07)
+#define KEYCODE_FKEY8             BYTE_TO_FKEY(0x08)
+#define KEYCODE_FKEY9             BYTE_TO_FKEY(0x09)
+#define KEYCODE_FKEY10            BYTE_TO_FKEY(0x0a)
+#define KEYCODE_FKEY11            BYTE_TO_FKEY(0x0b)
+#define KEYCODE_FKEY12            BYTE_TO_FKEY(0x0c)
+#define KEYCODE_FKEY13            BYTE_TO_FKEY(0x0d)
+#define KEYCODE_FKEY14            BYTE_TO_FKEY(0x0e)
+#define KEYCODE_FKEY15            BYTE_TO_FKEY(0x0f)
+#define KEYCODE_FKEY16            BYTE_TO_FKEY(0x10)
+#define KEYCODE_FKEY17            BYTE_TO_FKEY(0x11)
+#define KEYCODE_FKEY18            BYTE_TO_FKEY(0x12)
+#define KEYCODE_FKEY19            BYTE_TO_FKEY(0x13)
+#define KEYCODE_FKEY20            BYTE_TO_FKEY(0x14)
+#define KEYCODE_FKEY21            BYTE_TO_FKEY(0x15)
+#define KEYCODE_FKEY22            BYTE_TO_FKEY(0x16)
+#define KEYCODE_FKEY23            BYTE_TO_FKEY(0x17)
+#define KEYCODE_FKEY24            BYTE_TO_FKEY(0x18)
 
 // Locales ========================
 

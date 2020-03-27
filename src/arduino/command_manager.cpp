@@ -28,7 +28,7 @@ CommandManager::doDefaultDelay() {
 }
 
 void
-CommandManager::command(u8 commandCode, const u32 param) {
+CommandManager::command(const u8 commandCode, const u32 param) {
     if(commandCode == COMMAND_DELAY) {
         delay(param);
 
@@ -43,14 +43,6 @@ CommandManager::command(u8 commandCode, const u32 param) {
         defaultDelay(param);
 
         // no need to repeat this
-        /*
-        if(repeatNum) {
-            for(; repeatNum > 1; repeatNum--) {
-                doDefaultDelay();
-                defaultDelay(param);
-            }
-        }
-        */
         repeatNum = 0;
 
         // no need to defaultDelay after this
@@ -79,19 +71,12 @@ CommandManager::command(u8 commandCode, const u32 param) {
 }
 
 void
-CommandManager::command(u8 commandCode, const u8* param, const u16 len) {
+CommandManager::command(const u8 commandCode, const u8* param, const u16 len) {
     if(commandCode == COMMAND_LOCALE) {
         locale(param, len);
 
         // no need to repeat this
-        /*
-        if(repeatNum) {
-            for(; repeatNum > 1; repeatNum--) {
-                doDefaultDelay();
-                locale(param, len);
-            }
-        }
-        */
+
         repeatNum = 0;
 
         // no need to defaultDelay this
@@ -167,68 +152,55 @@ CommandManager::display(const u8* param, const u16 len) const {
 #ifdef TESTING_WITHOUT_KEYBOARD
 u8 translateKey[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
-u8 translateMod[][13] = {
-"UTF8_AHEAD",
-"CTRL",
-"SHIFT",
-"ALT",
-"GUI",
-"ENTER",
-"MENU",
-"DELETE",
-"HOME",
-"INSERT",
-"PAGEUP",
-"PAGEDOWN",
-"UPARROW",
-"DOWNARROW",
-"LEFTARROW",
-"RIGHTARROW",
-"TAB",
-"END",
-"ESCAPE",
-"F1",
-"F2",
-"F3",
-"F4",
-"F5",
-"F6",
-"F7",
-"F8",
-"F9",
-"F10",
-"F11",
-"F12",
-"SPACE",
-"PAUSE",
-"CAPSLOCK",
-"NUMLOCK",
-"PRINTSCREEN",
-"SCROLLLOCK",
+u8 translateMod[][13] = { // "UTF8_AHEAD"
+    "CTRL",             "SHIFT",        "ALT",          "GUI",              "ENTER",
+    "ESCAPE",           "DELETE",       "TAB",          "SPACE",            "CAPSLOCK",
+    "MENU",             "HOME",         "INSERT",       "PAGEUP",           "PAGEDOWN",
+    "RIGHTARROW",       "LEFTARROW",    "DOWNARROW",    "UPARROW",          "END",
+    "SCROLLLOCK",       "PAUSE",        "NUMLOCK",      "PRINTSCREEN",
 };
 #endif
 
 void
-CommandManager::keys(const u8* param, const u16 len) const {
+CommandManager::keys(const u8* param, const u16 len) {
 #ifdef TESTING_WITHOUT_KEYBOARD
-    printf("[COMMANDS] Pressing keys: "); 
-    for(u16 i = 0; i < len - 1; i++) {
-        if(param[i] < KEY_0) {
-            printf("%c, ", translateKey[param[i] - KEY_A]);
+    printf("[COMMANDS] Pressing keys: ");
+#endif
+
+    for(u16 i = 0; i < len; i++) {
+        if(param[i] <= KEYCODE_F_KEY) {
+            if(param[i] == KEYCODE_F_KEY) {
+                i++;
+
+#ifdef TESTING_WITHOUT_KEYBOARD
+                printf("F%d, \n", (u8) FKEY_TO_BYTE(param[i]));
+#endif
+                quackKeyboard.pressFKey(FKEY_TO_BYTE(param[i]));
+            }
+            else if(param[i] == KEYCODE_UTF8_AHEAD) {
+#ifdef TESTING_WITHOUT_KEYBOARD
+                printf("\\u{%d}, \n", BYTES_TO_UINT(param + i + 1));
+#endif
+                quackKeyboard.pressUTF8(BYTES_TO_UINT(param + i + 1));
+                i += 4; // shift 4 bytes
+            }
         }
         else {
-            printf("%s, ", translateMod[param[i] - KEYCODE_UTF8_AHEAD]);
+            if(param[i] <= KEYCODE_PRINTSCREEN) {
+#ifdef TESTING_WITHOUT_KEYBOARD
+                printf("%s, \n", translateMod[param[i] - KEYCODE_CTRL]);
+#endif
+                quackKeyboard.pressExtra(param[i]);
+            }
+            else {
+#ifdef TESTING_WITHOUT_KEYBOARD
+                printf("%c, \n", translateKey[param[i]]);
+#endif
+                quackKeyboard.pressKey(param[i]);
+            }
         }
     }
-    if(param[len - 1] < KEY_0) {
-        printf("%c\n", translateKey[param[len - 1] - KEY_A]);
-    }
-    else {
-        printf("%s\n", translateMod[param[len - 1] - KEYCODE_UTF8_AHEAD]);
-    }
-#else
-
-#endif
+    quackKeyboard.release();
 }
 
 void

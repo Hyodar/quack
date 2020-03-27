@@ -17,7 +17,7 @@ struct QuackReport {
     u8 keys[6];
 
     QuackReport() : modifiers{KEY_NONE}, reserved{KEY_NONE},
-                    keys{{KEY_NONE, KEY_NONE, KEY_NONE, KEY_NONE, KEY_NONE, KEY_NONE}} {}
+                    keys{KEY_NONE, KEY_NONE, KEY_NONE, KEY_NONE, KEY_NONE, KEY_NONE} {}
     
     void clear() {
         modifiers = KEY_NONE;

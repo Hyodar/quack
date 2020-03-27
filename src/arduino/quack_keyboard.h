@@ -5,6 +5,8 @@
 #include "quack_report.h"
 #include "quack_hid_locale.h"
 
+#include "usb_hid_keys.h"
+
 class QuackKeyboard {
 
 private:
@@ -19,13 +21,17 @@ public:
     void send();
     void release();
 
-    // press uses the quack keycode pattern
-    void press(u8 quack_keycode);
+    void addHIDKey(const u8 keycode, const u8 modifier = KEY_NONE);
+    void addHIDModifier(const u8 modifier);
+
+    void pressKey(const u8 keycode);
+    void pressFKey(const u8 fkey_code);
+    void pressExtra(const u8 extra_code);
+    void pressUTF8(const u32 utf8_char);
     
-    // type uses the hid keycode pattern
-    void type(u8 hid_keycode);
-    
-    void write(u8* str, u16 len);
+    void type(const u8 hid_keycode);
+
+    void write(const u8* str, const u16 len);
 };
 
 #endif
