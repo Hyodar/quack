@@ -2,6 +2,12 @@
 #ifndef QUACK_KEYBOARD_H_
 #define QUACK_KEYBOARD_H_
 
+/*****************************************************************************
+ * quack_keyboard.h:
+ *  Keyboard controller class.
+ * 
+*****************************************************************************/
+
 #include "quack_report.h"
 #include "quack_hid_locale.h"
 
@@ -16,6 +22,8 @@ private:
 public:
     QuackKeyboard();
 
+    void begin();
+
     void setLocale(QuackHIDLocale* _quackHIDLocale);
 
     void send();
@@ -28,8 +36,6 @@ public:
     void pressFKey(const u8 fkey_code);
     void pressExtra(const u8 extra_code);
     void pressUTF8(const u32 utf8_char);
-    
-    void type(const u8 hid_keycode);
 
     void write(const u8* str, const u16 len);
 };

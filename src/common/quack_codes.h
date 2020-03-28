@@ -8,6 +8,11 @@
  * 
 *****************************************************************************/
 
+// Communication Protocol ========
+
+#define REQ_TRANSMITION_START  0x01
+#define REQ_TRANSMITION_END    0x04
+
 // Commands ======================
 
 // REM is not here because it's removed on the JS parser

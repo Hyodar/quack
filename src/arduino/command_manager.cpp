@@ -17,6 +17,16 @@ printstr(const u8* str, u16 len) {
 }
 #endif
 
+CommandManager::CommandManager(): currentDefaultDelay{DEFAULT_DELAY},
+                                  repeatNum{0}, quackKeyboard{} {
+    // no-op
+}
+
+void
+CommandManager::begin() {
+    quackKeyboard.begin();
+}
+
 void
 CommandManager::doDefaultDelay() {
 #ifdef TESTING_WITHOUT_KEYBOARD
@@ -27,17 +37,20 @@ CommandManager::doDefaultDelay() {
 #endif
 }
 
+#define REPEAT_IF_NECESSARY(func)\
+if(repeatNum) {\
+    for(; repeatNum > 1; repeatNum--) {\
+        doDefaultDelay();\
+        func;\
+    }\
+}\
+
 void
 CommandManager::command(const u8 commandCode, const u32 param) {
     if(commandCode == COMMAND_DELAY) {
         delay(param);
 
-        if(repeatNum) {
-            for(; repeatNum > 1; repeatNum--) {
-                doDefaultDelay();
-                delay(param);
-            }
-        }
+        REPEAT_IF_NECESSARY(delay(param))
     }
     else if(commandCode == COMMAND_DEFAULTDELAY) {
         defaultDelay(param);
@@ -59,12 +72,7 @@ CommandManager::command(const u8 commandCode, const u32 param) {
     else {
         keycode(param);
 
-        if(repeatNum) {
-            for(; repeatNum > 1; repeatNum--) {
-                doDefaultDelay();
-                keycode(param);
-            }
-        }
+        REPEAT_IF_NECESSARY(keycode(param))
     }
 
     doDefaultDelay();
@@ -85,32 +93,17 @@ CommandManager::command(const u8 commandCode, const u8* param, const u16 len) {
     else if(commandCode == COMMAND_STRING) {
         string(param, len);
 
-        if(repeatNum) {
-            for(; repeatNum > 1; repeatNum--) {
-                doDefaultDelay();
-                string(param, len);
-            }
-        }
+        REPEAT_IF_NECESSARY(string(param, len))
     }
     else if(commandCode == COMMAND_DISPLAY) {
         display(param, len);
 
-        if(repeatNum) {
-            for(; repeatNum > 1; repeatNum--) {
-                doDefaultDelay();
-                display(param, len);
-            }
-        }
+        REPEAT_IF_NECESSARY(display(param, len))
     }
     else {
         keys(param, len);
 
-        if(repeatNum) {
-            for(; repeatNum > 1; repeatNum--) {
-                doDefaultDelay();
-                keys(param, len);
-            }
-        }
+        REPEAT_IF_NECESSARY(keys(param, len))
     }
 
     doDefaultDelay();
@@ -132,12 +125,13 @@ CommandManager::locale(const u8* param, const u16 len) const {
 }
 
 void
-CommandManager::string(const u8* param, const u16 len) const {
+CommandManager::string(const u8* param, const u16 len) {
 #ifdef TESTING_WITHOUT_KEYBOARD
     printf("[COMMANDS] Typing string: "); printstr(param, len); putchar('\n');
 #else
 
 #endif
+    quackKeyboard.write(param, len);
 }
 
 void
@@ -218,8 +212,9 @@ CommandManager::defaultDelay(const u32 param) {
 #ifdef TESTING_WITHOUT_KEYBOARD
     printf("[COMMANDS] Setting default delay to %d ms\n", param);
 #else
-    currentDefaultDelay = param;
+
 #endif
+    currentDefaultDelay = param;
 }
 
 void

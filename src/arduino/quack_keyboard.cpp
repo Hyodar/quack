@@ -49,6 +49,11 @@ const u8 keyboardDescriptor[] {
 };
 
 QuackKeyboard::QuackKeyboard() : quackHIDLocale{&locale_us} {
+    // no-op
+}
+
+void
+QuackKeyboard::begin() {
     static HIDSubDescriptor node(keyboardDescriptor, sizeof(keyboardDescriptor));
 
     HID().AppendDescriptor(&node);
@@ -74,7 +79,6 @@ QuackKeyboard::send() {
     }
     printf("]\n}\n");
 #endif
-
     HID().SendReport(HID_SEND_ID, (u8*) &quackReport, sizeof(QuackReport));
 }
 
@@ -112,11 +116,22 @@ QuackKeyboard::pressKey(const u8 keycode) {
     printf("[KEYBOARD] Pressing key: %d\n", keycode);
 #endif
     if(keycode < quackHIDLocale->asciiLen) {
-        u8 modifiers = pgm_read_byte(quackHIDLocale->ascii + keycode * 2);
-        u8 key = pgm_read_byte(quackHIDLocale->ascii + keycode * 2 + 1);
-
-        addHIDKey(key, modifiers);
+        addHIDKey(
+            pgm_read_byte(quackHIDLocale->ascii + keycode * 2 + 1),
+            pgm_read_byte(quackHIDLocale->ascii + keycode * 2)
+        );
+        return;
     }
+
+    for(u8 i = 0; i < quackHIDLocale->extendedAsciiLen; i++) {
+        if(keycode == pgm_read_byte(quackHIDLocale->extendedAscii + i * 3)) {
+            addHIDKey(
+                pgm_read_byte(quackHIDLocale->extendedAscii + i * 3 + 2),
+                pgm_read_byte(quackHIDLocale->extendedAscii + i * 3 + 1)
+            );
+        }
+    }
+    
 }
 
 void
@@ -130,32 +145,26 @@ QuackKeyboard::pressFKey(const u8 fkey_code) {
 // extra can be either a modifier or a special key, like PRINTSCREEN
 void
 QuackKeyboard::pressExtra(const u8 extra_code) {
-    // modifier
+    // this translates the internal key mapping (quack_codes.h)
+    // to the HID key mapping (usb_hid_keys.h)
     if(extra_code <= KEYCODE_GUI) {
         addHIDModifier(extra_code - KEYCODE_CTRL + KEY_MOD_LCTRL);
     }
-    else {
-        if(extra_code <= KEYCODE_SPACE) {
-            addHIDKey(extra_code - KEYCODE_ENTER + KEY_ENTER);
-        }
-        else if(extra_code <= KEYCODE_PAGEUP) {
-            addHIDKey(extra_code - KEYCODE_PRINTSCREEN + KEY_SYSRQ);
-        }
-        else if(extra_code <= KEYCODE_NUMLOCK) {
-            addHIDKey(extra_code - KEYCODE_END + KEY_END);
-        }
-        else {
-            if(extra_code == KEYCODE_CAPSLOCK) {
-                addHIDKey(KEY_CAPSLOCK);
-            }
-            else {
-                addHIDKey(KEY_PROPS);
-            }
-        }
+    else if(extra_code <= KEYCODE_SPACE) {
+        addHIDKey(extra_code - KEYCODE_ENTER + KEY_ENTER);
     }
-#ifdef KEYBOARD_DEBUGGING
-
-#endif
+    else if(extra_code <= KEYCODE_PAGEUP) {
+        addHIDKey(extra_code - KEYCODE_PRINTSCREEN + KEY_SYSRQ);
+    }
+    else if(extra_code <= KEYCODE_NUMLOCK) {
+        addHIDKey(extra_code - KEYCODE_END + KEY_END);
+    }
+    else if(extra_code == KEYCODE_CAPSLOCK) {
+        addHIDKey(KEY_CAPSLOCK);
+    }
+    else {
+        addHIDKey(KEY_PROPS);
+    }
 }
 
 void
@@ -163,5 +172,20 @@ QuackKeyboard::pressUTF8(const u32 utf8_char) {
 #ifdef KEYBOARD_DEBUGGING
 
 #endif
+}
+
+void
+QuackKeyboard::write(const u8* str, const u16 len) {
+    for(u16 i = 0; i < len; i++) {
+        if(str[i] != KEYCODE_UTF8_AHEAD) {
+            pressKey(str[i]);
+        }
+        else {
+            pressUTF8(BYTES_TO_UINT(str + i + 1));
+            i += 4;
+        }
+
+        release();
+    }
 }
 

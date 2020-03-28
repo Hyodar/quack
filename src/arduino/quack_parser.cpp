@@ -8,8 +8,13 @@
 #include <cstdio>
 #endif
 
-QuackParser::QuackParser() : currentCommand{COMMAND_NONE} {
+QuackParser::QuackParser() : parsingState{ParsingState::NONE}, currentCommand{COMMAND_NONE} {
     // no-op
+}
+
+void
+QuackParser::begin() {
+    commandManager.begin();
 }
 
 // https://stackoverflow.com/questions/16826422/c-most-efficient-way-to-convert-string-to-int-faster-than-atoi
@@ -29,10 +34,10 @@ QuackParser::parseU32(const u8* str, u16 len) {
 // if necessary
 
 void
-QuackParser::parse(u8* str, const u16 len) {
+QuackParser::parse(const u8* str, const u16 len) {
     u16 cursor = 0;
     
-    u8* paramStart = nullptr;
+    const u8* paramStart = nullptr;
     u16 paramLen = 0;
 
 #ifdef PARSER_DEBUGGING
