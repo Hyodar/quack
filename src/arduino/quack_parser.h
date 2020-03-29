@@ -10,6 +10,7 @@
 
 #include "quack_utils.h"
 #include "command_manager.h"
+#include "fastcrc/FastCRC.h"
 
 class QuackParser {
 
@@ -20,21 +21,33 @@ enum ParsingState {
     CONTINUE
 };
 
+struct QuackFrame {
+    u16 checksum;
+    u16 length;
+    u8 commandCode;
+    const u8* params;
+
+    QuackFrame();
+};
+
 private:
     CommandManager commandManager;
-    ParsingState parsingState;
+    //ParsingState parsingState;
     
-    u8 currentCommand;
+    QuackFrame quackFrame;
+    FastCRC16 CRC16;
 
-    void sendCommand(const u8* const params, const u16 len);
-    u32 parseU32(const u8* const params, const u16 len);
+    void sendCommand();
 
 public:
     QuackParser();
 
     void begin();
 
-    void parse(const u8* const str, const u16 len);
+    const bool parse(const u8* const str, const u16 len);
+    const u32 parseU32(const u8* const str);
+
+    const bool checkChecksum();
 
 };
 

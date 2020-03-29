@@ -1,0 +1,4 @@
+Each frame has a specific structure:
+
+ ========================= HEADER ========================= ========== DATA ========= === SEPARATOR ===
+| checksum (2 bytes) | command (1 byte) | length (2 bytes) | params (<length> bytes) |  \x00 (1 byte)  |

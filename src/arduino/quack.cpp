@@ -13,7 +13,9 @@ Quack::run() {
 
     const QuackInterface::QuackBuffer* buffer = quackInterface.getBuffer();
 
-    quackParser.parse(BUFFER_PTR_TO_STR(buffer));
+    if(!quackParser.parse(UNPACK_BUFFER(buffer))) {
+        quackInterface.requestResend();
+    }
 
     quackInterface.flush();
 }

@@ -10,8 +10,8 @@
 
 // Communication Protocol ========
 
-#define REQ_TRANSMITION_START  0x01
-#define REQ_TRANSMITION_END    0x04
+#define WRONG_CHECKSUM         0x01
+#define FRAME_SEPARATOR        0x00
 
 // Commands ======================
 
@@ -24,12 +24,13 @@
 #define COMMAND_STRING          35
 #define COMMAND_DISPLAY         36
 #define COMMAND_KEYS            37
+#define COMMAND_CONTINUESTRING  38
 
 // Params: number(1)
-#define COMMAND_DELAY           38
-#define COMMAND_DEFAULTDELAY    39
-#define COMMAND_REPEAT          40
-#define COMMAND_KEYCODE         41
+#define COMMAND_DELAY           39
+#define COMMAND_DEFAULTDELAY    40
+#define COMMAND_REPEAT          41
+#define COMMAND_KEYCODE         42
 
 #define IS_COMMAND_PARAM_INT(comm) comm >= COMMAND_DELAY
 

@@ -11,6 +11,7 @@
 // #define HID_ENABLED
 // #define ARDUINO_ENABLED
 // #define SERIAL_ENABLED
+// #define DISPLAY_ENABLED
 
 #define TESTING_WITHOUT_KEYBOARD
 #define PARSER_DEBUGGING
@@ -22,5 +23,7 @@
 #define BAUDRATE      9600
 #define BUFFER_SIZE   (384 * 2)
 #define DEFAULT_DELAY 1000
+
+#define QUACKFRAME_HEADER_SIZE 5
 
 #endif

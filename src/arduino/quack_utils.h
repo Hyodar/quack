@@ -14,6 +14,10 @@
 #define pgm_read_byte(address_short) *(address_short)
 #endif
 
+#define STR_TO_U16(str) *((u16*) (str))
+#define STR_TO_I16(str) *((i16*) (str))
+#define STR_TO_U32(str) *((u32*) (str))
+
 typedef __INT8_TYPE__  i8;
 typedef __INT16_TYPE__ i16;
 typedef __INT32_TYPE__ i32;

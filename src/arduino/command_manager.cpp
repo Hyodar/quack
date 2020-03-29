@@ -158,42 +158,19 @@ u8 translateMod[][13] = { // "UTF8_AHEAD"
 void
 CommandManager::keys(const u8* const param, const u16 len) {
 #ifdef TESTING_WITHOUT_KEYBOARD
-    printf("[COMMANDS] Pressing keys: ");
+    printf("[COMMANDS] Pressing keys: TODO translation\n");
 #endif
 
     for(u16 i = 0; i < len; i++) {
-        if(param[i] <= KEYCODE_F_KEY) {
-            if(param[i] == KEYCODE_F_KEY) {
-                i++;
-
-#ifdef TESTING_WITHOUT_KEYBOARD
-                printf("F%d, \n", (u8) FKEY_TO_BYTE(param[i]));
-#endif
-                quackKeyboard.pressFKey(FKEY_TO_BYTE(param[i]));
-            }
-            else if(param[i] == KEYCODE_UTF8_AHEAD) {
-#ifdef TESTING_WITHOUT_KEYBOARD
-                printf("\\u{%d}, \n", BYTES_TO_UINT(param + i + 1));
-#endif
-                quackKeyboard.pressUTF8(BYTES_TO_UINT(param + i + 1));
-                i += 4; // shift 4 bytes
+        if(param[i] >= KEY_LEFTCTRL) {
+            if(param[i] <= KEY_LEFTMETA) {
+                quackKeyboard.addHIDModifier(param[i]);
+                continue;
             }
         }
-        else {
-            if(param[i] <= KEYCODE_PRINTSCREEN) {
-#ifdef TESTING_WITHOUT_KEYBOARD
-                printf("%s, \n", translateMod[param[i] - KEYCODE_CTRL]);
-#endif
-                quackKeyboard.pressExtra(param[i]);
-            }
-            else {
-#ifdef TESTING_WITHOUT_KEYBOARD
-                printf("%c, \n", translateKey[param[i] - translateKey[0]]);
-#endif
-                quackKeyboard.pressKey(param[i]);
-            }
-        }
+        quackKeyboard.addHIDKey(param[i]);
     }
+
     quackKeyboard.release();
 }
 

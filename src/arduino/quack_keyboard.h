@@ -32,11 +32,6 @@ public:
     void addHIDKey(const u8 keycode, const u8 modifier = KEY_NONE);
     void addHIDModifier(const u8 modifier);
 
-    void pressKey(const u8 keycode);
-    void pressFKey(const u8 fkey_code);
-    void pressExtra(const u8 extra_code);
-    void pressUTF8(const u32 utf8_char);
-
     void write(const u8* const str, const u16 len);
 };
 

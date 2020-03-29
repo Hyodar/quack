@@ -17,7 +17,7 @@ class QuackInterface {
 
 public:
 
-    #define BUFFER_PTR_TO_STR(buffer) buffer->data, buffer->length
+    #define UNPACK_BUFFER(buffer) buffer->data, buffer->length
     struct QuackBuffer {
         u8 data[BUFFER_SIZE];
         u16 length;
@@ -25,15 +25,28 @@ public:
         QuackBuffer();
     };
 
-    enum StreamState {
-        NONE,
-        RECEIVING,
-        PARSING
-    };
+    // enum StreamState {
+    //     NONE                    = 0,
+    //     RECEIVING_CHECKSUM_1    = 1,
+    //     RECEIVING_CHECKSUM_2    = 2,
+    //     RECEIVING_COMMAND       = 3,
+    //     RECEIVING_LENGTH_1      = 4,
+    //     RECEIVING_LENGTH_2      = 5,
+    //     RECEIVING_PARAMS        = 6,
+    //     PARSING                 = 7
+    // };
 
 private:
     // StreamState streamState;
+
     QuackBuffer recBuffer;
+    
+    // union u16Length {
+    //     u16 length;
+    //     u8  bytes[2];
+    // };
+
+    // union u16Length dataLength;
 
 public:
 
@@ -44,6 +57,8 @@ public:
     const bool update();
 
     QuackBuffer* getBuffer();
+
+    void requestResend();
 
     void flush();
 

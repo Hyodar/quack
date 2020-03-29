@@ -8,7 +8,11 @@
 #include <cstdio>
 #endif
 
-QuackParser::QuackParser() : parsingState{ParsingState::NONE}, currentCommand{COMMAND_NONE} {
+QuackParser::QuackFrame::QuackFrame() : checksum{0}, length{0}, commandCode{COMMAND_NONE}, params{nullptr} {
+    // no-op
+}
+
+QuackParser::QuackParser() /*: parsingState{ParsingState::NONE}*/ {
     // no-op
 }
 
@@ -18,82 +22,60 @@ QuackParser::begin() {
 }
 
 // https://stackoverflow.com/questions/16826422/c-most-efficient-way-to-convert-string-to-int-faster-than-atoi
-u32
-QuackParser::parseU32(const u8* const str, const u16 len) {
+const u32
+QuackParser::parseU32(const u8* const str) {
     u32 n = 0;
     
-    for(u16 i = 0; i < len; i++) {
+    for(u16 i = 0; i < 4; i++) {
         n = (n*10) + (str[i] - '0');
     }
 
     return n;
 }
 
-// parse(str, len) is built to be able to parse multiple lines at once,
-// if necessary
-
-void
+const bool
 QuackParser::parse(const u8* const str, const u16 len) {
-    u16 cursor = 0;
+
+#ifdef PARSER_DEBUGGING
+    printf("[PARSER] Starting.\n");
+#endif
+    quackFrame.checksum = STR_TO_U16(str);
+    quackFrame.commandCode = str[2];
+    quackFrame.length = STR_TO_U16(str + 3);
+    quackFrame.params = str + 5;
+
+    if(!checkChecksum()) {
+#ifdef PARSER_DEBUGGING
+        printf("[PARSER] Checksum (%d) error! Requesting resend.\n", quackFrame.checksum);
+#endif
+        return false;
+    }
+
+    sendCommand();
     
-    const u8* paramStart = nullptr;
-    u16 paramLen = 0;
+    return true;
+}
 
+const bool
+QuackParser::checkChecksum() {
+    // TODO import checksum
 #ifdef PARSER_DEBUGGING
-    printf("[PARSER] starting...\n");
-#endif
-
-    if(parsingState == ParsingState::CONTINUE) {
-        paramStart = str;
-        parsingState = ParsingState::PARAMS;
+    printf("[PARSER] Computing checksum for '");
+    for(u16 i = 0; i < quackFrame.length + 3; i++) {
+        printf("%d ", (quackFrame.params - 3)[i]);
     }
-
-    for(;;cursor++) {
-        paramLen = 0;
-
-        while(str[cursor] != '\n' AND str[cursor] != '\r') {
-            if(!(cursor < len)) goto end;
-
-#ifdef PARSER_DEBUGGING
-            printf("[PARSER] reading char: %c\n", str[cursor]);
+    printf("'\n");
 #endif
-
-            if(parsingState == ParsingState::PARAMS) {
-                paramLen++;
-                cursor++;
-                continue;
-            }
-
-            currentCommand = str[cursor];
-            paramStart = str + cursor + 1;
-            parsingState = ParsingState::PARAMS;
-
-            cursor++;
-        }
-
-        sendCommand(paramStart, paramLen);
-    }
-
-    return;
-
-    end:
-        if(parsingState == ParsingState::PARAMS) {
-            if(paramLen) {
-                sendCommand(paramStart, paramLen);
-            }
-            else if(NOT(str[cursor - 1] == '\n' || str[cursor - 1] == '\r')) {
-                parsingState = ParsingState::CONTINUE;
-            }
-        }
+    return (CRC16.ccitt(quackFrame.params - 3, quackFrame.length + 3) == quackFrame.checksum);
 }
 
 void
-QuackParser::sendCommand(const u8* const params, const u16 len) {
-    parsingState = ParsingState::COMMAND;
+QuackParser::sendCommand() {
 
-    if(currentCommand >= COMMAND_DELAY) {
-        commandManager.command(currentCommand, parseU32(params, len));
+    if(quackFrame.commandCode >= COMMAND_DELAY) {
+        // u32 parameter
+        commandManager.command(quackFrame.commandCode, parseU32(quackFrame.params));
         return;
     }
-    commandManager.command(currentCommand, params, len);
+    commandManager.command(quackFrame.commandCode, quackFrame.params, quackFrame.length);
 }
