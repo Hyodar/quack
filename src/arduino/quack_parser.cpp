@@ -19,12 +19,11 @@ QuackParser::begin() {
 
 // https://stackoverflow.com/questions/16826422/c-most-efficient-way-to-convert-string-to-int-faster-than-atoi
 u32
-QuackParser::parseU32(const u8* str, u16 len) {
+QuackParser::parseU32(const u8* const str, const u16 len) {
     u32 n = 0;
     
-    for(;len != 0; len--) {
-        n = (n*10) + (*str - '0');
-        ++str;
+    for(u16 i = 0; i < len; i++) {
+        n = (n*10) + (str[i] - '0');
     }
 
     return n;
@@ -34,7 +33,7 @@ QuackParser::parseU32(const u8* str, u16 len) {
 // if necessary
 
 void
-QuackParser::parse(const u8* str, const u16 len) {
+QuackParser::parse(const u8* const str, const u16 len) {
     u16 cursor = 0;
     
     const u8* paramStart = nullptr;
@@ -89,7 +88,7 @@ QuackParser::parse(const u8* str, const u16 len) {
 }
 
 void
-QuackParser::sendCommand(const u8* params, const u16 len) {
+QuackParser::sendCommand(const u8* const params, const u16 len) {
     parsingState = ParsingState::COMMAND;
 
     if(currentCommand >= COMMAND_DELAY) {

@@ -53,7 +53,7 @@ QuackKeyboard::QuackKeyboard() : quackHIDLocale{&locale_us} {
 }
 
 void
-QuackKeyboard::begin() {
+QuackKeyboard::begin() const {
     static HIDSubDescriptor node(keyboardDescriptor, sizeof(keyboardDescriptor));
 
     HID().AppendDescriptor(&node);
@@ -65,7 +65,7 @@ QuackKeyboard::setLocale(QuackHIDLocale* _quackHIDLocale) {
 }
 
 void
-QuackKeyboard::send() {
+QuackKeyboard::send() const {
 #ifdef KEYBOARD_DEBUGGING
     printf("[KEYBOARD] Sending report. Report description: {\n");
     printf("\tkeys: [");
@@ -175,7 +175,7 @@ QuackKeyboard::pressUTF8(const u32 utf8_char) {
 }
 
 void
-QuackKeyboard::write(const u8* str, const u16 len) {
+QuackKeyboard::write(const u8* const str, const u16 len) {
     for(u16 i = 0; i < len; i++) {
         if(str[i] != KEYCODE_UTF8_AHEAD) {
             pressKey(str[i]);

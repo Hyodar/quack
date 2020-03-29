@@ -28,29 +28,40 @@ private:
 public:
     Serial() {}
 
-    void begin(u32 baudRate) {
+    void begin(const u32 baudRate) const {
         printf("[SERIAL] Beginning with baudrate %d.\n", baudRate); 
     }
 
-    void write(u8 byte) {
+    void write(const u8 byte) {
         buffer.push(byte);
         printf("[SERIAL] Writing %c to buffer.\n", byte);
     }
-    void write(const u8* const str, const u16 len) { for(u16 i = 0; i < len; i++) write(str[i]); }
+
+    void write(const u8* const str, const u16 len) {
+        for(u16 i = 0; i < len; i++) {
+            write(str[i]);
+        }
+    }
+
     const u8 read() {
         if(!buffer.empty()) {
-            u8 byte = buffer.front();
+            const u8 byte = buffer.front();
             printf("[SERIAL] Reading %c from buffer.\n", byte);
+            
             buffer.pop();
-
             return byte;
         }
     }
+
     void flush() {
-        while(!buffer.empty()) buffer.pop();
         printf("[SERIAL] Flushing buffer.\n");
+
+        while(!buffer.empty()) {
+            buffer.pop();
+        }
     }
-    u16 available() {
+
+    const u16 available() {
         //printf("[SERIAL] Checking availability.\n");
         return buffer.size();
     }

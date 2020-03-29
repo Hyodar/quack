@@ -79,7 +79,7 @@ CommandManager::command(const u8 commandCode, const u32 param) {
 }
 
 void
-CommandManager::command(const u8 commandCode, const u8* param, const u16 len) {
+CommandManager::command(const u8 commandCode, const u8* const param, const u16 len) {
     if(commandCode == COMMAND_LOCALE) {
         locale(param, len);
 
@@ -116,7 +116,7 @@ u8 translateLocale[][3] = {
 #endif
 
 void
-CommandManager::locale(const u8* param, const u16 len) const {
+CommandManager::locale(const u8* const param, const u16 len) const {
 #ifdef TESTING_WITHOUT_KEYBOARD
     printf("[COMMANDS] Setting locale to: %s\n", translateLocale[param[0] - LOCALE_US]);
 #else
@@ -125,7 +125,7 @@ CommandManager::locale(const u8* param, const u16 len) const {
 }
 
 void
-CommandManager::string(const u8* param, const u16 len) {
+CommandManager::string(const u8* const param, const u16 len) {
 #ifdef TESTING_WITHOUT_KEYBOARD
     printf("[COMMANDS] Typing string: "); printstr(param, len); putchar('\n');
 #else
@@ -135,7 +135,7 @@ CommandManager::string(const u8* param, const u16 len) {
 }
 
 void
-CommandManager::display(const u8* param, const u16 len) const {
+CommandManager::display(const u8* const param, const u16 len) const {
 #ifdef TESTING_WITHOUT_KEYBOARD
     printf("[COMMANDS] Displaying string: "); printstr(param, len); putchar('\n');
 #else
@@ -156,7 +156,7 @@ u8 translateMod[][13] = { // "UTF8_AHEAD"
 #endif
 
 void
-CommandManager::keys(const u8* param, const u16 len) {
+CommandManager::keys(const u8* const param, const u16 len) {
 #ifdef TESTING_WITHOUT_KEYBOARD
     printf("[COMMANDS] Pressing keys: ");
 #endif

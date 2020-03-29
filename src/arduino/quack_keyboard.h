@@ -22,11 +22,11 @@ private:
 public:
     QuackKeyboard();
 
-    void begin();
+    void begin() const;
 
     void setLocale(QuackHIDLocale* _quackHIDLocale);
 
-    void send();
+    void send() const;
     void release();
 
     void addHIDKey(const u8 keycode, const u8 modifier = KEY_NONE);
@@ -37,7 +37,7 @@ public:
     void pressExtra(const u8 extra_code);
     void pressUTF8(const u32 utf8_char);
 
-    void write(const u8* str, const u16 len);
+    void write(const u8* const str, const u16 len);
 };
 
 #endif
