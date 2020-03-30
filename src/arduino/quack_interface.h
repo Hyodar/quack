@@ -63,7 +63,8 @@ public:
 
     QuackBuffer* getBuffer();
 
-    void requestResend();
+    void requestResend() const;
+    void requestNext() const;
 
     void flush();
 

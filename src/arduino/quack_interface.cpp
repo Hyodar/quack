@@ -31,9 +31,17 @@ QuackInterface::update() {
             const u8 receivedByte = Serial1.read();
 
             if(receivedByte == FRAME_SEPARATOR) {
+#ifdef INTERFACE_DEBUGGING
+                printf("[INTERFACE] Found start separator. Changing state to FILLING_BUFFER.\n");
+#endif
                 streamState = StreamState::FILLING_BUFFER;
                 break;
             }
+
+#ifdef INTERFACE_DEBUGGING
+                printf("[INTERFACE] Read byte on WAITING_START state: %d.\n", receivedByte);
+#endif
+
         }
     }
 
@@ -47,7 +55,7 @@ QuackInterface::update() {
             if(recBuffer.length >= QUACKFRAME_HEADER_SIZE) {
                 // finished getting header
 #ifdef INTERFACE_DEBUGGING
-                printf("[INTERFACE] Received frame from Serial. Changing state to PARSING.\n");
+                printf("[INTERFACE] Received frame from Serial. Changing state to WAITING_START and waiting buffer read.\n");
 #endif
                 streamState = StreamState::WAITING_START;
                 return true;
@@ -121,8 +129,13 @@ QuackInterface::getBuffer() {
 }
 
 void
-QuackInterface::requestResend() {
+QuackInterface::requestResend() const {
     Serial1.write(WRONG_CHECKSUM);
+}
+
+void
+QuackInterface::requestNext() const {
+    Serial1.write(FINISHED_PARSING);
 }
 
 void

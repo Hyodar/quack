@@ -16,6 +16,9 @@ Quack::run() {
     if(!quackParser.parse(UNPACK_BUFFER(buffer))) {
         quackInterface.requestResend();
     }
+    else {
+        quackInterface.requestNext();
+    }
 
     quackInterface.flush();
 }

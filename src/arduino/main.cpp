@@ -23,7 +23,7 @@ main(void) {
 
     setup();
 
-    const u8 payload[] = {'\x27', '\x04', '\x00', '1', '0', '0', '0', '\x00'};
+    const u8 payload[] = {'\x24', '\x04', '\x00', '1', '0', '0', '0', '\x00'};
 
     FastCRC16 CRC16;
     printf("%d\n", CRC16.ccitt((uint8_t*) payload, sizeof(payload) - 1));
@@ -38,7 +38,7 @@ main(void) {
     Serial1.write((u8*) &checksum, sizeof(u16));
 
     // command
-    Serial1.write(DECLARE_STR("\x27"));
+    Serial1.write(DECLARE_STR("\x24"));
 
     // length
     Serial1.write(DECLARE_STR("\x04\x00"));

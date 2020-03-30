@@ -33,7 +33,7 @@ public:
     }
 
     void write(u8 character) {
-        printf("[DISPLAY] Writing character on screen: %d.\n", character);
+        printf("[DISPLAY] Writing character on screen: %c.\n", character);
     }
 
     void clearDisplay() {
