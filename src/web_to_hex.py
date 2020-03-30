@@ -6,7 +6,7 @@ from gzip import compress as gzip_compress
 WEB_PATH = "./web"
 TARGET_FILE = "./esp/web_files.h"
 ARRAY_TEMPLATE = StringTemplate("#ifdef ESP_ENABLED\nconst u8 ${array_name}[] PROGMEM = {\n#else\nconst u8 ${array_name}[] = {\n#endif\n\t$array\n};\n\n")
-CALLBACK_TEMPLATE = StringTemplate('#define ${array_name}_CALLBACK \\\nserver.on("$filename", HTTP_GET, [](AsyncWebServerRequest* request) {\\\n\treply(request, $response_code, "$response_type", $array_name, sizeof($array_name));\\\n})\n\n');
+CALLBACK_TEMPLATE = StringTemplate('#define ${array_name}_CALLBACK \\\nserver.on("$filename", HTTP_GET, [](AsyncWebServerRequest* request) {\\\n\treply(request, $http_code, "$response_type", $array_name, sizeof($array_name));\\\n})\n\n');
 RESPONSE_TYPES = {
     ".js": "application/javascript",
     ".css": "text/css",
@@ -15,11 +15,11 @@ RESPONSE_TYPES = {
 
 def get_response_info(file):
     if file.stem.isdigit():
-        response_code = filename.stem
+        http_code = file.stem
     else:
-        response_code = 200
+        http_code = 200
 
-    return (response_code, RESPONSE_TYPES.get(file.suffix, "text/plain"))
+    return (http_code, RESPONSE_TYPES.get(file.suffix, "text/plain"))
 
 def build_array(file_content):
     array = [hex(char) for char in gzip_compress(file_content.encode("utf-8"))]
@@ -36,15 +36,16 @@ def file_hexarray(file, array_name):
     return ARRAY_TEMPLATE.substitute(array_name=array_name, array=array)
 
 def file_callback(file, array_name):
-    response_code, response_type = get_response_info(file)
+    http_code, response_type = get_response_info(file)
 
     return CALLBACK_TEMPLATE.substitute(array_name=array_name,
                                         filename=file.name,
-                                        response_code=response_code,
+                                        http_code=http_code,
                                         response_type=response_type)
 
 def main():
     lines = [
+        "\n",
         "#ifndef WEB_FILES_H_\n",
         "#define WEB_FILES_H_\n",
         "\n",
@@ -56,13 +57,18 @@ def main():
     callbacks = []
 
     for file in Path(WEB_PATH).glob("*"):
-        array_name = file.name.replace('.', '_').upper()
+        if file.stem.isdigit():
+            name = f"HTTP{file.name}"
+        else:
+            name = file.name
+
+        array_name = name.replace('.', '_').upper()
 
         lines.append(file_hexarray(file, array_name));
         lines.append(file_callback(file, array_name));
         callbacks.append(f"{array_name}_CALLBACK");
     
-    callbacks = ';\\\n'.join(callbacks)
+    callbacks = '; \\\n'.join(callbacks)
     lines.append(f"#define GET_CALLBACKS \\\n{callbacks}\n\n")
     lines.append("#endif");
 
