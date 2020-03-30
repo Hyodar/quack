@@ -11,6 +11,7 @@
 #include "quack_config.h"
 #include "quack_utils.h"
 #include "quack_keyboard.h"
+#include "quack_display.h"
 
 class CommandManager {
 
@@ -24,6 +25,7 @@ public:
 
 private:
     QuackKeyboard quackKeyboard;
+    QuackDisplay quackDisplay;
 
     u32 currentDefaultDelay;
     u32 repeatNum;
@@ -32,7 +34,7 @@ private:
 
     void locale(const u8* const param, const u16 len) const;
     void string(const u8* const param, const u16 len);
-    void display(const u8* const param, const u16 len) const;
+    void display(const u8* const param, const u16 len);
     void keys(const u8* const param, const u16 len);
 
     void delay(const u32 param) const;

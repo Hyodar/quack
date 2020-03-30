@@ -36,8 +36,13 @@ public:
     //     PARSING                 = 7
     // };
 
+    enum StreamState {
+        WAITING_START,
+        FILLING_BUFFER
+    };
+
 private:
-    // StreamState streamState;
+    StreamState streamState;
 
     QuackBuffer recBuffer;
     

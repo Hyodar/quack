@@ -30,8 +30,12 @@ main(void) {
     // printf("%d\n", *((uint16_t*) "\xd7H"));
     
     u16 checksum = CRC16.ccitt((uint8_t*) payload, sizeof(payload) - 1);
+
+    // separator (start)
+    Serial1.write(DECLARE_STR("\x00"));
+
     // checksum
-    Serial1.write((u8*) &checksum, 2);
+    Serial1.write((u8*) &checksum, sizeof(u16));
 
     // command
     Serial1.write(DECLARE_STR("\x27"));
@@ -42,7 +46,7 @@ main(void) {
     // params
     Serial1.write(DECLARE_STR("1000"));
 
-    // separator
+    // separator (end)
     Serial1.write(DECLARE_STR("\x00"));
 
     for(;;) {

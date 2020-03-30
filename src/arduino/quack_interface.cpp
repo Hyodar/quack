@@ -12,7 +12,7 @@ QuackInterface::QuackBuffer::QuackBuffer() : data{0}, length{0} {
 
 }
 
-QuackInterface::QuackInterface() : //streamState{StreamState::RECEIVING_CHECKSUM_1},
+QuackInterface::QuackInterface() : streamState{StreamState::WAITING_START},
                                    recBuffer{} /*, dataLength{0}*/ {
     // no-op
 }
@@ -26,6 +26,17 @@ const bool
 QuackInterface::update() {
     u16 available = Serial1.available();
 
+    if(streamState == StreamState::WAITING_START) {
+        for(; available > 0; available--) {
+            const u8 receivedByte = Serial1.read();
+
+            if(receivedByte == FRAME_SEPARATOR) {
+                streamState = StreamState::FILLING_BUFFER;
+                break;
+            }
+        }
+    }
+
     while(available && recBuffer.length <= BUFFER_SIZE) {
         const u8 receivedByte = Serial1.read();
 
@@ -38,6 +49,7 @@ QuackInterface::update() {
 #ifdef INTERFACE_DEBUGGING
                 printf("[INTERFACE] Received frame from Serial. Changing state to PARSING.\n");
 #endif
+                streamState = StreamState::WAITING_START;
                 return true;
             }
         }

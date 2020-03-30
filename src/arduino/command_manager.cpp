@@ -17,8 +17,9 @@ printstr(const u8* str, u16 len) {
 }
 #endif
 
-CommandManager::CommandManager(): currentDefaultDelay{DEFAULT_DELAY},
-                                  repeatNum{0}, quackKeyboard{} {
+CommandManager::CommandManager(): quackKeyboard{}, quackDisplay{},
+                                  currentDefaultDelay{DEFAULT_DELAY},
+                                  repeatNum{0}  {
     // no-op
 }
 
@@ -135,12 +136,12 @@ CommandManager::string(const u8* const param, const u16 len) {
 }
 
 void
-CommandManager::display(const u8* const param, const u16 len) const {
+CommandManager::display(const u8* const param, const u16 len) {
 #ifdef TESTING_WITHOUT_KEYBOARD
     printf("[COMMANDS] Displaying string: "); printstr(param, len); putchar('\n');
 #else
-
 #endif
+    quackDisplay.write(param, len);
 }
 
 #ifdef TESTING_WITHOUT_KEYBOARD

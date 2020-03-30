@@ -26,4 +26,7 @@
 
 #define QUACKFRAME_HEADER_SIZE 5
 
+#define DISPLAY_WIDTH   128
+#define DISPLAY_HEIGHT  32
+
 #endif

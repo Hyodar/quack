@@ -50,6 +50,11 @@ QuackParser::parse(const u8* const str, const u16 len) {
 #endif
         return false;
     }
+#ifdef PARSER_DEBUGGING
+    else {
+        printf("[PARSER] Checksum (%d) OK! Sending command to CommandManager.\n", quackFrame.checksum);
+    }
+#endif
 
     sendCommand();
     
