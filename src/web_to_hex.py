@@ -1,12 +1,44 @@
 
-from string import Template as StringTemplate
 from pathlib import Path
 from gzip import compress as gzip_compress
 
 WEB_PATH = "./web"
 TARGET_FILE = "./esp/web_files.h"
-ARRAY_TEMPLATE = StringTemplate("#ifdef ESP_ENABLED\nconst u8 ${array_name}[] PROGMEM = {\n#else\nconst u8 ${array_name}[] = {\n#endif\n\t$array\n};\n\n")
-CALLBACK_TEMPLATE = StringTemplate('#define ${array_name}_CALLBACK \\\nserver.on("$filename", HTTP_GET, [](AsyncWebServerRequest* request) {\\\n\treply(request, $http_code, "$response_type", $array_name, sizeof($array_name));\\\n})\n\n');
+
+ARRAY_MODEL = """
+#ifdef ESP_ENABLED
+const u8 {array_name}[] PROGMEM = {{
+#else
+const u8 {array_name}[] = {{
+#endif
+    {array_content}
+}};
+"""
+
+CALLBACK_MODEL = '''
+#define {array_name}_CALLBACK \\
+server.on("{filename}", HTTP_GET, [](AsyncWebServerRequest* request) {{ \\
+    reply(request, {http_code}, "{response_type}", {array_name}, sizeof({array_name})); \\
+}})
+'''
+
+HEADER_MODEL = """
+#ifndef WEB_FILES_H_
+#define WEB_FILES_H_
+
+#include "quack_config.h"
+#include "quack_utils.h"
+
+// ======================== GZIP Compressed Web Files ========================
+{arrays}
+// ============================== GET Callbacks ==============================
+{callbacks}
+#define GET_CALLBACKS \\
+{get_callbacks}
+
+#endif
+"""
+
 RESPONSE_TYPES = {
     ".js": "application/javascript",
     ".css": "text/css",
@@ -22,55 +54,57 @@ def get_response_info(file):
     return (http_code, RESPONSE_TYPES.get(file.suffix, "text/plain"))
 
 def build_array(file_content):
-    array = [hex(char) for char in gzip_compress(file_content.encode("utf-8"))]
+    array_content = [
+        hex(char) 
+        for char in gzip_compress(file_content.encode("utf-8"))
+    ]
 
-    for i in range(10, len(array), 10):
-        array[i] = '\n\t' + array[i]
+    for i in range(10, len(array_content), 10):
+        array_content[i] = '\n\t' + array_content[i]
 
-    return ",\t".join(array)
+    return ",\t".join(array_content)
 
 def file_hexarray(file, array_name):
     with file.open(mode='r', encoding="utf-8") as content:
-        array = build_array(content.read())
+        array_content = build_array(content.read())
 
-    return ARRAY_TEMPLATE.substitute(array_name=array_name, array=array)
+    return ARRAY_MODEL.format(array_name=array_name,
+                              array_content=array_content)
 
 def file_callback(file, array_name):
     http_code, response_type = get_response_info(file)
 
-    return CALLBACK_TEMPLATE.substitute(array_name=array_name,
-                                        filename=file.name,
-                                        http_code=http_code,
-                                        response_type=response_type)
+    return CALLBACK_MODEL.format(array_name=array_name,
+                                 filename=file.name,
+                                 http_code=http_code,
+                                 response_type=response_type)
+
+def get_array_name(file):
+    if not file.stem.isdigit():
+        name = file.name
+    else:
+        name = f"HTTP{file.name}"
+
+    return name.replace(".", "_").upper()
 
 def main():
-    lines = [
-        "\n",
-        "#ifndef WEB_FILES_H_\n",
-        "#define WEB_FILES_H_\n",
-        "\n",
-        '#include "quack_config.h"\n',
-        '#include "quack_utils.h"\n',
-        "\n",
-    ]
 
+    arrays = []
     callbacks = []
+    get_callbacks = []
 
     for file in Path(WEB_PATH).glob("*"):
-        if file.stem.isdigit():
-            name = f"HTTP{file.name}"
-        else:
-            name = file.name
+        array_name = get_array_name(file)
 
-        array_name = name.replace('.', '_').upper()
+        arrays.append(file_hexarray(file, array_name))
+        callbacks.append(file_callback(file, array_name))
+        get_callbacks.append(f"{array_name}_CALLBACK")
 
-        lines.append(file_hexarray(file, array_name));
-        lines.append(file_callback(file, array_name));
-        callbacks.append(f"{array_name}_CALLBACK");
-    
-    callbacks = '; \\\n'.join(callbacks)
-    lines.append(f"#define GET_CALLBACKS \\\n{callbacks}\n\n")
-    lines.append("#endif");
+    lines = HEADER_MODEL.format(
+        arrays="".join(arrays),
+        callbacks="".join(callbacks),
+        get_callbacks="; \\\n".join(get_callbacks),
+    )
 
     with Path(TARGET_FILE).open(mode='w', encoding="utf-8") as target_file:
         target_file.writelines(lines)
