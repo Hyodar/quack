@@ -11,7 +11,7 @@ const u8 {array_name}[] PROGMEM = {{
 #else
 const u8 {array_name}[] = {{
 #endif
-    {array_content}
+\t{array_content}
 }};
 """
 
