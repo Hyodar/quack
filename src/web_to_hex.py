@@ -59,10 +59,10 @@ def build_array(file_content):
         for char in gzip_compress(file_content.encode("utf-8"))
     ]
 
-    for i in range(10, len(array_content), 10):
-        array_content[i] = '\n\t' + array_content[i]
+    for i in range(9, len(array_content), 9):
+        array_content[i] = f"\n\t{array_content[i]}"
 
-    return ",\t".join(array_content)
+    return ",\t".join(array_content).replace('\t\n', '\n')
 
 def file_hexarray(file, array_name):
     with file.open(mode='r', encoding="utf-8") as content:
