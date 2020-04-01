@@ -23,12 +23,12 @@ enum ParsingState {
 
 struct QuackFrame {
     u16 checksum;
-    u16 length;
     u8 commandCode;
+    u16 length;
     const u8* params;
 
     QuackFrame();
-};
+} PACKED;
 
 private:
     CommandManager commandManager;
