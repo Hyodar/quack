@@ -55,13 +55,14 @@ main(void) {
     QuackParser quackParser;
 
     quackParser.parse(DECLARE_STR("STRING abcde"));
-    const QuackParser::QuackFrame* const frame = quackParser.getProcessedLine();
+    const QuackFrame* const frame = quackParser.getProcessedLine();
+    const u8* const buffer = frame->getBuffer();
     printf("Resulting frame: {\n");
-    printf("\tChecksum: %d\n", frame->checksum);
-    printf("\tCommandCode: %d\n", frame->commandCode);
-    printf("\tLength: %d\n", frame->length);
+    printf("\tChecksum: %d\n", *((u16*) buffer));
+    printf("\tCommandCode: %d\n", buffer[2]);
+    printf("\tLength: %d\n", buffer[4]); // limited to 255
     printf("\tParams: ");
-    for(u16 i = 0; i < frame->length; i++) printf("%d, ", frame->params[i]);
+    for(u16 i = 0; i < buffer[4]; i++) printf("%d, ", buffer[HEADER_SIZE + i]);
     printf("\n}\n");
 
     std::thread interfaceThread(interface);

@@ -13,6 +13,7 @@
 #include "quack_config.h"
 #include "quack_utils.h"
 
+#include "quack_frame.h"
 #include "quack_hid_locale.h"
 
 class QuackParser {
@@ -25,13 +26,6 @@ public:
         SENDING,
         WAITING_RESPONSE
     };
-
-    struct QuackFrame {
-        u16 checksum;
-        u8 commandCode;
-        u16 length;
-        u8 params[BUFFER_SIZE];
-    } PACKED;
 
     struct QuackLine {
         u16 lineOrder;

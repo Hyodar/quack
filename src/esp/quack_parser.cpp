@@ -29,16 +29,13 @@ QuackParser::changeLocale(const u8* str) {
 */
 
 #define LINE quackLines[activeLine].data
-#define NEW_CHAR LINE.params[LINE.length++]
-#define COPY_BUFFER(from, to, len) \
-for(u16 i = 0; i < len; i++) to[i] = from[i];
 
 void
 QuackParser::replaceKey(const u8 str) {
     if(str < keyboardLocale->asciiLen) {
-        NEW_CHAR = pgm_read_byte(keyboardLocale->ascii + str * 2 + 1);
+        LINE.addParameterByte(pgm_read_byte(keyboardLocale->ascii + str * 2 + 1));
         u8 modifier = pgm_read_byte(keyboardLocale->ascii + str * 2);
-        if(modifier) NEW_CHAR = modifier;
+        if(modifier) LINE.addParameterByte(modifier);
         return;
     }
 
@@ -46,7 +43,7 @@ QuackParser::replaceKey(const u8 str) {
         if(str == pgm_read_byte(keyboardLocale->extendedAscii + i * 3)) {
             pgm_read_byte(keyboardLocale->extendedAscii + i * 3 + 2);
             u8 modifier = pgm_read_byte(keyboardLocale->extendedAscii + i * 3 + 1);
-            if(modifier) NEW_CHAR = modifier;
+            if(modifier) LINE.addParameterByte(modifier);
         }
     }
 }
@@ -59,59 +56,59 @@ QuackParser::replaceKeyword(const u8* const str, const u16 len) {
     }
 
     else if(len == 3)  {
-        if(str[0] == 'A') NEW_CHAR = KEY_LEFTALT;
-        else if(str[0] == 'E') NEW_CHAR = KEY_END;
-        else if(str[0] == 'G') NEW_CHAR = KEY_LEFTMETA;
-        else NEW_CHAR = KEY_TAB;
+        if(str[0] == 'A') LINE.addParameterByte(KEY_LEFTALT);
+        else if(str[0] == 'E') LINE.addParameterByte(KEY_END);
+        else if(str[0] == 'G') LINE.addParameterByte(KEY_LEFTMETA);
+        else LINE.addParameterByte(KEY_TAB);
     }
 
     else if(len == 4) {
-        if(str[0] == 'C') NEW_CHAR = KEY_LEFTCTRL;
-        else if(str[0]) NEW_CHAR = KEY_HOME;
-        else NEW_CHAR = KEY_PROPS;
+        if(str[0] == 'C') LINE.addParameterByte(KEY_LEFTCTRL);
+        else if(str[0]) LINE.addParameterByte(KEY_HOME);
+        else LINE.addParameterByte(KEY_PROPS);
     }
 
     else if(len == 5) {
-        if(str[0] == 'E') NEW_CHAR = KEY_ENTER;
-        else if(str[0] == 'P') NEW_CHAR = KEY_PAUSE;
-        else if(str[0] == 'S' && str[1] == 'H') NEW_CHAR = KEY_LEFTSHIFT;
-        else NEW_CHAR = KEY_SPACE;
+        if(str[0] == 'E') LINE.addParameterByte(KEY_ENTER);
+        else if(str[0] == 'P') LINE.addParameterByte(KEY_PAUSE);
+        else if(str[0] == 'S' && str[1] == 'H') LINE.addParameterByte(KEY_LEFTSHIFT);
+        else LINE.addParameterByte(KEY_SPACE);
     }
 
     else if(len == 6) {
-        if(str[0] == 'D') NEW_CHAR = KEY_BACKSPACE;
-        else if(str[0] == 'E') NEW_CHAR = KEY_ESC;
-        else if(str[0] == 'I') NEW_CHAR = KEY_INSERT;
-        else NEW_CHAR = KEY_PAGEUP;
+        if(str[0] == 'D') LINE.addParameterByte(KEY_BACKSPACE);
+        else if(str[0] == 'E') LINE.addParameterByte(KEY_ESC);
+        else if(str[0] == 'I') LINE.addParameterByte(KEY_INSERT);
+        else LINE.addParameterByte(KEY_PAGEUP);
     }
 
     else if(len == 7) {
-        if(str[0] == 'N') NEW_CHAR = KEY_NUMLOCK;
-        else NEW_CHAR = KEY_UP;
+        if(str[0] == 'N') LINE.addParameterByte(KEY_NUMLOCK);
+        else LINE.addParameterByte(KEY_UP);
     }
 
     else if(len == 8) {
-        if(str[0] == 'C') NEW_CHAR = KEY_CAPSLOCK;
-        else NEW_CHAR = KEY_PAGEDOWN;
+        if(str[0] == 'C') LINE.addParameterByte(KEY_CAPSLOCK);
+        else LINE.addParameterByte(KEY_PAGEDOWN);
     }
 
     else if(len == 9) {
-        if(str[0] == 'L') NEW_CHAR = KEY_LEFT;
-        else NEW_CHAR = KEY_DOWN;
+        if(str[0] == 'L') LINE.addParameterByte(KEY_LEFT);
+        else LINE.addParameterByte(KEY_DOWN);
     }
 
     else if(len >= 10) {
-        if(str[0] == 'R') NEW_CHAR = KEY_RIGHT;
-        else if(str[0] == 'S') NEW_CHAR = KEY_SCROLLLOCK;
-        else NEW_CHAR = KEY_SYSRQ;
+        if(str[0] == 'R') LINE.addParameterByte(KEY_RIGHT);
+        else if(str[0] == 'S') LINE.addParameterByte(KEY_SCROLLLOCK);
+        else LINE.addParameterByte(KEY_SYSRQ);
     }
 
     else if(str[0] == 'F') {
         if(len == 2) {
-            NEW_CHAR = KEY_F1 + (str[1] - '1');
+            LINE.addParameterByte(KEY_F1 + (str[1] - '1'));
         }
         else {
-            NEW_CHAR = KEY_F10 + (str[2] - '0');
+            LINE.addParameterByte(KEY_F10 + (str[2] - '0'));
         }
     }
 }
@@ -192,9 +189,6 @@ QuackParser::updateActiveLine() {
         if(quackLines[i].state == QuackLineState::FREE_TO_PARSE) {
             activeLine = i;
             quackLines[i].state = QuackLineState::PARSING;
-            
-            quackLines[i].data.length = 0;
-            quackLines[i].data.commandCode = COMMAND_NONE;
 
             return true;
         }
@@ -229,7 +223,7 @@ QuackParser::parse(const u8* const str, const u16 len) {
     */
 
     quackLines[activeLine].lineOrder = orderCount++;
-    LINE.commandCode = commandCode;
+    LINE.setCommandCode(commandCode);
     
     if(commandCode == COMMAND_STRING) {
         parseStringParams(str + cursor, len - cursor);
@@ -238,26 +232,17 @@ QuackParser::parse(const u8* const str, const u16 len) {
         parseKeysParams(str + cursor, len - cursor);
     }
     else {
-        LINE.length = len - cursor - 1;
-        COPY_BUFFER((str + cursor), LINE.params, (len - cursor));
-        LINE.length = len - cursor;
+        LINE.copyBuffer((str + cursor), (len - cursor));
     }
 
-    for(u16 i = 0; i < LINE.length + 3; i++) {
-        printf("%d, ", ((u8*) ((&LINE.checksum) + 1))[i]);
-    }
-    putchar('\n');
-    LINE.checksum = CRC16.ccitt(
-        (u8*) ((&(LINE.checksum)) + 1),
-        LINE.length + sizeof(u8) + sizeof(u16)
-    );
+    LINE.serialize(&CRC16);
 
     quackLines[activeLine].state = QuackLineState::DONE_PARSING;
 
     return true;
 }
 
-const QuackParser::QuackFrame* const
+const QuackFrame* const
 QuackParser::getProcessedLine() {
     for(u16 i = 0; i < QUACKLINES_BUFFER; i++) {
         if(quackLines[i].lineOrder == nextOrder) {
