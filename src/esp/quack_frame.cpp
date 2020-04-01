@@ -38,8 +38,8 @@ QuackFrame::serialize(FastCRC16* CRC16) {
         length + sizeof(u8) + sizeof(u16)
     );
 
-    buffer[1] = (checksum >> 8) & 0xff;
-    buffer[0] = checksum & 0xff;
+    buffer[0] = (checksum >> 8) & 0xff;
+    buffer[1] = checksum & 0xff;
 
     length = 0; // reset length
     setCommandCode(COMMAND_NONE); // reset commandCode
