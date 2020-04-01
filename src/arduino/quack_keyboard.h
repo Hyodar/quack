@@ -9,7 +9,6 @@
 *****************************************************************************/
 
 #include "quack_report.h"
-#include "quack_hid_locale.h"
 
 #include "usb_hid_keys.h"
 
@@ -17,14 +16,11 @@ class QuackKeyboard {
 
 private:
     QuackReport quackReport;
-    QuackHIDLocale* quackHIDLocale;
 
 public:
     QuackKeyboard();
 
     void begin() const;
-
-    void setLocale(QuackHIDLocale* _quackHIDLocale);
 
     void send() const;
     void release();

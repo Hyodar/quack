@@ -4,8 +4,6 @@
 #include "quack_codes.h"
 #include "quack_hid.h"
 
-#include "locale_us.h"
-
 #include "quack_keyboard.h"
 
 #ifdef KEYBOARD_DEBUGGING
@@ -48,7 +46,7 @@ const u8 keyboardDescriptor[] {
     0xc0,       //   END_COLLECTION
 };
 
-QuackKeyboard::QuackKeyboard() : quackHIDLocale{&locale_us} {
+QuackKeyboard::QuackKeyboard() {
     // no-op
 }
 
@@ -57,11 +55,6 @@ QuackKeyboard::begin() const {
     static HIDSubDescriptor node(keyboardDescriptor, sizeof(keyboardDescriptor));
 
     HID().AppendDescriptor(&node);
-}
-
-void
-QuackKeyboard::setLocale(QuackHIDLocale* _quackHIDLocale) {
-    quackHIDLocale = _quackHIDLocale;
 }
 
 void
