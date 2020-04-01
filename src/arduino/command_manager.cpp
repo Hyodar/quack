@@ -170,7 +170,6 @@ CommandManager::keys(const u8* const param, const u16 len) {
             }
         }
         quackKeyboard.addHIDKey(param[i]);
-        quackKeyboard.send();
     }
 
     quackKeyboard.release();
