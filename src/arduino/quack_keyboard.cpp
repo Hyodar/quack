@@ -105,7 +105,7 @@ QuackKeyboard::addHIDKey(const u8 keycode, const u8 modifier) {
 
 void
 QuackKeyboard::addHIDModifier(const u8 keycode) {
-    quackReport.modifiers |= keycode;
+    quackReport.modifiers |= (1 << (keycode - KEY_LEFTCTRL));
 
     send();
 }
@@ -115,7 +115,7 @@ QuackKeyboard::write(const u8* const str, const u16 len) {
     for(u16 i = 0; i < len; i++) {
         if(str[i] >= KEY_LEFTCTRL) {
             if(str[i] >= KEY_LEFTMETA) {
-                quackReport.modifiers |= (1 << (str[i] - KEY_LEFTCTRL));
+                addHIDModifier(str[i]);
                 continue;
             }
         }
