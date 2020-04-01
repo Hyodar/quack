@@ -8,10 +8,6 @@
 #include <cstdio>
 #endif
 
-QuackParser::QuackFrame::QuackFrame() : checksum{0}, length{0}, commandCode{COMMAND_NONE}, params{nullptr} {
-    // no-op
-}
-
 QuackParser::QuackParser() /*: parsingState{ParsingState::NONE}*/ {
     // no-op
 }
@@ -39,12 +35,8 @@ QuackParser::parse(const u8* const str, const u16 len) {
 #ifdef PARSER_DEBUGGING
     printf("[PARSER] Starting.\n");
 #endif
-    quackFrame.checksum = STR_TO_U16(str);
-    quackFrame.commandCode = str[2];
-    quackFrame.length = STR_TO_U16(str + 3);
-    quackFrame.params = str + 5;
 
-    if(!checkChecksum()) {
+    if(!quackFrame.deserialize(str, len, &CRC16)) {
 #ifdef PARSER_DEBUGGING
         printf("[PARSER] Checksum (%d) error! Requesting resend.\n", quackFrame.checksum);
 #endif

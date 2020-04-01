@@ -16,6 +16,8 @@
 
 #define PACKED __attribute__ ((packed))
 
+#define DESERIALIZE_U16(ptr) ((((ptr)[0] << 8)) | ((ptr)[1]))
+
 #define STR_TO_U16(str) *((u16*) (str))
 #define STR_TO_I16(str) *((i16*) (str))
 #define STR_TO_U32(str) *((u32*) (str))

@@ -8,9 +8,12 @@
  * 
 *****************************************************************************/
 
-#include "quack_utils.h"
-#include "command_manager.h"
 #include "fastcrc/FastCRC.h"
+
+#include "quack_utils.h"
+
+#include "command_manager.h"
+#include "quack_frame.h"
 
 class QuackParser {
 
@@ -21,14 +24,14 @@ enum ParsingState {
     CONTINUE
 };
 
-struct QuackFrame {
-    u16 checksum;
-    u8 commandCode;
-    u16 length;
-    const u8* params;
+// struct QuackFrame {
+//     u16 checksum;
+//     u8 commandCode;
+//     u16 length;
+//     const u8* params;
 
-    QuackFrame();
-} PACKED;
+//     QuackFrame();
+// } PACKED;
 
 private:
     CommandManager commandManager;
