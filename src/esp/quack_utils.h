@@ -14,6 +14,8 @@
 #define pgm_read_byte(address_short) *(address_short)
 #endif
 
+#define PACKED __attribute__ ((packed))
+
 #define STR_TO_U16(str) *((u16*) (str))
 #define STR_TO_I16(str) *((i16*) (str))
 #define STR_TO_U32(str) *((u32*) (str))

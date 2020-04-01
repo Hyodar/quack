@@ -22,5 +22,7 @@
 #define USEFUL_REMINDERS
 
 #define BAUDRATE      9600
+#define BUFFER_SIZE   480
+#define QUACKLINES_BUFFER  2
 
 #endif

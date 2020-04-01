@@ -10,9 +10,11 @@
 
 // #include "fastcrc/FastCRC.h"
 
-// #define DECLARE_STR(str) (u8*) str, sizeof(str) - 1
+#define DECLARE_STR(str) (u8*) str, sizeof(str) - 1
 
 // Quack quack;
+
+#include "quack_parser.h"
 
 void
 setup() {
@@ -49,6 +51,18 @@ int
 main(void) {
 
     setup();
+
+    QuackParser quackParser;
+
+    quackParser.parse(DECLARE_STR("STRING abcde"));
+    const QuackParser::QuackFrame* const frame = quackParser.getProcessedLine();
+    printf("Resulting frame: {\n");
+    printf("\tChecksum: %d\n", frame->checksum);
+    printf("\tCommandCode: %d\n", frame->commandCode);
+    printf("\tLength: %d\n", frame->length);
+    printf("\tParams: ");
+    for(u16 i = 0; i < frame->length; i++) printf("%d, ", frame->params[i]);
+    printf("\n}\n");
 
     std::thread interfaceThread(interface);
     std::thread parserThread(parser);

@@ -21,7 +21,7 @@
 #define COMMAND_NONE            0x21
 
 // Params: string/bytes(1)
-#define COMMAND_LOCALE          0x22
+// #define COMMAND_LOCALE          0x22
 #define COMMAND_STRING          0x23
 #define COMMAND_DISPLAY         0x24
 #define COMMAND_KEYS            0x25
