@@ -130,12 +130,16 @@ QuackInterface::getBuffer() {
 
 void
 QuackInterface::requestResend() const {
+#ifdef ESP_ENABLED
     Serial1.write(WRONG_CHECKSUM);
+#endif
 }
 
 void
 QuackInterface::requestNext() const {
+#ifdef ESP_ENABLED
     Serial1.write(FINISHED_PARSING);
+#endif
 }
 
 void
