@@ -17,7 +17,6 @@ private:
 #else
 public:
 #endif
-    u16 checksum;
     u8 commandCode;
     u16 length;
     const u8* params;
