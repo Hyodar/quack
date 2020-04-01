@@ -131,14 +131,18 @@ QuackInterface::getBuffer() {
 void
 QuackInterface::requestResend() const {
 #ifdef ESP_ENABLED
+    Serial1.write(FRAME_SEPARATOR);
     Serial1.write(WRONG_CHECKSUM);
+    Serial1.write(FRAME_SEPARATOR);
 #endif
 }
 
 void
 QuackInterface::requestNext() const {
 #ifdef ESP_ENABLED
+    Serial1.write(FRAME_SEPARATOR);
     Serial1.write(FINISHED_PARSING);
+    Serial1.write(FRAME_SEPARATOR);
 #endif
 }
 
