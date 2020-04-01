@@ -1,0 +1,1 @@
+g++ -std=c++17 main.cpp -o quack_esp.out -lpthread
