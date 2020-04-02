@@ -173,6 +173,14 @@ QuackWebserver::begin() {
 
     GET_CALLBACKS;
 
+    server.on("/", [this](AsyncWebServerRequest* request) {
+        reply(request, 200, "text/html", INDEX_HTML, sizeof(INDEX_HTML));
+    });
+
+    server.onNotFound([this](AsyncWebServerRequest* request) {
+        reply(request, 404, "text/html", HTTP404_HTML, sizeof(HTTP404_HTML));
+    });
+
     events.onConnect([](AsyncEventSourceClient* client) {
         client->send("hello!", NULL, millis(), 1000);
     });
