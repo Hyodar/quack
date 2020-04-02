@@ -4,5 +4,12 @@
     </head>
     <body>
         <h1>Hello World!</h1>
+        <textarea id="editor"></textarea>
+        <button onclick="sendScript()">Send</button>
+
+        <form method="POST" action="/upload" enctype="multipart/form-data">
+            <input type="file" />
+            <button type="submit">Submit file</button>
+        </form>
     </body>
 </html>
