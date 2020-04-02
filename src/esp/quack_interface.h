@@ -4,7 +4,7 @@
 
 #include "quack_config.h"
 #include "quack_utils.h"
-#include "quack_frame.h"
+#include "quack_parser.h"
 
 class QuackInterface {
 
@@ -17,7 +17,7 @@ enum Status {
 };
 
 private:
-    const QuackFrame* quackFrame;
+    QuackParser::QuackLine* quackLine;
     enum Status status;
 
 public:
@@ -28,7 +28,7 @@ public:
     const QuackInterface::Status getStatus() const;
     void waitResponse();
 
-    void send(const QuackFrame* frame);
+    void send(QuackParser::QuackLine* line);
     void resend() const;
 
 };
