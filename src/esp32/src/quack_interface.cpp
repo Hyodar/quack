@@ -11,6 +11,9 @@ QuackInterface::QuackInterface() : quackLine{nullptr}, status{RESPONSE_SUCCESS} 
 void
 QuackInterface::begin() const {
     Serial.begin(BAUDRATE);
+#ifdef SERIAL_DEBUG_OUTPUT
+    Serial.setDebugOutput(true);
+#endif
 }
 
 const QuackInterface::Status

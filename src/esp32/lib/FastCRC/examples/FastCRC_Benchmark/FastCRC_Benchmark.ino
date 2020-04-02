@@ -62,20 +62,20 @@ inline uint16_t softcrcXMODEM(uint16_t seed, uint8_t *data, uint16_t datalen) {
 }
 
 
-void printVals(const char * name, const uint32_t crc, const uint32_t time) {
+void printVals(const char * name, const uint32_t crc, const uint32_t _time) {
   Serial.print(name);
   Serial.print("\tValue:0x");
   Serial.print(crc, HEX);
-  Serial.print(", Time: ");
-  Serial.print(time);
+  Serial.print(", _time: ");
+  Serial.print(_time);
   Serial.print(" us (");
-  Serial.print((8.*BUFSIZE) / time);
+  Serial.print((8.*BUFSIZE) / _time);
   Serial.println(" mbs)");
 
 }
 
 void setup() {
-  int time;
+  int _time;
   uint32_t crc;
 
   delay(1500);
@@ -95,64 +95,64 @@ void setup() {
   }
 
   /* 8 BIT */
-  time = micros();
+  _time = micros();
   crc = CRC8.maxim(buf, BUFSIZE);
-  time = micros() - time;
-  printVals("Maxim (iButton) FastCRC:", crc, time);
+  _time = micros() - _time;
+  printVals("Maxim (iButton) FastCRC:", crc, _time);
 
-  time = micros();
+  _time = micros();
   crc = softcrcIbutton(0, buf, BUFSIZE);
-  time = micros() - time;
-  printVals("Maxim (iButton) builtin:", crc, time);
+  _time = micros() - _time;
+  printVals("Maxim (iButton) builtin:", crc, _time);
 
 #if !defined(LOFLASH)
-  time = micros();
+  _time = micros();
   crc = CRC16.modbus(buf, BUFSIZE);
-  time = micros() - time;
-  printVals("MODBUS FastCRC:", crc, time);
+  _time = micros() - _time;
+  printVals("MODBUS FastCRC:", crc, _time);
 
-  time = micros();
+  _time = micros();
   crc = softcrc(0xffff, buf, BUFSIZE);
-  time = micros() - time;
-  printVals("MODBUS builtin: ", crc, time);
+  _time = micros() - _time;
+  printVals("MODBUS builtin: ", crc, _time);
 
-  time = micros();
+  _time = micros();
   crc = CRC16.xmodem(buf, BUFSIZE);
-  time = micros() - time;
-  printVals("XMODEM FastCRC:", crc, time);
+  _time = micros() - _time;
+  printVals("XMODEM FastCRC:", crc, _time);
 
-  time = micros();
+  _time = micros();
   crc = softcrcXMODEM(0, buf, BUFSIZE);
-  time = micros() - time;
-  printVals("XMODEM builtin: ", crc, time);
+  _time = micros() - _time;
+  printVals("XMODEM builtin: ", crc, _time);
 #endif
 
   /* 16 BIT */
-  time = micros();
+  _time = micros();
   crc = CRC16.mcrf4xx(buf, BUFSIZE);
-  time = micros() - time;
-  printVals("MCRF4XX FastCRC:", crc, time);
+  _time = micros() - _time;
+  printVals("MCRF4XX FastCRC:", crc, _time);
 
 
-  time = micros();
+  _time = micros();
   crc = softcrcCCIT(0xffff, buf, BUFSIZE);
-  time = micros() - time;
-  printVals("MCRF4XX builtin:", crc, time);
+  _time = micros() - _time;
+  printVals("MCRF4XX builtin:", crc, _time);
 
 #if !defined(LOFLASH)
-  time = micros();
+  _time = micros();
   crc = CRC16.kermit(buf, BUFSIZE);
-  time = micros() - time;
-  printVals("KERMIT FastCRC:", crc, time);
+  _time = micros() - _time;
+  printVals("KERMIT FastCRC:", crc, _time);
 #endif
 
 
   /* 32 BIT */
 #if !defined(LOFLASH)
-  time = micros();
+  _time = micros();
   crc = CRC32.crc32(buf, BUFSIZE);
-  time = micros() - time;
-  printVals("Ethernet FastCRC:", crc, time);
+  _time = micros() - _time;
+  printVals("Ethernet FastCRC:", crc, _time);
 #endif
 
 }

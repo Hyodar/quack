@@ -3,7 +3,7 @@ from pathlib import Path
 from gzip import compress as gzip_compress
 
 WEB_PATH = "./web"
-TARGET_FILE = "./esp32/web_files.h"
+TARGET_FILE = "./esp32/src/web_files.h"
 
 ARRAY_MODEL = """
 #ifdef ESP_ENABLED
@@ -17,7 +17,7 @@ const u8 {array_name}[] = {{
 
 CALLBACK_MODEL = '''
 #define {array_name}_CALLBACK \\
-server.on("{filename}", HTTP_GET, [](AsyncWebServerRequest* request) {{ \\
+server.on("{filename}", HTTP_GET, [this](AsyncWebServerRequest* request) {{ \\
     reply(request, {http_code}, "{response_type}", {array_name}, sizeof({array_name})); \\
 }})
 '''

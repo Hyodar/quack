@@ -7,7 +7,7 @@
 #include <cstdio>
 #endif
 
-QuackFrame::QuackFrame() : length{0} {
+QuackFrame::QuackFrame() : buffer{0}, length{0} {
     // no-op
 }
 
