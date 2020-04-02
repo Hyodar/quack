@@ -1,1 +1,1 @@
-g++ -std=c++17 fastcrc/FastCRChw.cpp fastcrc/FastCRCsw.cpp quack_parser.cpp quack_frame.cpp main.cpp -o quack_esp.out -lpthread
+g++ -std=c++17 fastcrc/FastCRChw.cpp fastcrc/FastCRCsw.cpp quack_parser.cpp quack_frame.cpp quack_interface.cpp quack_serial.cpp quack.cpp main.cpp -o quack_esp.out -lpthread

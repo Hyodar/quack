@@ -24,10 +24,10 @@ public:
     void addParameterByte(const u8 byte);
     void copyBuffer(const u8* const buf, const u16 bufLength);
     void serialize(FastCRC16* CRC16);
+    void reset();
 
-    #ifdef FRAME_DEBUGGING
     const u8* const getBuffer() const { return buffer; }
-    #endif
+    const u16 getLength() const { return length; }
 };
 
 #endif

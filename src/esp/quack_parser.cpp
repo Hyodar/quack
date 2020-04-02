@@ -149,13 +149,14 @@ QuackParser::parseStringParams(const u8* const str, const u16 len) {
 }
 
 const u16
-QuackParser::getCommandCode(const u8* const str, const u8 len) const {
+QuackParser::getCommandCode(const u8* const str, const u8 len, const bool continuation) const {
     // tried to parse based on usage frequency here,
     // but could probably use some improvements
     
     if(len == 6) {
         // LOCALE, STRING, REPEAT
         if(str[0] == 'S') {
+            if(continuation) return COMMAND_CONTINUESTRING;
             return COMMAND_STRING;
         }
         //else if(str[0] == 'R') {
@@ -198,10 +199,11 @@ QuackParser::updateActiveLine() {
 }
 
 const bool
-QuackParser::parse(const u8* const str, const u16 len) {
+QuackParser::parse(const u8* const str, const u16 len, const bool continuation) {
     if(!updateActiveLine()) {
         return false;
     }
+    LINE.reset();
 
     // structure: <COMMAND_NAME> <PARAMS>
     u16 cursor = 0;
@@ -210,7 +212,7 @@ QuackParser::parse(const u8* const str, const u16 len) {
         cursor++;
     }
 
-    u8 commandCode = getCommandCode(str, cursor);
+    u8 commandCode = getCommandCode(str, cursor, continuation);
     cursor++; // skip space char
 
     /*
@@ -242,14 +244,14 @@ QuackParser::parse(const u8* const str, const u16 len) {
     return true;
 }
 
-const QuackFrame* const
+QuackParser::QuackLine*
 QuackParser::getProcessedLine() {
     for(u16 i = 0; i < QUACKLINES_BUFFER; i++) {
         if(quackLines[i].lineOrder == nextOrder) {
             if(quackLines[i].state == QuackLineState::DONE_PARSING) {
                 quackLines[i].state = QuackLineState::SENDING;
                 nextOrder++;
-                return &(quackLines[i].data);
+                return &(quackLines[i]);
             }
             return nullptr;
         }

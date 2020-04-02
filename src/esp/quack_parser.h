@@ -51,7 +51,7 @@ private:
     QuackHIDLocale* keyboardLocale;
 
     const bool updateActiveLine();
-    const u16 getCommandCode(const u8* const str, const u8 len) const;
+    const u16 getCommandCode(const u8* const str, const u8 len, bool continuation) const;
     void parseKeysParams(const u8* const str, const u16 len);
     void parseStringParams(const u8* const str, const u16 len);
     void replaceKeyword(const u8* const str, const u16 len);
@@ -63,8 +63,8 @@ public:
 
     void begin();
 
-    const bool parse(const u8* const str, const u16 len);
-    const QuackFrame* const getProcessedLine();
+    const bool parse(const u8* const str, const u16 len, const bool continuation=false);
+    QuackParser::QuackLine* getProcessedLine();
 };
 
 #endif

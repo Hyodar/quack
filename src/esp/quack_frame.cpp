@@ -3,6 +3,10 @@
 
 #include "quack_codes.h"
 
+#ifdef FRAME_DEBUGGING
+#include <cstdio>
+#endif
+
 QuackFrame::QuackFrame() : length{0} {
     // no-op
 }
@@ -41,6 +45,19 @@ QuackFrame::serialize(FastCRC16* CRC16) {
     buffer[0] = (checksum >> 8) & 0xff;
     buffer[1] = checksum & 0xff;
 
+#ifdef FRAME_DEBUGGING
+    printf("[FRAME] Serialized frame. Result: {\n");
+    printf("\tChecksum: %d,\n", *((u16*) buffer));
+    printf("\tCommandCode: %d,\n", buffer[2]);
+    printf("\tLength: %d,\n", DESERIALIZE_U16(buffer + 3));
+    printf("\tParams: {");
+    for(u16 i = 0; i < DESERIALIZE_U16(buffer + 3); i++) printf("%d, ", buffer[HEADER_SIZE + i]);
+    printf("}\n}\n");
+#endif
+}
+
+void
+QuackFrame::reset() {
     length = 0; // reset length
     setCommandCode(COMMAND_NONE); // reset commandCode
 }

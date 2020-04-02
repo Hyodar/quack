@@ -14,7 +14,9 @@
 
 // Quack quack;
 
-#include "quack_parser.h"
+#include "quack.h"
+
+Quack quack;
 
 void
 setup() {
@@ -23,7 +25,7 @@ setup() {
 
 void
 loop1() {
-    // quack.runInterface();
+    quack.runInterface();
 }
 
 void
@@ -52,18 +54,7 @@ main(void) {
 
     setup();
 
-    QuackParser quackParser;
-
-    quackParser.parse(DECLARE_STR("STRING abcde"));
-    const QuackFrame* const frame = quackParser.getProcessedLine();
-    const u8* const buffer = frame->getBuffer();
-    printf("Resulting frame: {\n");
-    printf("\tChecksum: %d\n", *((u16*) buffer));
-    printf("\tCommandCode: %d\n", buffer[2]);
-    printf("\tLength: %d\n", buffer[4]); // limited to 255
-    printf("\tParams: ");
-    for(u16 i = 0; i < buffer[4]; i++) printf("%d, ", buffer[HEADER_SIZE + i]);
-    printf("\n}\n");
+    quack.quackParser.parse(DECLARE_STR("STRING abcde"));
 
     std::thread interfaceThread(interface);
     std::thread parserThread(parser);

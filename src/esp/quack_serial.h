@@ -34,7 +34,7 @@ public:
 
     void write(const u8 byte) {
         buffer.push(byte);
-        printf("[SERIAL] Writing %c to buffer.\n", byte);
+        printf("[SERIAL] Writing %d to buffer.\n", byte);
     }
 
     void write(const u8* const str, const u16 len) {
@@ -46,7 +46,7 @@ public:
     const u8 read() {
         if(!buffer.empty()) {
             const u8 byte = buffer.front();
-            printf("[SERIAL] Reading %c from buffer.\n", byte);
+            printf("[SERIAL] Reading %d from buffer.\n", byte);
             
             buffer.pop();
             return byte;
