@@ -47,7 +47,7 @@ QuackFrame::serialize(FastCRC16* CRC16) {
 
 #ifdef FRAME_DEBUGGING
     printf("[FRAME] Serialized frame. Result: {\n");
-    printf("\tChecksum: %d,\n", *((u16*) buffer));
+    printf("\tChecksum: %d,\n", DESERIALIZE_U16(buffer));
     printf("\tCommandCode: %d,\n", buffer[2]);
     printf("\tLength: %d,\n", DESERIALIZE_U16(buffer + 3));
     printf("\tParams: {");

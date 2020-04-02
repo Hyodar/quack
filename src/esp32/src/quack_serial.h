@@ -12,7 +12,8 @@
 
 #ifdef SERIAL_ENABLED
 
-#include <Serial.h>
+// #include <Serial.h>
+#include <Arduino.h> // Serial
 
 #else
 
@@ -67,7 +68,7 @@ public:
     }
 };
 
-extern Serial Serial1;
+extern Serial Serial;
 
 #endif
 

@@ -10,7 +10,7 @@ QuackInterface::QuackInterface() : quackLine{nullptr}, status{RESPONSE_SUCCESS} 
 
 void
 QuackInterface::begin() const {
-    // TODO
+    Serial.begin(BAUDRATE);
 }
 
 const QuackInterface::Status
@@ -20,8 +20,8 @@ QuackInterface::getStatus() const {
 
 void
 QuackInterface::waitResponse() {
-    if(Serial1.available()) {
-        const u8 byte = Serial1.read();
+    if(Serial.available()) {
+        const u8 byte = Serial.read();
 
         if(byte == WRONG_CHECKSUM) {
             status = RESPONSE_RESEND;
@@ -38,14 +38,14 @@ void
 QuackInterface::send(QuackParser::QuackLine* line) {
     quackLine = line;
 
-    Serial1.write(FRAME_SEPARATOR);
-    Serial1.write(line->data.getBuffer(), line->data.getLength() + HEADER_SIZE);
-    Serial1.write(FRAME_SEPARATOR);
+    Serial.write(FRAME_SEPARATOR);
+    Serial.write(line->data.getBuffer(), line->data.getLength() + HEADER_SIZE);
+    Serial.write(FRAME_SEPARATOR);
 }
 
 void
 QuackInterface::resend() const {
-    Serial1.write(FRAME_SEPARATOR);
-    Serial1.write(quackLine->data.getBuffer(), quackLine->data.getLength() + HEADER_SIZE);
-    Serial1.write(FRAME_SEPARATOR);
+    Serial.write(FRAME_SEPARATOR);
+    Serial.write(quackLine->data.getBuffer(), quackLine->data.getLength() + HEADER_SIZE);
+    Serial.write(FRAME_SEPARATOR);
 }

@@ -9,17 +9,17 @@
 *****************************************************************************/
 
 // #define HID_ENABLED
-// #define ARDUINO_ENABLED
-// #define SERIAL_ENABLED
+#define ARDUINO_ENABLED
+#define SERIAL_ENABLED
 // #define DISPLAY_ENABLED
-// #define ESP_ENABLED
+#define ESP_ENABLED
 
 #define TESTING_WITHOUT_KEYBOARD
-#define PARSER_DEBUGGING
-#define KEYBOARD_DEBUGGING
-#define INTERFACE_DEBUGGING
-#define FRAME_DEBUGGING
-#define QUACK_DEBUGGING
+// #define PARSER_DEBUGGING
+// #define KEYBOARD_DEBUGGING
+// #define INTERFACE_DEBUGGING
+// #define FRAME_DEBUGGING
+// #define QUACK_DEBUGGING
 #define STRING_HELPERS
 #define USEFUL_REMINDERS
 

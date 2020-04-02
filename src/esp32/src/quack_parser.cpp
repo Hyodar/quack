@@ -17,7 +17,7 @@ QuackParser::QuackParser() : activeLine{0}, nextOrder{0}, orderCount{0}, keyboar
 
 void
 QuackParser::begin() {
-
+    // no-op
 }
 
 /*
@@ -41,9 +41,10 @@ QuackParser::replaceKey(const u8 str) {
 
     for(u8 i = 0; i < keyboardLocale->extendedAsciiLen; i++) {
         if(str == pgm_read_byte(keyboardLocale->extendedAscii + i * 3)) {
-            pgm_read_byte(keyboardLocale->extendedAscii + i * 3 + 2);
+            LINE.addParameterByte(pgm_read_byte(keyboardLocale->extendedAscii + i * 3 + 2));
             u8 modifier = pgm_read_byte(keyboardLocale->extendedAscii + i * 3 + 1);
             if(modifier) LINE.addParameterByte(modifier);
+            return;
         }
     }
 }

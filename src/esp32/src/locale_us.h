@@ -7,6 +7,10 @@
 #include "quack_hid_locale.h"
 #include "usb_hid_keys.h"
 
+#ifdef ARDUINO_ENABLED
+#include <Arduino.h>
+#endif
+
 // Modifier(s), Key
 #ifdef ARDUINO_ENABLED
 const uint8_t ascii_us[] PROGMEM = {
