@@ -5,7 +5,7 @@
 #include "quack_config.h"
 #include "quack_utils.h"
 
-#include "fastcrc/FastCRC.h"
+#include <FastCRC.h>
 
 #define HEADER_SIZE sizeof(u16) + sizeof(u8) + sizeof(u16)
 

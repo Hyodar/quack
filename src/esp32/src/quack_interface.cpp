@@ -4,7 +4,7 @@
 #include "quack_codes.h"
 #include "quack_serial.h"
 
-QuackInterface::QuackInterface() : quackFrame{nullptr}, status{RESPONSE_SUCCESS} {
+QuackInterface::QuackInterface() : quackLine{nullptr}, status{RESPONSE_SUCCESS} {
     // no-op
 }
 

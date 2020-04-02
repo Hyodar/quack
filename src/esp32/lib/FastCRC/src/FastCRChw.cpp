@@ -32,11 +32,7 @@
 // - Danjel McGougan (CRC-Table-Generator)
 //
 
-#include "../quack_config.h"
-
-#ifdef ARDUINO_ENABLED
 #include "Arduino.h"
-#endif
 #if defined(KINETISK)
 
 #include "mk20dx128.h"

@@ -7,7 +7,7 @@
 
 #include <cstdio>
 
-QuackParser::QuackLine::QuackLine() : state{QuackLineState::FREE_TO_PARSE}, lineOrder{0} {
+QuackParser::QuackLine::QuackLine() : lineOrder{0}, state{QuackLineState::FREE_TO_PARSE} {
     // no-op
 }
 

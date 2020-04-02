@@ -8,7 +8,7 @@
  * 
 *****************************************************************************/
 
-#include "fastcrc/FastCRC.h"
+#include <FastCRC.h>
 
 #include "quack_config.h"
 #include "quack_utils.h"

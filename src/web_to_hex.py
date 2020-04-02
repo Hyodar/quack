@@ -3,7 +3,7 @@ from pathlib import Path
 from gzip import compress as gzip_compress
 
 WEB_PATH = "./web"
-TARGET_FILE = "./esp/web_files.h"
+TARGET_FILE = "./esp32/web_files.h"
 
 ARRAY_MODEL = """
 #ifdef ESP_ENABLED
