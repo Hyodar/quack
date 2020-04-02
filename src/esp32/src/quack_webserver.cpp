@@ -171,6 +171,8 @@ QuackWebserver::begin() {
     ws.onEvent(onWsEvent);
     server.addHandler(&ws);
 
+    GET_CALLBACKS;
+
     events.onConnect([](AsyncEventSourceClient* client) {
         client->send("hello!", NULL, millis(), 1000);
     });
@@ -205,8 +207,6 @@ QuackWebserver::begin() {
             Serial.printf("BodyEnd: %u\n", total);
         }
     });
-
-    GET_CALLBACKS;
 
     server.begin();
 }

@@ -17,7 +17,7 @@ const u8 {array_name}[] = {{
 
 CALLBACK_MODEL = '''
 #define {array_name}_CALLBACK \\
-server.on("{filename}", HTTP_GET, [this](AsyncWebServerRequest* request) {{ \\
+server.on("/{filename}", HTTP_GET, [this](AsyncWebServerRequest* request) {{ \\
     reply(request, {http_code}, "{response_type}", {array_name}, sizeof({array_name})); \\
 }})
 '''

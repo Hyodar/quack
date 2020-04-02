@@ -61,12 +61,12 @@ const u8 INDEX_HTML[] = {
 // ============================== GET Callbacks ==============================
 
 #define HTTP404_HTML_CALLBACK \
-server.on("404.html", HTTP_GET, [this](AsyncWebServerRequest* request) { \
+server.on("/404.html", HTTP_GET, [this](AsyncWebServerRequest* request) { \
     reply(request, 404, "text/html", HTTP404_HTML, sizeof(HTTP404_HTML)); \
 })
 
 #define INDEX_HTML_CALLBACK \
-server.on("index2.html", HTTP_GET, [this](AsyncWebServerRequest* request) { \
+server.on("/index.html", HTTP_GET, [this](AsyncWebServerRequest* request) { \
     reply(request, 200, "text/html", INDEX_HTML, sizeof(INDEX_HTML)); \
 })
 
