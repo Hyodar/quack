@@ -14,6 +14,8 @@
 #define pgm_read_byte(address_short) *(address_short)
 #endif
 
+#define DEBUGGING_PRINTF Serial.printf
+
 #define PACKED __attribute__ ((packed))
 
 #define DESERIALIZE_U16(ptr) ((((ptr)[0] << 8)) | ((ptr)[1]))

@@ -4,7 +4,7 @@
 #include "quack_codes.h"
 
 #ifdef FRAME_DEBUGGING
-#include <cstdio>
+#include <Arduino.h>
 #endif
 
 QuackFrame::QuackFrame() : buffer{0}, length{0} {
@@ -46,13 +46,13 @@ QuackFrame::serialize(FastCRC16* CRC16) {
     buffer[1] = checksum & 0xff;
 
 #ifdef FRAME_DEBUGGING
-    printf("[FRAME] Serialized frame. Result: {\n");
-    printf("\tChecksum: %d,\n", DESERIALIZE_U16(buffer));
-    printf("\tCommandCode: %d,\n", buffer[2]);
-    printf("\tLength: %d,\n", DESERIALIZE_U16(buffer + 3));
-    printf("\tParams: {");
-    for(u16 i = 0; i < DESERIALIZE_U16(buffer + 3); i++) printf("%d, ", buffer[HEADER_SIZE + i]);
-    printf("}\n}\n");
+    DEBUGGING_PRINTF("[FRAME] Serialized frame. Result: {\n");
+    DEBUGGING_PRINTF("\tChecksum: %d,\n", DESERIALIZE_U16(buffer));
+    DEBUGGING_PRINTF("\tCommandCode: %d,\n", buffer[2]);
+    DEBUGGING_PRINTF("\tLength: %d,\n", DESERIALIZE_U16(buffer + 3));
+    DEBUGGING_PRINTF("\tParams: {");
+    for(u16 i = 0; i < DESERIALIZE_U16(buffer + 3); i++) DEBUGGING_PRINTF("%d, ", buffer[HEADER_SIZE + i]);
+    DEBUGGING_PRINTF("}\n}\n");
 #endif
 }
 

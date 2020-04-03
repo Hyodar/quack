@@ -5,7 +5,7 @@
 #include "quack_codes.h"
 #include "locale_us.h"
 
-#include <cstdio>
+#include <Arduino.h>
 
 QuackParser::QuackLine::QuackLine() : lineOrder{0}, state{QuackLineState::FREE_TO_PARSE} {
     // no-op
@@ -207,6 +207,9 @@ QuackParser::parse(const u8* const str, const u16 len, const bool continuation) 
     }
     LINE.reset();
 
+    for(u16 i = 0; i < len; i++) DEBUGGING_PRINTF("%c", str[i]);
+    DEBUGGING_PRINTF("\n");
+
     // structure: <COMMAND_NAME> <PARAMS>
     u16 cursor = 0;
 
@@ -277,26 +280,30 @@ void
 QuackParser::parsingLoop() {
     if(!bufferLength) return;
 
-    u16 length = 0;
+    u16 length = 1;
     u16 start = 0;
     
     for(;;) {
-        while((start + length + 1) < bufferLength && buffer[length + 1] != '\n') {
+        while((start + length) < bufferLength && buffer[start + length] != '\n') {
             length++;
         }
+
+        DEBUGGING_PRINTF("Can I parse?\n");
 
         while(!canParse()) {
             // wait
         }
 
+        DEBUGGING_PRINTF("Can parse\n");
+
         parse(buffer + start, length);
 
-        if((start + length + 1) >= bufferLength) {
+        if((start + length) >= bufferLength) {
             break;
         }
 
-        start = length + 1;
-        length = 0;
+        start = length + 1; // skip '\n'
+        length = 1;
     }
 
     bufferLength = 0;
@@ -304,7 +311,10 @@ QuackParser::parsingLoop() {
 
 void
 QuackParser::fillBuffer(const u8* const str, const u16 len) {
+    DEBUGGING_PRINTF("Buffer: ");
     for(u16 i = 0; i < len; i++) {
+        DEBUGGING_PRINTF("%c", str[i]);
         buffer[bufferLength++] = str[i];
     }
+    DEBUGGING_PRINTF("\n");
 }

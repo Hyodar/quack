@@ -30,12 +30,12 @@ public:
     Serial() {}
 
     void begin(const u32 baudRate) const {
-        printf("[SERIAL] Beginning with baudrate %d.\n", baudRate); 
+        DEBUGGING_PRINTF("[SERIAL] Beginning with baudrate %d.\n", baudRate); 
     }
 
     void write(const u8 byte) {
         buffer.push(byte);
-        printf("[SERIAL] Writing %d to buffer.\n", byte);
+        DEBUGGING_PRINTF("[SERIAL] Writing %d to buffer.\n", byte);
     }
 
     void write(const u8* const str, const u16 len) {
@@ -47,7 +47,7 @@ public:
     const u8 read() {
         if(!buffer.empty()) {
             const u8 byte = buffer.front();
-            printf("[SERIAL] Reading %d from buffer.\n", byte);
+            DEBUGGING_PRINTF("[SERIAL] Reading %d from buffer.\n", byte);
             
             buffer.pop();
             return byte;
@@ -55,7 +55,7 @@ public:
     }
 
     void flush() {
-        printf("[SERIAL] Flushing buffer.\n");
+        DEBUGGING_PRINTF("[SERIAL] Flushing buffer.\n");
 
         while(!buffer.empty()) {
             buffer.pop();
@@ -63,7 +63,7 @@ public:
     }
 
     const u16 available() {
-        //printf("[SERIAL] Checking availability.\n");
+        //DEBUGGING_PRINTF("[SERIAL] Checking availability.\n");
         return buffer.size();
     }
 };

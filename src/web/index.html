@@ -1,7 +1,7 @@
 <html>
     <head>
         <title>Hello World!</title>
-        <script src="/codeflask.min.js"></script>
+        <script src="codeflask.min.js"></script>
     </head>
     <style>
         body {
@@ -68,16 +68,29 @@
             handleTabs: false
         });
 
+        const commands = [
+            "DEFAULTDELAY", "DELAY", "STRING", "DISPLAY", "REPEAT",
+        ];
+
+        const translate = {
+            "DEFAULT_DELAY": "DEFAULTDELAY",
+            "REPLAY": "REPEAT",
+        };
+
         function preProcessCode(content) {
             let lines = content.split('\n');
 
             lines = lines.map((el) => {
                 return el.trim();
             }).filter((el, idx) => {
-                const command = el.split(' ')[0];
-                return command != "REM";
-            }).filter((el, idx) => {
-                return el != "" && el != "\n";
+                let command = el.split(' ')[0];
+
+                if(translate[command]) {
+                    lines[idx] = lines[idx].replace(command, translate[command]);
+                    command = el.split(' ')[0];
+                }
+
+                return commands.find((el) => el == command);
             });
 
             lines.forEach((el, idx) => {
@@ -101,6 +114,11 @@
 
             form.append("Code", code);
             form.append("CodeLength", code.length);
+
+            if(code.length >= 2**15) {
+                alert('size danger');
+                return;
+            }
 
             fetch("/run_raw", {
                 method : "POST",

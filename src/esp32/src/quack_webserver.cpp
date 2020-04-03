@@ -1,6 +1,7 @@
 
 #include "quack_webserver.h"
 
+#include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <SPIFFS.h>
 #include <FS.h>
@@ -11,6 +12,7 @@
 #include "web_files.h"
 #include "web_info.h"
 
+#include "quack_utils.h"
 #include "quack_parser.h"
 
 const u16 parseU16(const u8* const str) {
@@ -39,25 +41,25 @@ void
 QuackWebserver::onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client,
                           AwsEventType type, void* arg, uint8_t* data, size_t len) {
     if(type == WS_EVT_CONNECT) {
-        Serial.printf("ws[%s][%u] connect\n", server->url(), client->id());
+        DEBUGGING_PRINTF("ws[%s][%u] connect\n", server->url(), client->id());
         client->printf("Hello Client %u :)", client->id());
         client->ping();
     }
     else if(type == WS_EVT_DISCONNECT) {
-        Serial.printf("ws[%s][%u] disconnect\n", server->url(), client->id());
+        DEBUGGING_PRINTF("ws[%s][%u] disconnect\n", server->url(), client->id());
     }
     else if(type == WS_EVT_ERROR) {
-        Serial.printf("ws[%s][%u] error(%u): %s\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
+        DEBUGGING_PRINTF("ws[%s][%u] error(%u): %s\n", server->url(), client->id(), *((uint16_t*)arg), (char*)data);
     }
     else if(type == WS_EVT_PONG) {
-        Serial.printf("ws[%s][%u] pong[%u]: %s\n", server->url(), client->id(), len, (len)?(char*)data:"");
+        DEBUGGING_PRINTF("ws[%s][%u] pong[%u]: %s\n", server->url(), client->id(), len, (len)?(char*)data:"");
     }
     else if(type == WS_EVT_DATA) {
         AwsFrameInfo* info = (AwsFrameInfo*) arg;
         String msg = "";
         if(info->final && info->index == 0 && info->len == len) {
             // the whole message is in a single frame and we got all of it's data
-            Serial.printf("ws[%s][%u] %s-message[%llu]: ", server->url(), client->id(), (info->opcode == WS_TEXT)?"text":"binary", info->len);
+            DEBUGGING_PRINTF("ws[%s][%u] %s-message[%llu]: ", server->url(), client->id(), (info->opcode == WS_TEXT)?"text":"binary", info->len);
 
             if(info->opcode == WS_TEXT) {
                 for(size_t i=0; i < info->len; i++) {
@@ -72,7 +74,7 @@ QuackWebserver::onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client,
                 }
             }
 
-            Serial.printf("%s\n",msg.c_str());
+            DEBUGGING_PRINTF("%s\n",msg.c_str());
 
             if(info->opcode == WS_TEXT) {
                 client->text("I got your text message");
@@ -85,12 +87,12 @@ QuackWebserver::onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client,
             // message is comprised of multiple frames or the frame is split into multiple packets
             if(info->index == 0){
                 if(info->num == 0) {
-                    Serial.printf("ws[%s][%u] %s-message start\n", server->url(), client->id(), (info->message_opcode == WS_TEXT)?"text":"binary");
+                    DEBUGGING_PRINTF("ws[%s][%u] %s-message start\n", server->url(), client->id(), (info->message_opcode == WS_TEXT)?"text":"binary");
                 }
-                Serial.printf("ws[%s][%u] frame[%u] start[%llu]\n", server->url(), client->id(), info->num, info->len);
+                DEBUGGING_PRINTF("ws[%s][%u] frame[%u] start[%llu]\n", server->url(), client->id(), info->num, info->len);
             }
 
-            Serial.printf("ws[%s][%u] frame[%u] %s[%llu - %llu]: ", server->url(), client->id(), info->num, (info->message_opcode == WS_TEXT)?"text":"binary", info->index, info->index + len);
+            DEBUGGING_PRINTF("ws[%s][%u] frame[%u] %s[%llu - %llu]: ", server->url(), client->id(), info->num, (info->message_opcode == WS_TEXT)?"text":"binary", info->index, info->index + len);
 
             if(info->opcode == WS_TEXT){
                 for(size_t i=0; i < len; i++) {
@@ -104,13 +106,13 @@ QuackWebserver::onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client,
                 }
             }
             
-            Serial.printf("%s\n",msg.c_str());
+            DEBUGGING_PRINTF("%s\n",msg.c_str());
 
             if((info->index + len) == info->len){
-                Serial.printf("ws[%s][%u] frame[%u] end[%llu]\n", server->url(), client->id(), info->num, info->len);
+                DEBUGGING_PRINTF("ws[%s][%u] frame[%u] end[%llu]\n", server->url(), client->id(), info->num, info->len);
                 
                 if(info->final){
-                    Serial.printf("ws[%s][%u] %s-message end\n", server->url(), client->id(), (info->message_opcode == WS_TEXT)?"text":"binary");
+                    DEBUGGING_PRINTF("ws[%s][%u] %s-message end\n", server->url(), client->id(), (info->message_opcode == WS_TEXT)?"text":"binary");
                     
                     if(info->message_opcode == WS_TEXT) {
                         client->text("I got your text message");
@@ -138,7 +140,7 @@ QuackWebserver::begin(QuackParser* _parser) {
     WiFi.begin(ssid, password);
     
     if(WiFi.waitForConnectResult() != WL_CONNECTED) {
-        Serial.printf("STA: Failed!\n");
+        DEBUGGING_PRINTF("STA: Failed!\n");
         WiFi.disconnect(false);
         delay(1000);
         WiFi.begin(ssid, password);
@@ -197,10 +199,12 @@ QuackWebserver::begin(QuackParser* _parser) {
     server.on("/run_raw", HTTP_POST, [this](AsyncWebServerRequest* request) {
         request->send(200);
 
-        if(request->hasParam("Code") && request->hasParam("CodeLength")) {
-            const u8* const code = (const u8*) request->getParam("Code")->value().c_str();
-            const u16 length = parseU16((const u8*) request->getParam("CodeLength")->value().c_str());
+        DEBUGGING_PRINTF("Received run raw command\n");
+        if(request->hasParam("Code", true) && request->hasParam("CodeLength", true)) {
+            const u8* const code = (const u8*) request->getParam("Code", true)->value().c_str();
+            const u16 length = parseU16((const u8*) request->getParam("CodeLength", true)->value().c_str());
 
+            DEBUGGING_PRINTF("Filling buffer\n");
             parser->fillBuffer(code, length);
         }
     });
@@ -220,26 +224,26 @@ QuackWebserver::begin(QuackParser* _parser) {
     server.onFileUpload([](AsyncWebServerRequest* request, const String& filename,
                            size_t index, uint8_t* data, size_t len, bool final) {
         if(!index) {
-            Serial.printf("UploadStart: %s\n", filename.c_str());
+            DEBUGGING_PRINTF("UploadStart: %s\n", filename.c_str());
         }
 
-        Serial.printf("%s", (const char*)data);
+        DEBUGGING_PRINTF("%s", (const char*)data);
 
         if(final) {
-            Serial.printf("UploadEnd: %s (%u)\n", filename.c_str(), index+len);
+            DEBUGGING_PRINTF("UploadEnd: %s (%u)\n", filename.c_str(), index+len);
         }
     });
 
     server.onRequestBody([](AsyncWebServerRequest* request, uint8_t* data,
                             size_t len, size_t index, size_t total){
         if(!index) {
-            Serial.printf("BodyStart: %u\n", total);
+            DEBUGGING_PRINTF("BodyStart: %u\n", total);
         }
         
-        Serial.printf("%s", (const char*)data);
+        DEBUGGING_PRINTF("%s", (const char*)data);
 
         if(index + len == total) {
-            Serial.printf("BodyEnd: %u\n", total);
+            DEBUGGING_PRINTF("BodyEnd: %u\n", total);
         }
     });
 
