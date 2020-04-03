@@ -4,20 +4,23 @@
 
 #include <ESPAsyncWebServer.h>
 
+class QuackParser;
+
 class QuackWebserver {
 
 private:
     AsyncWebServer server;
     AsyncWebSocket ws;
     AsyncEventSource events;
-    
+    QuackParser* parser;
+
     static void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client,
                           AwsEventType type, void * arg, uint8_t *data, size_t len);
 
 public:
     QuackWebserver();
 
-    void begin();
+    void begin(QuackParser* _parser);
 
     void loop();
 

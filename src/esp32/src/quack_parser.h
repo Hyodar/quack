@@ -65,6 +65,8 @@ public:
 
     const bool parse(const u8* const str, const u16 len, const bool continuation=false);
     QuackParser::QuackLine* getProcessedLine();
+    const bool canParse();
+    void parsingLoop(const u8* const str, const u16 len);
 };
 
 #endif

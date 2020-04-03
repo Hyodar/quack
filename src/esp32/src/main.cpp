@@ -8,24 +8,26 @@
 Quack quack;
 QuackWebserver quackWebserver;
 
-void loop2(void* params) {
+void
+loop2(void* params) {
     Serial.println("[THREADING] Initializing loop2");
     for(;;) {
-        //quack.runInterface();
         quackWebserver.loop();
         delay(1); // watchdog
     }
 }
 
-void setup() {
+void
+setup() {
     // quackParser.parse(DECLARE_STR("STRING abcde"));
     quack.begin();
-    quackWebserver.begin();
+    quackWebserver.begin(quack.getParser());
 
     // create new task in FreeRTOS API
     xTaskCreatePinnedToCore(loop2, "loop2", 8192, NULL, 1, NULL, 0);
 }
 
-void loop() {
-    
+void
+loop() {
+    quack.runInterface();
 }

@@ -31,3 +31,8 @@ Quack::runInterface() {
         quackInterface.waitResponse();
     }
 }
+
+QuackParser*
+Quack::getParser() {
+    return &quackParser;
+}

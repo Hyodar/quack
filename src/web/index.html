@@ -1,15 +1,100 @@
 <html>
     <head>
         <title>Hello World!</title>
+        <script src="codeflask.min.js"></script>
     </head>
+    <style>
+        body {
+            background-color: dimgray;
+        }
+        .square-btn {
+            background-color: transparent;
+            height: 60px;
+            color: rgb(197, 197, 197);
+            border: 1px solid rgb(126, 126, 126);
+            border-radius: 5px;
+            padding: 8px;
+            padding-left: 15px;
+            padding-right: 15px;
+            margin: 8px;
+            text-transform: uppercase;
+            font-family: monospace;
+            font-size: large;
+        }
+        .logo {
+            color: rgb(197, 197, 197);
+            margin-right:100px;
+            margin-left: 30px;
+            font-family: monospace;
+            font-size: xx-large;
+        }
+        .nav {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            background-color: dimgray;
+        }
+    </style>
     <body>
-        <h1>Hello World!</h1>
-        <textarea id="editor"></textarea>
-        <button onclick="sendScript()">Send</button>
-
-        <form method="POST" action="/upload" enctype="multipart/form-data">
-            <input type="file" />
-            <button type="submit">Submit file</button>
-        </form>
+        <div class="nav">
+            <h2 class="logo">Quack</h2>
+            <button class="square-btn" onclick="sendScript()">Save</button>
+            <button class="square-btn" onclick="runScript()">Run</button>
+            <button class="square-btn" onclick="stopScript()">Stop</button>
+            <button class="square-btn" onclick="uploadScript()">Upload</button>
+            <button class="square-btn" onclick="openScript()">Open</button>
+        </div>
+        <div id="editor"></div>
     </body>
+    <script>
+        const flask = new CodeFlask('#editor', {
+            language: 'js',
+            lineNumbers: true,
+            handleTabs: false
+        });
+
+        function preProcessCode(content) {
+            let lines = content.split('\n');
+
+            lines = lines.map((el) => {
+                return el.trim();
+            }).filter((el, idx) => {
+                const command = el.split(' ')[0];
+                return command != "REM";
+            }).filter((el, idx) => {
+                return el != "" && el != "\n";
+            });
+
+            lines.forEach((el, idx) => {
+                const command = el.split(' ')[0];
+
+                if(command == "REPEAT") {
+                    const temp = lines[idx - 1];
+                    lines[idx - 1] = lines[idx];
+                    lines[idx] = temp;
+                }
+            });
+
+            return lines.join("\n");
+        }
+
+        function runScript() {
+            const form = new FormData();
+            const code = preProcessCode(flask.getCode());
+
+            console.log(`Resulting Duckyscript:\n${code}`);
+
+            form.append("Code", code);
+            form.append("CodeLength", code.length);
+
+            fetch("/run_raw", {
+                method : "POST",
+                body: form,
+            }).then(
+                response => response.text()
+            ).then(
+                html => console.log(html)
+            );
+        }
+    </script>
 </html>

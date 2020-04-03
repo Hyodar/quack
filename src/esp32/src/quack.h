@@ -20,6 +20,7 @@ public:
     void begin();
     void runParser();
     void runInterface();
+    QuackParser* getParser();
 };
 
 #endif

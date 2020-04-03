@@ -260,3 +260,39 @@ QuackParser::getProcessedLine() {
 
     return nullptr;
 }
+
+const bool
+QuackParser::canParse() {
+    for(u16 i = 0; i < QUACKLINES_BUFFER; i++) {
+        if(quackLines[i].state == QuackParser::QuackLineState::FREE_TO_PARSE) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void
+QuackParser::parsingLoop(const u8* const str, const u16 len) {
+    u16 length = 0;
+    u16 start = 0;
+    
+    for(;;) {
+        while((start + length + 1) < len && str[length + 1] != '\n') {
+            length++;
+        }
+
+        while(!canParse()) {
+            // wait
+        }
+
+        parse(str + start, length);
+
+        if((start + length + 1) >= len) {
+            break;
+        }
+
+        start = length + 1;
+        length = 0;
+    }
+}

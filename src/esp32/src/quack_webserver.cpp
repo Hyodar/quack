@@ -11,7 +11,19 @@
 #include "web_files.h"
 #include "web_info.h"
 
-QuackWebserver::QuackWebserver() : server{80}, ws{"/ws"}, events{"/events"} {
+#include "quack_parser.h"
+
+const u16 parseU16(const u8* const str) {
+    u32 n = 0;
+    
+    for(u16 i = 0; str[i] != '\0'; i++) {
+        n = (n*10) + (str[i] - '0');
+    }
+
+    return n;
+}
+
+QuackWebserver::QuackWebserver() : server{80}, ws{"/ws"}, events{"/events"}, parser{nullptr} {
     // no-op
 }
 
@@ -25,7 +37,7 @@ QuackWebserver::reply(AsyncWebServerRequest* request, int code, const char* type
 
 void
 QuackWebserver::onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client,
-                          AwsEventType type, void * arg, uint8_t *data, size_t len) {
+                          AwsEventType type, void* arg, uint8_t* data, size_t len) {
     if(type == WS_EVT_CONNECT) {
         Serial.printf("ws[%s][%u] connect\n", server->url(), client->id());
         client->printf("Hello Client %u :)", client->id());
@@ -41,10 +53,10 @@ QuackWebserver::onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client,
         Serial.printf("ws[%s][%u] pong[%u]: %s\n", server->url(), client->id(), len, (len)?(char*)data:"");
     }
     else if(type == WS_EVT_DATA) {
-        AwsFrameInfo * info = (AwsFrameInfo*)arg;
+        AwsFrameInfo* info = (AwsFrameInfo*) arg;
         String msg = "";
         if(info->final && info->index == 0 && info->len == len) {
-            //the whole message is in a single frame and we got all of it's data
+            // the whole message is in a single frame and we got all of it's data
             Serial.printf("ws[%s][%u] %s-message[%llu]: ", server->url(), client->id(), (info->opcode == WS_TEXT)?"text":"binary", info->len);
 
             if(info->opcode == WS_TEXT) {
@@ -70,7 +82,7 @@ QuackWebserver::onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client,
             }
         }
         else {
-        //message is comprised of multiple frames or the frame is split into multiple packets
+            // message is comprised of multiple frames or the frame is split into multiple packets
             if(info->index == 0){
                 if(info->num == 0) {
                     Serial.printf("ws[%s][%u] %s-message start\n", server->url(), client->id(), (info->message_opcode == WS_TEXT)?"text":"binary");
@@ -113,8 +125,12 @@ QuackWebserver::onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client,
 }
 
 void
-QuackWebserver::begin() {
+QuackWebserver::begin(QuackParser* _parser) {
     
+    // Parser ================================================================
+
+    parser = _parser;
+
     // WiFi ==================================================================
 
     WiFi.mode(WIFI_AP_STA);
@@ -154,6 +170,7 @@ QuackWebserver::begin() {
         else if(error == OTA_RECEIVE_ERROR) events.send("Recieve Failed", "ota");
         else if(error == OTA_END_ERROR) events.send("End Failed", "ota");
     });
+
     ArduinoOTA.setHostname(hostName);
     ArduinoOTA.begin();
 
@@ -175,6 +192,17 @@ QuackWebserver::begin() {
 
     server.on("/", [this](AsyncWebServerRequest* request) {
         reply(request, 200, "text/html", INDEX_HTML, sizeof(INDEX_HTML));
+    });
+
+    server.on("/run_raw", HTTP_POST, [this](AsyncWebServerRequest* request) {
+        request->send(200);
+
+        if(request->hasParam("Code") && request->hasParam("CodeLength")) {
+            const u8* const code = (const u8*) request->getParam("Code")->value().c_str();
+            const u16 length = parseU16((const u8*) request->getParam("CodeLength")->value().c_str());
+
+            parser->parsingLoop(code, length);
+        }
     });
 
     server.onNotFound([this](AsyncWebServerRequest* request) {
@@ -201,7 +229,6 @@ QuackWebserver::begin() {
             Serial.printf("UploadEnd: %s (%u)\n", filename.c_str(), index+len);
         }
     });
-
 
     server.onRequestBody([](AsyncWebServerRequest* request, uint8_t* data,
                             size_t len, size_t index, size_t total){
