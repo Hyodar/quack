@@ -48,7 +48,7 @@ public:
     void begin();
 
     const bool parse(const u8* const str, const u16 len);
-    const u32 parseU32(const u8* const str);
+    const u32 parseU32(const u8* const str, const u16 len);
 
     const bool checkChecksum();
 
