@@ -1,14 +1,16 @@
 <html>
     <head>
         <title>Hello World!</title>
-        <script src="codeflask.min.js"></script>
+        <script src="/codeflask.min.js"></script>
     </head>
     <style>
         body {
             background-color: dimgray;
         }
         .square-btn {
-            background-color: transparent;
+            /*background-color: #505050;*/
+            background: linear-gradient(45deg, #505050, #606060);
+            box-shadow: 1px 3px 3px 2px rgba(0, 0, 0, 0.15);
             height: 60px;
             color: rgb(197, 197, 197);
             border: 1px solid rgb(126, 126, 126);
@@ -20,13 +22,26 @@
             text-transform: uppercase;
             font-family: monospace;
             font-size: large;
+            cursor: pointer;
+        }
+        .square-btn:hover {
+            background: linear-gradient(45deg, #454545, #555555);
         }
         .logo {
             color: rgb(197, 197, 197);
-            margin-right:100px;
+            margin: 0px;
+            margin-right: 100px;
             margin-left: 30px;
             font-family: monospace;
-            font-size: xx-large;
+            font-size: 28px;
+            text-transform: uppercase;
+            font-weight: 500;
+            border: 2.4px solid #a9a9a9;
+            padding: 10px;
+            border-radius: 35px;
+            background: linear-gradient(90deg, #585858, #707070);
+            box-shadow: 0px 0px 7px 2px #00000038;
+            align-self: center;
         }
         .nav {
             display: flex;
