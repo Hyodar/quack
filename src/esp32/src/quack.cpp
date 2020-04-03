@@ -9,7 +9,7 @@ Quack::begin() {
 
 void
 Quack::runParser() {
-
+    quackParser.parsingLoop();
 }
 
 void

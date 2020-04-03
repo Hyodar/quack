@@ -11,7 +11,8 @@ QuackParser::QuackLine::QuackLine() : lineOrder{0}, state{QuackLineState::FREE_T
     // no-op
 }
 
-QuackParser::QuackParser() : activeLine{0}, nextOrder{0}, orderCount{0}, keyboardLocale{&locale_us} {
+QuackParser::QuackParser() : activeLine{0}, nextOrder{0}, orderCount{0},
+                             keyboardLocale{&locale_us}, buffer{0}, bufferLength{0} {
     // no-op
 }
 
@@ -273,12 +274,14 @@ QuackParser::canParse() {
 }
 
 void
-QuackParser::parsingLoop(const u8* const str, const u16 len) {
+QuackParser::parsingLoop() {
+    if(!bufferLength) return;
+
     u16 length = 0;
     u16 start = 0;
     
     for(;;) {
-        while((start + length + 1) < len && str[length + 1] != '\n') {
+        while((start + length + 1) < bufferLength && buffer[length + 1] != '\n') {
             length++;
         }
 
@@ -286,13 +289,22 @@ QuackParser::parsingLoop(const u8* const str, const u16 len) {
             // wait
         }
 
-        parse(str + start, length);
+        parse(buffer + start, length);
 
-        if((start + length + 1) >= len) {
+        if((start + length + 1) >= bufferLength) {
             break;
         }
 
         start = length + 1;
         length = 0;
+    }
+
+    bufferLength = 0;
+}
+
+void
+QuackParser::fillBuffer(const u8* const str, const u16 len) {
+    for(u16 i = 0; i < len; i++) {
+        buffer[bufferLength++] = str[i];
     }
 }

@@ -13,6 +13,7 @@ loop2(void* params) {
     Serial.println("[THREADING] Initializing loop2");
     for(;;) {
         quackWebserver.loop();
+        quack.runInterface();
         delay(1); // watchdog
     }
 }
@@ -29,5 +30,5 @@ setup() {
 
 void
 loop() {
-    quack.runInterface();
+    quack.runParser();
 }

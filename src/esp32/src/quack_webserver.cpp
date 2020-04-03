@@ -201,7 +201,7 @@ QuackWebserver::begin(QuackParser* _parser) {
             const u8* const code = (const u8*) request->getParam("Code")->value().c_str();
             const u16 length = parseU16((const u8*) request->getParam("CodeLength")->value().c_str());
 
-            parser->parsingLoop(code, length);
+            parser->fillBuffer(code, length);
         }
     });
 

@@ -50,6 +50,9 @@ private:
     FastCRC16 CRC16;
     QuackHIDLocale* keyboardLocale;
 
+    u8 buffer[1000];
+    u16 bufferLength;
+
     const bool updateActiveLine();
     const u16 getCommandCode(const u8* const str, const u8 len, bool continuation) const;
     void parseKeysParams(const u8* const str, const u16 len);
@@ -66,7 +69,8 @@ public:
     const bool parse(const u8* const str, const u16 len, const bool continuation=false);
     QuackParser::QuackLine* getProcessedLine();
     const bool canParse();
-    void parsingLoop(const u8* const str, const u16 len);
+    void parsingLoop();
+    void fillBuffer(const u8* const str, const u16 len);
 };
 
 #endif
