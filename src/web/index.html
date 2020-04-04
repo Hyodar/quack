@@ -7,11 +7,10 @@
         body {
             background-color: dimgray;
         }
-        .square-btn {
+        .btn {
             /*background-color: #505050;*/
             background: linear-gradient(45deg, #505050, #606060);
             box-shadow: 1px 3px 3px 2px rgba(0, 0, 0, 0.15);
-            height: 60px;
             color: rgb(197, 197, 197);
             border: 1px solid rgb(126, 126, 126);
             border-radius: 5px;
@@ -23,6 +22,9 @@
             font-family: monospace;
             font-size: large;
             cursor: pointer;
+        }
+        .square-btn {
+            height: 60px;
         }
         .square-btn:hover {
             background: linear-gradient(45deg, #454545, #555555);
@@ -53,11 +55,14 @@
     <body>
         <div class="nav">
             <h2 class="logo">Quack</h2>
-            <button class="square-btn" onclick="sendScript()">Save</button>
-            <button class="square-btn" onclick="runScript()">Run</button>
-            <button class="square-btn" onclick="stopScript()">Stop</button>
-            <button class="square-btn" onclick="uploadScript()">Upload</button>
-            <button class="square-btn" onclick="openScript()">Open</button>
+            <button class="btn square-btn" onclick="saveScript()">Save</button>
+            <button class="btn square-btn" onclick="runScript()">Run</button>
+            <button class="btn square-btn" onclick="stopScript()">Stop</button>
+            <button class="btn square-btn" onclick="uploadScript()">Upload</button>
+            <button class="btn square-btn" onclick="openScript()">Open</button>
+        </div>
+        <div id="options-menu" style="background-color: #606060; color: white; padding: 5px; visibility: hidden; height: 0px;">
+            <code id="filename-container" style="font-size: 16px; visibility: hidden;">File name: <input id="filename-save"></input> <button class="btn" onclick="saveFile()">Go</button></code>
         </div>
         <div id="editor"></div>
     </body>
@@ -65,17 +70,56 @@
         const flask = new CodeFlask('#editor', {
             language: 'js',
             lineNumbers: true,
-            handleTabs: false
+            handleTabs: true
         });
 
         const commands = [
-            "DEFAULTDELAY", "DELAY", "STRING", "DISPLAY", "REPEAT",
+            "DEFAULTDELAY", "DELAY", "STRING", "DISPLAY", "REPEAT", "KEYS"
         ];
+
+        const keys = [
+            "CTRL", "CONTROL", "SHIFT", "ALT", "WINDOWS",
+            "GUI", "ENTER", "MENU", "APP", "DELETE", "HOME",
+            "INSERT", "PAGEUP", "PAGEDOWN", "UP", "UPARROW",
+            "DOWN", "DOWNARROW", "LEFT", "LEFTARROW", "RIGHT",
+            "RIGHTARROW", "TAB", "END", "ESC", "ESCAPE", "SPACE",
+            "PAUSE", "BREAK", "CAPSLOCK", "NUMLOCK", "PRINTSCREEN",
+            "SCROLLLOCK"
+        ];
+
+        const translateKey = {
+            "CONTROL": "CTRL",
+            "UP": "UPARROW",
+            "DOWN": "DOWNARROW",
+            "LEFT": "LEFTARROW",
+            "RIGHT": "RIGHTARROW",
+            "ESCAPE": "ESC",
+            "BREAK": "PAUSE"
+        };
 
         const translate = {
             "DEFAULT_DELAY": "DEFAULTDELAY",
             "REPLAY": "REPEAT",
         };
+
+        function showOptionsMenu() {
+            document.getElementById("options-menu").style.visibility = "visible";
+            document.getElementById("options-menu").style.height = "unset";
+        }
+
+        function hideOptionsMenu() {
+            document.getElementById("options-menu").style.visibility = "hidden";
+            document.getElementById("options-menu").style.height = "0px";
+        }
+
+        function saveScript() {
+            showOptionsMenu();
+            document.getElementById("filename-container").style.visibility = "visible";
+        }
+
+        function saveFile() {
+            hideOptionsMenu();
+        }
 
         function preProcessCode(content) {
             let lines = content.split('\n');
@@ -83,12 +127,27 @@
             lines = lines.map((el) => {
                 return el.trim();
             }).filter((el, idx) => {
-                let command = el.split(' ')[0];
+                let parts = el.split(' ');
+                let command = parts[0];
+                
+                parts = parts.filter((el) => el != "");
 
                 if(translate[command]) {
-                    lines[idx] = lines[idx].replace(command, translate[command]);
-                    command = el.split(' ')[0];
+                    command = translate[command];
                 }
+                else if(keys.find((el) => el == command)) {
+                    parts = parts.map((el) => {
+                        if(translateKey[el]) {
+                            return translateKey[el];
+                        }
+                        return el;
+                    });
+
+                    command = "KEYS";
+                    parts.unshift(command);
+                }
+
+                lines[idx] = parts.join(' ');
 
                 return commands.find((el) => el == command);
             });
@@ -115,13 +174,13 @@
             form.append("Code", code);
             form.append("CodeLength", code.length);
 
-            if(code.length >= 2**15) {
-                alert('size danger');
+            if(code.length >= 1000) {
+                alert("You can't run a script with more than 1KB without saving.");
                 return;
             }
 
             fetch("/run_raw", {
-                method : "POST",
+                method: "POST",
                 body: form,
             }).then(
                 response => response.text()
