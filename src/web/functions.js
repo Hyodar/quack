@@ -35,13 +35,15 @@ const translate = {
 };
 
 function showOptionsMenu() {
-    document.getElementById("options-menu").style.visibility = "visible";
-    document.getElementById("options-menu").style.height = "unset";
+    document.getElementById("options-menu").style.filter = "opacity(1)";
+    document.getElementById("options-menu").style.transform = "scaleY(1)";
+    document.getElementById("options-menu").style.height = "auto";
 }
 
 function hideOptionsMenu() {
-    document.getElementById("options-menu").style.visibility = "hidden";
-    document.getElementById("options-menu").style.height = "0px";
+    document.getElementById("options-menu").style.filter = "opacity(0)";
+    document.getElementById("options-menu").style.transform = "scaleY(0)";
+    document.getElementById("options-menu").style.height = "unset";
 }
 
 function saveScript() {
