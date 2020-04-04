@@ -1,6 +1,9 @@
 
 from pathlib import Path
 from gzip import compress as gzip_compress
+from css_html_js_minify import html_minify
+from css_html_js_minify import js_minify
+from css_html_js_minify import css_minify
 
 WEB_PATH = "./web"
 TARGET_FILE = "./esp32/src/web_files.h"
@@ -45,6 +48,17 @@ RESPONSE_TYPES = {
     ".html": "text/html"
 }
 
+def minify(file, content):
+    if file.suffix == '.html':
+        return html_minify(content)
+    if file.suffix == '.js':
+        return js_minify(content)
+    if file.suffix == '.css':
+        return css_minify(content)
+
+    return content
+
+
 def get_response_info(file):
     if file.stem.isdigit():
         http_code = file.stem
@@ -66,7 +80,7 @@ def build_array(file_content):
 
 def file_hexarray(file, array_name):
     with file.open(mode='r', encoding="utf-8") as content:
-        array_content = build_array(content.read())
+        array_content = build_array(minify(file, content.read()))
 
     return ARRAY_MODEL.format(array_name=array_name,
                               array_content=array_content)
