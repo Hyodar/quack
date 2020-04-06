@@ -38,18 +38,18 @@ const bool
 QuackParser::parse(const u8* const str, const u16 len) {
 
 #ifdef PARSER_DEBUGGING
-    DEBUGGING_PRINTF("[PARSER] Starting.\n");
+    DEBUGGING_PRINT("[PARSER] Starting.\n");
 #endif
 
     if(!quackFrame.deserialize(str, len, &CRC16)) {
 #ifdef PARSER_DEBUGGING
-        DEBUGGING_PRINTF("[PARSER] Checksum error! Requesting resend.\n");
+        DEBUGGING_PRINT("[PARSER] Checksum error! Requesting resend.\n");
 #endif
         return false;
     }
 #ifdef PARSER_DEBUGGING
     else {
-        DEBUGGING_PRINTF("[PARSER] Checksum OK! Sending command to CommandManager.\n");
+        DEBUGGING_PRINT("[PARSER] Checksum OK! Sending command to CommandManager.\n");
     }
 #endif
 

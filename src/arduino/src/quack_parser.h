@@ -24,18 +24,8 @@ enum ParsingState {
     CONTINUE
 };
 
-// struct QuackFrame {
-//     u16 checksum;
-//     u8 commandCode;
-//     u16 length;
-//     const u8* params;
-
-//     QuackFrame();
-// } PACKED;
-
 private:
     CommandManager commandManager;
-    //ParsingState parsingState;
     
     QuackFrame quackFrame;
     FastCRC16 CRC16;
