@@ -14,13 +14,6 @@
 
 #include "quack_utils.h"
 
-#ifdef STRING_HELPERS
-void
-printstr(const u8* str, u16 len) {
-    for(u16 i = 0; i < len; i++) putchar(str[i]);
-}
-#endif
-
 CommandManager::CommandManager(): quackKeyboard{}, quackDisplay{},
                                   currentDefaultDelay{DEFAULT_DELAY},
                                   repeatNum{0} {
@@ -35,12 +28,12 @@ CommandManager::begin() {
 
 void
 CommandManager::doDefaultDelay() {
-#ifdef TESTING_WITHOUT_KEYBOARD
-    DEBUGGING_PRINTF("[COMMANDS] Default delaying for %d ms\n", currentDefaultDelay);
-    // usleep(currentDefaultDelay * 1000);
-#else
-
+#ifdef COMMAND_DEBUGGING
+    DEBUGGING_PRINT("[COMMANDS] Default delaying for ");
+    DEBUGGING_PRINT(currentDefaultDelay);
+    DEBUGGING_PRINT(" ms.\n");
 #endif
+    delay(currentDefaultDelay);
 }
 
 #define REPEAT_IF_NECESSARY(func)\
@@ -115,59 +108,46 @@ CommandManager::command(const u8 commandCode, const u8* const param, const u16 l
     doDefaultDelay();
 }
 
-#ifdef TESTING_WITHOUT_KEYBOARD
-u8 translateLocale[][3] = {
-    "US", "BR",
-};
-#endif
-
 void
 CommandManager::locale(const u8* const param, const u16 len) const {
-#ifdef TESTING_WITHOUT_KEYBOARD
-    DEBUGGING_PRINTF("[COMMANDS] Setting locale to: %s\n", translateLocale[param[0] - LOCALE_US]);
-#else
-
+#ifdef COMMAND_DEBUGGING
+    DEBUGGING_PRINT("[COMMANDS] Setting locale to: ");
+    DEBUGGING_PRINT(param[0]);
+    DEBUGGING_PRINT(param[1]);
+    DEBUGGING_PRINT(".\n");
 #endif
 }
 
 void
 CommandManager::string(const u8* const param, const u16 len) {
-#ifdef TESTING_WITHOUT_KEYBOARD
-    DEBUGGING_PRINTF("[COMMANDS] Typing string: "); printstr(param, len); putchar('\n');
-#else
-
+#ifdef COMMAND_DEBUGGING
+    DEBUGGING_PRINT("[COMMANDS] Typing string: ");
+    DEBUGGING_PRINTSTR(param, len);
+    DEBUGGING_PRINT('\n');
 #endif
     quackKeyboard.write(param, len);
 }
 
 void
 CommandManager::display(const u8* const param, const u16 len) {
-#ifdef TESTING_WITHOUT_KEYBOARD
-    DEBUGGING_PRINTF("[COMMANDS] Displaying string: "); printstr(param, len); putchar('\n');
-#else
+#ifdef COMMAND_DEBUGGING
+    DEBUGGING_PRINT("[COMMANDS] Displaying string: ");
+    DEBUGGING_PRINTSTR(param, len);
+    DEBUGGING_PRINT('\n');
 #endif
     quackDisplay.write(param, len);
 }
 
-#ifdef TESTING_WITHOUT_KEYBOARD
-u8 translateKey[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-
-u8 translateMod[][13] = { // "UTF8_AHEAD"
-    "CTRL",             "SHIFT",        "ALT",          "GUI",              "ENTER",
-    "ESCAPE",           "DELETE",       "TAB",          "SPACE",            "CAPSLOCK",
-    "MENU",             "HOME",         "INSERT",       "PAGEUP",           "PAGEDOWN",
-    "RIGHTARROW",       "LEFTARROW",    "DOWNARROW",    "UPARROW",          "END",
-    "SCROLLLOCK",       "PAUSE",        "NUMLOCK",      "PRINTSCREEN",
-};
-#endif
-
 void
 CommandManager::keys(const u8* const param, const u16 len) {
-#ifdef TESTING_WITHOUT_KEYBOARD
-    DEBUGGING_PRINTF("[COMMANDS] Pressing keys: TODO translation\n");
+#ifdef COMMAND_DEBUGGING
+    DEBUGGING_PRINT("[COMMANDS] Pressing keys: ");
 #endif
 
     for(u16 i = 0; i < len; i++) {
+#ifdef COMMAND_DEBUGGING
+    DEBUGGING_PRINT(param[i], HEX);
+#endif
         if(param[i] >= KEY_LEFTCTRL) {
             if(param[i] <= KEY_LEFTMETA) {
                 quackKeyboard.addHIDModifier(param[i]);
@@ -182,39 +162,39 @@ CommandManager::keys(const u8* const param, const u16 len) {
 
 void
 CommandManager::delay(const u32 param) const {
-#ifdef TESTING_WITHOUT_KEYBOARD
-    DEBUGGING_PRINTF("[COMMANDS] Delaying for %d ms\n", param);
-    // usleep(param * 1000);
-#else
-
+#ifdef COMMAND_DEBUGGING
+    DEBUGGING_PRINT("[COMMANDS] Delaying for ");
+    DEBUGGING_PRINT(param);
+    DEBUGGING_PRINT(" ms.\n");
 #endif
+    delay(param);
 }
 
 void
 CommandManager::defaultDelay(const u32 param) {
-#ifdef TESTING_WITHOUT_KEYBOARD
-    DEBUGGING_PRINTF("[COMMANDS] Setting default delay to %d ms\n", param);
-#else
-
+#ifdef COMMAND_DEBUGGING
+    DEBUGGING_PRINT("[COMMANDS] Setting delay to ");
+    DEBUGGING_PRINT(param);
+    DEBUGGING_PRINT(" ms.\n");
 #endif
     currentDefaultDelay = param;
 }
 
 void
 CommandManager::repeat(const u32 param) {
-#ifdef TESTING_WITHOUT_KEYBOARD
-    DEBUGGING_PRINTF("[COMMANDS] Repeating next command for %d times\n", param);
-#else
-
+#ifdef COMMAND_DEBUGGING
+    DEBUGGING_PRINT("[COMMANDS] Will repeat next command for ");
+    DEBUGGING_PRINT(param);
+    DEBUGGING_PRINT(" times.\n");
 #endif
     repeatNum = param;
 }
 
 void
 CommandManager::keycode(const u32 param) const {
-#ifdef TESTING_WITHOUT_KEYBOARD
-    DEBUGGING_PRINTF("[COMMANDS] Typing keycode %d\n", param);
-#else
-
+#ifdef COMMAND_DEBUGGING
+    DEBUGGING_PRINT("[COMMANDS] Typing keycode ");
+    DEBUGGING_PRINT(param, HEX);
+    DEBUGGING_PRINT(".\n");
 #endif
 }
