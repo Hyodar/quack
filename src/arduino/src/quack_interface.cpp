@@ -37,14 +37,16 @@ QuackInterface::update() {
 
             if(receivedByte == FRAME_SEPARATOR) {
 #ifdef INTERFACE_DEBUGGING
-                DEBUGGING_PRINTF("[INTERFACE] Found start separator. Changing state to FILLING_BUFFER.\n");
+                DEBUGGING_PRINT("[INTERFACE] Found start separator. Changing state to FILLING_BUFFER.\n");
 #endif
                 streamState = StreamState::FILLING_BUFFER;
                 break;
             }
 
 #ifdef INTERFACE_DEBUGGING
-                DEBUGGING_PRINTF("[INTERFACE] Read byte on WAITING_START state: %d.\n", receivedByte);
+                DEBUGGING_PRINT("[INTERFACE] Read byte on WAITING_START state: ");
+                DEBUGGING_PRINT(receivedByte, HEX);
+                DEBUGGING_PRINT(".\n");
 #endif
 
         }
@@ -54,13 +56,15 @@ QuackInterface::update() {
         const u8 receivedByte = Serial1.read();
 
 #ifdef INTERFACE_DEBUGGING
-        DEBUGGING_PRINTF("[INTERFACE] Receving byte %d from Serial.\n", receivedByte);
+        DEBUGGING_PRINT("[INTERFACE] Receiving byte from serial: ");
+        DEBUGGING_PRINT(receivedByte, HEX);
+        DEBUGGING_PRINT(".\n");
 #endif
         if(receivedByte == FRAME_SEPARATOR) {
             if(recBuffer.length >= QUACKFRAME_HEADER_SIZE) {
                 // finished getting header
 #ifdef INTERFACE_DEBUGGING
-                DEBUGGING_PRINTF("[INTERFACE] Received frame from Serial. Changing state to WAITING_START and waiting buffer read.\n");
+                DEBUGGING_PRINT("[INTERFACE] Received frame from Serial. Changing state to WAITING_START and waiting buffer read.\n");
 #endif
                 streamState = StreamState::WAITING_START;
                 return true;
@@ -74,59 +78,6 @@ QuackInterface::update() {
 
     return false;
 }
-
-// const bool
-// QuackInterface::update() {
-//     u16 available = Serial1.available();
-
-//     while(streamState < RECEIVING_PARAMS && available) {
-
-// #ifdef INTERFACE_DEBUGGING
-//         DEBUGGING_PRINTF("[INTERFACE] Receving frame header.\n");
-// #endif
-
-//         const u8 receivedByte = Serial1.read();
-
-// #ifdef INTERFACE_DEBUGGING
-//         DEBUGGING_PRINTF("[INTERFACE] Receving byte %d from Serial.\n", receivedByte);
-// #endif
-
-//         if(streamState >= RECEIVING_LENGTH_1) {
-// #ifdef INTERFACE_DEBUGGING
-//             DEBUGGING_PRINTF("[INTERFACE] Datalength byte %d: %d\n", streamState - RECEIVING_LENGTH_1, receivedByte);
-// #endif
-
-//             dataLength.bytes[streamState - RECEIVING_LENGTH_1] = receivedByte;
-//         }
-
-//         recBuffer.data[recBuffer.length++] = receivedByte;
-//         available--;
-//         streamState = StreamState(streamState + 1);
-//     }
-
-// #ifdef INTERFACE_DEBUGGING
-//         //DEBUGGING_PRINTF("[INTERFACE] Received frame. Expected params length: %d %d.\n", dataLength.bytes[0], dataLength.bytes[1]);
-// #endif
-
-//     while(available) {
-//         const u8 receivedByte = Serial1.read();
-
-// #ifdef INTERFACE_DEBUGGING
-//         DEBUGGING_PRINTF("[INTERFACE] Receving byte %d from Serial.\n", receivedByte);
-// #endif
-
-//         recBuffer.data[recBuffer.length++] = receivedByte;
-//         available--;
-//         dataLength.length--;
-
-//         if(NOT dataLength.length) {
-//             streamState = StreamState::RECEIVING_CHECKSUM_1;
-//             return true;
-//         }
-//     }
-
-//     return false;
-// }
 
 QuackInterface::QuackBuffer*
 QuackInterface::getBuffer() {
@@ -155,10 +106,10 @@ void
 QuackInterface::flush() {
 
 #ifdef INTERFACE_DEBUGGING
-        DEBUGGING_PRINTF("[INTERFACE] Parsing finished. Resetting buffer and changing state back to RECEIVING.\n");
+    DEBUGGING_PRINT("[INTERFACE] Flushing. Resetting buffer and changing state back to WAITING_START.\n");
 #endif
 
     recBuffer.length = 0;
-    // streamState = StreamState::RECEIVING;
+    streamState = StreamState::WAITING_START;
 
 }

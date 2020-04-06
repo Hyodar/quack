@@ -25,33 +25,15 @@ public:
         QuackBuffer();
     };
 
-    // enum StreamState {
-    //     NONE                    = 0,
-    //     RECEIVING_CHECKSUM_1    = 1,
-    //     RECEIVING_CHECKSUM_2    = 2,
-    //     RECEIVING_COMMAND       = 3,
-    //     RECEIVING_LENGTH_1      = 4,
-    //     RECEIVING_LENGTH_2      = 5,
-    //     RECEIVING_PARAMS        = 6,
-    //     PARSING                 = 7
-    // };
-
     enum StreamState {
         WAITING_START,
-        FILLING_BUFFER
+        FILLING_BUFFER,
     };
 
 private:
     StreamState streamState;
 
     QuackBuffer recBuffer;
-    
-    // union u16Length {
-    //     u16 length;
-    //     u8  bytes[2];
-    // };
-
-    // union u16Length dataLength;
 
 public:
 
