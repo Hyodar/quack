@@ -7,12 +7,13 @@
 #define DISPLAY_WIDTH   0x80
 #define DISPLAY_HEIGHT  0x20
 
-#define OLED_RESET_PIN      0x3C
+#define OLED_ADDRESS        0x3C
 #define OLED_TEXT_SIZE      1
 #define OLED_TEXT_COLOR     SSD1306_WHITE
 #define OLED_CURSOR_POS_X   0
 #define OLED_CURSOR_POS_Y   0
 #define OLED_CP437          true
+#define OLED_RESET          4
 
 #ifdef DISPLAY_ENABLED
 
@@ -29,7 +30,6 @@
 
 #include "quack_utils.h"
 
-#define OLED_RESET 4
 #define SSD1306_WHITE 1
 #define SSD1306_SWITCHCAPVCC 1 // ?
 

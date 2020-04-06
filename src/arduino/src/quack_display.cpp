@@ -2,19 +2,20 @@
 #include "quack_display.h"
 
 QuackDisplay::QuackDisplay() : display{DISPLAY_WIDTH, DISPLAY_HEIGHT, &Wire, OLED_RESET} {
-#ifdef DISPLAY_DEBUGGING
-    DEBUGGING_PRINT("[DISPLAY] Initializing with RESET pin on ");
-    DEBUGGING_PRINT(OLED_RESET_PIN, HEX);
-    DEBUGGING_PRINT(".\n");
-#endif
 }
 
 void
 QuackDisplay::begin() {
-    if(!display.begin(SSD1306_SWITCHCAPVCC, OLED_RESET_PIN)) {
+    if(!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {
         DEBUGGING_PRINT("[DISPLAY] [!] SSD1306 allocation failed.\n");
         for(;;); // Don't proceed, loop forever
     }
+
+#ifdef DISPLAY_DEBUGGING
+    DEBUGGING_PRINT("[DISPLAY] Initializing with RESET pin on ");
+    DEBUGGING_PRINT(OLED_ADDRESS, HEX);
+    DEBUGGING_PRINT(".\n");
+#endif
 
     display.setTextSize(OLED_TEXT_SIZE);
 
