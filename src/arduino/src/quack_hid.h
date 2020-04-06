@@ -17,6 +17,12 @@
 
 #else
 
+#define u16 __u16
+#include <Arduino.h>
+#undef u16
+
+#include "quack_utils.h"
+
 struct HIDSubDescriptor {
     HIDSubDescriptor(const u8* keyboardDescriptor, u32 len) {}
 };

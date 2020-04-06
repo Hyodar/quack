@@ -2,7 +2,12 @@
 #include "quack_frame.h"
 #include "quack_codes.h"
 
+#define u16 __u16
 #include <Arduino.h>
+#undef u16
+
+#include "quack_utils.h"
+
 #include <FastCRC.h>
 
 QuackFrame::QuackFrame() : commandCode{COMMAND_NONE},
