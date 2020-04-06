@@ -64,17 +64,19 @@ QuackKeyboard::begin() const {
 void
 QuackKeyboard::send() const {
 #ifdef KEYBOARD_DEBUGGING
-    DEBUGGING_PRINTF("[KEYBOARD] Sending report. Report description: {\n");
-    DEBUGGING_PRINTF("\tkeys: [");
+    DEBUGGING_PRINT("[KEYBOARD] Sending report. Report description: {\n");
+    DEBUGGING_PRINT("\tkeys: [");
     for(u8 i = 0; i < 6; i++) {
-        DEBUGGING_PRINTF("%d, ", quackReport.keys[i]);
+        DEBUGGING_PRINT(quackReport.keys[i], HEX);
+        DEBUGGING_PRINT(", ");
     }
-    DEBUGGING_PRINTF("],\n");
-    DEBUGGING_PRINTF("\tmodifiers: [");
+    DEBUGGING_PRINT("],\n");
+    DEBUGGING_PRINT("\tmodifiers: [");
     for(u8 i = 0; i < 8; i++) {
-        DEBUGGING_PRINTF("%d, ", (quackReport.modifiers & (1 << i)) >> i);
+        DEBUGGING_PRINT((quackReport.modifiers & (1 << i)) >> i);
+        DEBUGGING_PRINT(", ");
     }
-    DEBUGGING_PRINTF("]\n}\n");
+    DEBUGGING_PRINT("]\n}\n");
 #endif
     HID().SendReport(HID_SEND_ID, (u8*) &quackReport, sizeof(QuackReport));
 }
@@ -82,7 +84,7 @@ QuackKeyboard::send() const {
 void
 QuackKeyboard::release() {
 #ifdef KEYBOARD_DEBUGGING
-    DEBUGGING_PRINTF("[KEYBOARD] Releasing keys.\n");
+    DEBUGGING_PRINT("[KEYBOARD] Releasing keys.\n");
 #endif
     quackReport.clear();
     send();
