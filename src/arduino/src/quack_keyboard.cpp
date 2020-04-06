@@ -5,12 +5,10 @@
 
 #include "quack_keyboard.h"
 
-#ifdef KEYBOARD_DEBUGGING
 // little hack here because of u16 typedef inside USBAPI.h
 #define u16 __u16
 #include <Arduino.h>
 #undef u16
-#endif
 
 #include "quack_utils.h"
 
@@ -64,19 +62,19 @@ QuackKeyboard::begin() const {
 void
 QuackKeyboard::send() const {
 #ifdef KEYBOARD_DEBUGGING
-    DEBUGGING_PRINT("[KEYBOARD] Sending report. Report description: {\n");
-    DEBUGGING_PRINT("\tkeys: [");
+    DEBUGGING_PRINT(F("[KEYBOARD] Sending report. Report description: {\n"));
+    DEBUGGING_PRINT(F("\tkeys: ["));
     for(u8 i = 0; i < 6; i++) {
         DEBUGGING_PRINT(quackReport.keys[i], HEX);
-        DEBUGGING_PRINT(", ");
+        DEBUGGING_PRINT(F(", "));
     }
-    DEBUGGING_PRINT("],\n");
-    DEBUGGING_PRINT("\tmodifiers: [");
+    DEBUGGING_PRINT(F("],\n"));
+    DEBUGGING_PRINT(F("\tmodifiers: ["));
     for(u8 i = 0; i < 8; i++) {
         DEBUGGING_PRINT((quackReport.modifiers & (1 << i)) >> i);
-        DEBUGGING_PRINT(", ");
+        DEBUGGING_PRINT(F(", "));
     }
-    DEBUGGING_PRINT("]\n}\n");
+    DEBUGGING_PRINT(F("]\n}\n"));
 #endif
     HID().SendReport(HID_SEND_ID, (u8*) &quackReport, sizeof(QuackReport));
 }
@@ -84,7 +82,7 @@ QuackKeyboard::send() const {
 void
 QuackKeyboard::release() {
 #ifdef KEYBOARD_DEBUGGING
-    DEBUGGING_PRINT("[KEYBOARD] Releasing keys.\n");
+    DEBUGGING_PRINT(F("[KEYBOARD] Releasing keys.\n"));
 #endif
     quackReport.clear();
     send();

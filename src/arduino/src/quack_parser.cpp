@@ -4,12 +4,10 @@
 #include "quack_codes.h"
 #include "quack_config.h"
 
-#ifdef PARSER_DEBUGGING
 // little hack here because of u16 typedef inside USBAPI.h
 #define u16 __u16
 #include <Arduino.h>
 #undef u16
-#endif
 
 #include "quack_utils.h"
 
@@ -38,18 +36,18 @@ const bool
 QuackParser::parse(const u8* const str, const u16 len) {
 
 #ifdef PARSER_DEBUGGING
-    DEBUGGING_PRINT("[PARSER] Starting.\n");
+    DEBUGGING_PRINT(F("[PARSER] Starting.\n"));
 #endif
 
     if(!quackFrame.deserialize(str, len, &CRC16)) {
 #ifdef PARSER_DEBUGGING
-        DEBUGGING_PRINT("[PARSER] Checksum error! Requesting resend.\n");
+        DEBUGGING_PRINT(F("[PARSER] Checksum error! Requesting resend.\n"));
 #endif
         return false;
     }
 #ifdef PARSER_DEBUGGING
     else {
-        DEBUGGING_PRINT("[PARSER] Checksum OK! Sending command to CommandManager.\n");
+        DEBUGGING_PRINT(F("[PARSER] Checksum OK! Sending command to CommandManager.\n"));
     }
 #endif
 

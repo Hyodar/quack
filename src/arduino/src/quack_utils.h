@@ -15,7 +15,7 @@
 #endif
 
 #ifdef DEBUGGING_ENABLED
-#define DEBUGGING_PRINT(str, ...) Serial.print(str, ##__VA_ARGS__)
+#define DEBUGGING_PRINT(str, ...) Serial.print((str), ##__VA_ARGS__)
 #define DEBUGGING_PRINTSTR(str, len) for(u8 i = 0; i < (len); i++) DEBUGGING_PRINT((str)[i])
 #else
 #define DEBUGGING_PRINT(str, ...)

@@ -4,13 +4,11 @@
 #include "quack_codes.h"
 #include "quack_config.h"
 
-#ifdef TESTING_WITHOUT_KEYBOARD
 // little hack here because of u16 typedef inside USBAPI.h
 #define u16 __u16
 #include <Arduino.h>
 #undef u16
 #include <unistd.h>
-#endif
 
 #include "quack_utils.h"
 
@@ -29,9 +27,9 @@ CommandManager::begin() {
 void
 CommandManager::doDefaultDelay() {
 #ifdef COMMAND_DEBUGGING
-    DEBUGGING_PRINT("[COMMANDS] Default delaying for ");
+    DEBUGGING_PRINT(F("[COMMANDS] Default delaying for "));
     DEBUGGING_PRINT(currentDefaultDelay);
-    DEBUGGING_PRINT(" ms.\n");
+    DEBUGGING_PRINT(F(" ms.\n"));
 #endif
     delay(currentDefaultDelay);
 }
@@ -111,17 +109,17 @@ CommandManager::command(const u8 commandCode, const u8* const param, const u16 l
 void
 CommandManager::locale(const u8* const param, const u16 len) const {
 #ifdef COMMAND_DEBUGGING
-    DEBUGGING_PRINT("[COMMANDS] Setting locale to: ");
+    DEBUGGING_PRINT(F("[COMMANDS] Setting locale to: "));
     DEBUGGING_PRINT(param[0]);
     DEBUGGING_PRINT(param[1]);
-    DEBUGGING_PRINT(".\n");
+    DEBUGGING_PRINT(F(".\n"));
 #endif
 }
 
 void
 CommandManager::string(const u8* const param, const u16 len) {
 #ifdef COMMAND_DEBUGGING
-    DEBUGGING_PRINT("[COMMANDS] Typing string: ");
+    DEBUGGING_PRINT(F("[COMMANDS] Typing string: "));
     DEBUGGING_PRINTSTR(param, len);
     DEBUGGING_PRINT('\n');
 #endif
@@ -131,7 +129,7 @@ CommandManager::string(const u8* const param, const u16 len) {
 void
 CommandManager::display(const u8* const param, const u16 len) {
 #ifdef COMMAND_DEBUGGING
-    DEBUGGING_PRINT("[COMMANDS] Displaying string: ");
+    DEBUGGING_PRINT(F("[COMMANDS] Displaying string: "));
     DEBUGGING_PRINTSTR(param, len);
     DEBUGGING_PRINT('\n');
 #endif
@@ -141,7 +139,7 @@ CommandManager::display(const u8* const param, const u16 len) {
 void
 CommandManager::keys(const u8* const param, const u16 len) {
 #ifdef COMMAND_DEBUGGING
-    DEBUGGING_PRINT("[COMMANDS] Pressing keys: ");
+    DEBUGGING_PRINT(F("[COMMANDS] Pressing keys: "));
 #endif
 
     for(u16 i = 0; i < len; i++) {
@@ -163,9 +161,9 @@ CommandManager::keys(const u8* const param, const u16 len) {
 void
 CommandManager::delay(const u32 param) const {
 #ifdef COMMAND_DEBUGGING
-    DEBUGGING_PRINT("[COMMANDS] Delaying for ");
+    DEBUGGING_PRINT(F("[COMMANDS] Delaying for "));
     DEBUGGING_PRINT(param);
-    DEBUGGING_PRINT(" ms.\n");
+    DEBUGGING_PRINT(F(" ms.\n"));
 #endif
     delay(param);
 }
@@ -173,9 +171,9 @@ CommandManager::delay(const u32 param) const {
 void
 CommandManager::defaultDelay(const u32 param) {
 #ifdef COMMAND_DEBUGGING
-    DEBUGGING_PRINT("[COMMANDS] Setting delay to ");
+    DEBUGGING_PRINT(F("[COMMANDS] Setting delay to "));
     DEBUGGING_PRINT(param);
-    DEBUGGING_PRINT(" ms.\n");
+    DEBUGGING_PRINT(F(" ms.\n"));
 #endif
     currentDefaultDelay = param;
 }
@@ -183,9 +181,9 @@ CommandManager::defaultDelay(const u32 param) {
 void
 CommandManager::repeat(const u32 param) {
 #ifdef COMMAND_DEBUGGING
-    DEBUGGING_PRINT("[COMMANDS] Will repeat next command for ");
+    DEBUGGING_PRINT(F("[COMMANDS] Will repeat next command for "));
     DEBUGGING_PRINT(param);
-    DEBUGGING_PRINT(" times.\n");
+    DEBUGGING_PRINT(F(" times.\n"));
 #endif
     repeatNum = param;
 }
@@ -193,8 +191,8 @@ CommandManager::repeat(const u32 param) {
 void
 CommandManager::keycode(const u32 param) const {
 #ifdef COMMAND_DEBUGGING
-    DEBUGGING_PRINT("[COMMANDS] Typing keycode ");
+    DEBUGGING_PRINT(F("[COMMANDS] Typing keycode "));
     DEBUGGING_PRINT(param, HEX);
-    DEBUGGING_PRINT(".\n");
+    DEBUGGING_PRINT(F(".\n"));
 #endif
 }
