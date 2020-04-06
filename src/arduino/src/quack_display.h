@@ -4,8 +4,15 @@
 
 #include "quack_config.h"
 
-#define DISPLAY_WIDTH 128
-#define DISPLAY_HEIGHT 32
+#define DISPLAY_WIDTH   0x80
+#define DISPLAY_HEIGHT  0x20
+
+#define OLED_RESET_PIN      0x3C
+#define OLED_TEXT_SIZE      1
+#define OLED_TEXT_COLOR     SSD1306_WHITE
+#define OLED_CURSOR_POS_X   0
+#define OLED_CURSOR_POS_Y   0
+#define OLED_CP437          true
 
 #ifdef DISPLAY_ENABLED
 
@@ -30,40 +37,40 @@ class Adafruit_SSD1306 {
 public:
     Adafruit_SSD1306(const u32 screenWidth, const u32 screenHeight,
                      void* i2cWire, const u8 resetPin) {
-        DEBUGGING_PRINTF("[DISPLAY] Initializing with RESET pin on %d.\n", resetPin);
+        // no-op                         
     }
 
     bool begin(int a, int b) {
-        DEBUGGING_PRINTF("[DISPLAY] Beginning.\n");
+        // no-op        
         return true;
     }
 
     void display() {
-        DEBUGGING_PRINTF("[DISPLAY] Displaying.\n");
+        // no-op        
     }
 
     void write(u8 character) {
-        DEBUGGING_PRINTF("[DISPLAY] Writing character on screen: %c.\n", character);
+        // no-op            
     }
 
     void clearDisplay() {
-        DEBUGGING_PRINTF("[DISPLAY] Clearing display.\n");
+        // no-op        
     }
 
     void setTextSize(const u32 size) {
-        DEBUGGING_PRINTF("[DISPLAY] Setting text scale to %d.\n", size);
+        // no-op            
     }
 
     void setTextColor(const u32 color) {
-        DEBUGGING_PRINTF("[DISPLAY] Setting text color to %d.\n", color);
+        // no-op            
     }
 
     void setCursor(const u32 x, const u32 y) {
-        DEBUGGING_PRINTF("[DISPLAY] Setting cursor to (%d, %d).\n", x, y);
+        // no-op            
     }
 
     void cp437(const bool cp) {
-        DEBUGGING_PRINTF("[DISPLAY] Setting cp to %s.\n", (cp)? "true" : "false");
+        // no-op        
     }
 };
 
