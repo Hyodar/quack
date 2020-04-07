@@ -22,7 +22,8 @@ QuackInterface::QuackInterface() : streamState{StreamState::WAITING_START},
 
 void
 QuackInterface::begin() const {
-    Serial1.begin(BAUDRATE);
+    Serial.begin(SERIAL_BAUDRATE);
+    Serial1.begin(SERIAL1_BAUDRATE);
 }
 
 const bool

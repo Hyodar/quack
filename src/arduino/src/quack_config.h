@@ -23,7 +23,8 @@
 #define KEYBOARD_DEBUGGING
 #define PARSER_DEBUGGING
 
-#define BAUDRATE                115200
+#define SERIAL_BAUDRATE         115200
+#define SERIAL1_BAUDRATE        9600
 #define BUFFER_SIZE             480
 #define QUACKLINES_BUFFER       2
 #define DEFAULT_DELAY           1000
