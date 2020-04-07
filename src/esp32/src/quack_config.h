@@ -23,8 +23,9 @@
 // #define STRING_HELPERS
 // #define USEFUL_REMINDERS
 
-#define BAUDRATE      115200
-#define BUFFER_SIZE   480
-#define QUACKLINES_BUFFER  2
+#define SERIAL_BAUDRATE     115200
+#define SERIAL2_BAUDRATE    9600
+#define BUFFER_SIZE         480
+#define QUACKLINES_BUFFER   2
 
 #endif

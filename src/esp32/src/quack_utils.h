@@ -15,6 +15,7 @@
 #endif
 
 #define DEBUGGING_PRINTF Serial.printf
+#define DEBUGGING_PRINTSTR(str, len) for(u16 i = 0; i < (len); i++) Serial.printf("%d ", (str)[i]);
 
 #define PACKED __attribute__ ((packed))
 

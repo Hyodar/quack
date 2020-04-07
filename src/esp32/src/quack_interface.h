@@ -12,6 +12,7 @@ public:
 
 enum Status {
     WAITING_RESPONSE,
+    GET_RESPONSE,
     RESPONSE_SUCCESS,
     RESPONSE_RESEND
 };
@@ -26,10 +27,13 @@ public:
     void begin() const;
 
     const QuackInterface::Status getStatus() const;
+    void setStatus(QuackInterface::Status _status);
     void waitResponse();
 
     void send(QuackParser::QuackLine* line);
     void resend() const;
+
+    void freeLine();
 
 };
 

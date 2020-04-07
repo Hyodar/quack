@@ -10,10 +10,10 @@ QuackInterface::QuackInterface() : quackLine{nullptr}, status{RESPONSE_SUCCESS} 
 
 void
 QuackInterface::begin() const {
-    Serial.begin(BAUDRATE);
-#ifdef SERIAL_DEBUG_OUTPUT
+    Serial.begin(SERIAL_BAUDRATE);
+    Serial2.begin(SERIAL2_BAUDRATE);
     Serial.setDebugOutput(true);
-#endif
+    delay(500);
 }
 
 const QuackInterface::Status
@@ -22,18 +22,29 @@ QuackInterface::getStatus() const {
 }
 
 void
-QuackInterface::waitResponse() {
-    if(Serial.available()) {
-        const u8 byte = Serial.read();
+QuackInterface::setStatus(QuackInterface::Status _status) {
+    status = _status;
+}
 
-        if(byte == WRONG_CHECKSUM) {
-            status = RESPONSE_RESEND;
+void
+QuackInterface::waitResponse() {
+    if(Serial2.available()) {
+        const u8 byte = Serial2.read();
+
+        if(byte == FRAME_SEPARATOR) {
+            status = GET_RESPONSE;
+            return;
         }
-        else if(byte == FINISHED_PARSING) {
-            status = RESPONSE_SUCCESS;
-            quackLine->state = QuackParser::QuackLineState::FREE_TO_PARSE;
+
+        if(status == Status::GET_RESPONSE) {
+            if(byte == WRONG_CHECKSUM) {
+                status = Status::RESPONSE_RESEND;
+            }
+            else if(byte == FINISHED_PARSING) {
+                status = Status::RESPONSE_SUCCESS;
+                quackLine->state = QuackParser::QuackLineState::FREE_TO_PARSE;
+            }
         }
-        // else do nothing, probably a frame separator
     }
 }
 
@@ -41,14 +52,30 @@ void
 QuackInterface::send(QuackParser::QuackLine* line) {
     quackLine = line;
 
-    Serial.write(FRAME_SEPARATOR);
-    Serial.write(line->data.getBuffer(), line->data.getLength() + HEADER_SIZE);
-    Serial.write(FRAME_SEPARATOR);
+    const u8* const buf = line->data.getBuffer();
+    const u16 length = line->data.getLength() + HEADER_SIZE;
+
+    Serial2.write(FRAME_SEPARATOR);
+    for(u16 i = 0; i < length; i++) Serial2.write(buf[i]);
+    Serial2.write(FRAME_SEPARATOR);
+
+    Serial.write(0);
+    DEBUGGING_PRINTSTR(line->data.getBuffer(), line->data.getLength() + HEADER_SIZE);
+    DEBUGGING_PRINTF("\n");
 }
 
 void
 QuackInterface::resend() const {
-    Serial.write(FRAME_SEPARATOR);
-    Serial.write(quackLine->data.getBuffer(), quackLine->data.getLength() + HEADER_SIZE);
-    Serial.write(FRAME_SEPARATOR);
+    // Serial2.write(FRAME_SEPARATOR);
+    // Serial2.write(quackLine->data.getBuffer(), quackLine->data.getLength() + HEADER_SIZE);
+    // Serial2.write(FRAME_SEPARATOR);
+}
+
+void
+QuackInterface::freeLine() {
+    if(quackLine) {
+        DEBUGGING_PRINTF("[INTERFACE] Setting quackLine to FREE_TO_PARSE.\n");
+        quackLine->state = QuackParser::QuackLineState::FREE_TO_PARSE;
+        quackLine = nullptr;
+    }
 }
