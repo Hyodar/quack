@@ -29,7 +29,7 @@ private:
     void display(const u8* const param, const u16 len);
     void keys(const u8* const param, const u16 len);
 
-    void delay(const u32 param) const;
+    void doDelay(const u32 param) const;
     void defaultDelay(const u32 param);
     void repeat(const u32 param);
     void keycode(const u32 param) const;

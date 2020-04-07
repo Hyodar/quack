@@ -45,9 +45,9 @@ if(repeatNum) {\
 void
 CommandManager::command(const u8 commandCode, const u32 param) {
     if(commandCode == COMMAND_DELAY) {
-        delay(param);
+        doDelay(param);
 
-        REPEAT_IF_NECESSARY(delay(param))
+        REPEAT_IF_NECESSARY(doDelay(param))
     }
     else if(commandCode == COMMAND_DEFAULTDELAY) {
         defaultDelay(param);
@@ -159,7 +159,7 @@ CommandManager::keys(const u8* const param, const u16 len) {
 }
 
 void
-CommandManager::delay(const u32 param) const {
+CommandManager::doDelay(const u32 param) const {
 #ifdef COMMAND_DEBUGGING
     DEBUGGING_PRINT(F("[COMMANDS] Delaying for "));
     DEBUGGING_PRINT(param);
