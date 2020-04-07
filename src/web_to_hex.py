@@ -49,12 +49,14 @@ RESPONSE_TYPES = {
 }
 
 def minify(file, content):
+    """
     if file.suffix == '.html':
         return html_minify(content)
     if file.suffix == '.js':
         return js_minify(content)
     if file.suffix == '.css':
         return css_minify(content)
+    """
 
     return content
 
