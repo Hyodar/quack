@@ -2,7 +2,7 @@
 #ifndef QUACK_DISPLAY_H_
 #define QUACK_DISPLAY_H_
 
-#include "quack_config.h"
+#include <quack_config.h>
 
 #ifndef DISPLAY_ENABLED
 #define SSD1306_WHITE 1
@@ -18,7 +18,7 @@
 #include <Arduino.h>
 #undef u16
 
-#include "quack_utils.h"
+#include <quack_utils.h>
 
 const u8 DISPLAY_WIDTH      = 0x80;
 const u8 DISPLAY_HEIGHT     = 0x20;
@@ -38,7 +38,7 @@ const bool OLED_CP437       = true;
 #include <Arduino.h>
 #undef u16
 
-#include "quack_utils.h"
+#include <quack_utils.h>
 
 #define SSD1306_WHITE 1
 #define SSD1306_SWITCHCAPVCC 1 // ?

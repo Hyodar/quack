@@ -8,8 +8,8 @@
  * 
 *****************************************************************************/
 
-#include "quack_utils.h"
-#include "quack_config.h"
+#include <quack_utils.h>
+#include <quack_config.h>
 
 #ifdef HID_ENABLED
 
@@ -21,7 +21,7 @@
 #include <Arduino.h>
 #undef u16
 
-#include "quack_utils.h"
+#include <quack_utils.h>
 
 struct HIDSubDescriptor {
     HIDSubDescriptor(const u8* keyboardDescriptor, u32 len) {}

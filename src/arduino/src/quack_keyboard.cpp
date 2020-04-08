@@ -1,5 +1,5 @@
 
-#include "quack_config.h"
+#include <quack_config.h>
 #include "quack_codes.h"
 #include "quack_hid.h"
 
@@ -10,7 +10,7 @@
 #include <Arduino.h>
 #undef u16
 
-#include "quack_utils.h"
+#include <quack_utils.h>
 
 #ifdef ARDUINO_ENABLED
 const u8 keyboardDescriptor[] PROGMEM {

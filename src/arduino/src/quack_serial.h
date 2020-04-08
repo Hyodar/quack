@@ -8,7 +8,7 @@
  * 
 *****************************************************************************/
 
-#include "quack_config.h"
+#include <quack_config.h>
 
 #ifdef SERIAL_ENABLED
 
@@ -18,7 +18,7 @@
 
 #include <Arduino.h>
 #include <queue>
-#include "quack_utils.h"
+#include <quack_utils.h>
 
 class Serial {
 

@@ -2,8 +2,8 @@
 #ifndef QUACK_INTERFACE_H_
 #define QUACK_INTERFACE_H_
 
-#include "quack_config.h"
-#include "quack_utils.h"
+#include <quack_config.h>
+#include <quack_utils.h>
 #include "quack_parser.h"
 
 class QuackInterface {

@@ -2,8 +2,8 @@
 #ifndef QUACK_FRAME_H_
 #define QUACK_FRAME_H_
 
-#include "quack_config.h"
-#include "quack_utils.h"
+#include <quack_config.h>
+#include <quack_utils.h>
 
 #define HEADER_SIZE sizeof(u16) + sizeof(u8) + sizeof(u16)
 

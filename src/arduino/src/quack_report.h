@@ -8,7 +8,7 @@
  * 
 *****************************************************************************/
 
-#include "quack_utils.h"
+#include <quack_utils.h>
 #include "usb_hid_keys.h"
 
 struct QuackReport {

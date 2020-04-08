@@ -8,8 +8,8 @@
  * 
 *****************************************************************************/
 
-#include "quack_config.h"
-#include "quack_utils.h"
+#include <quack_config.h>
+#include <quack_utils.h>
 
 #include "quack_parser.h"
 

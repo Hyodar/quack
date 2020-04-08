@@ -2,8 +2,8 @@
 #ifndef LOCALE_US_H_
 #define LOCALE_US_H_
 
-#include "quack_config.h"
-#include "quack_utils.h"
+#include <quack_config.h>
+#include <quack_utils.h>
 #include "quack_hid_locale.h"
 #include "usb_hid_keys.h"
 

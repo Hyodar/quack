@@ -2,8 +2,8 @@
 #ifndef QUACK_FRAME_H_
 #define QUACK_FRAME_H_
 
-#include "quack_config.h"
-#include "quack_utils.h"
+#include <quack_config.h>
+#include <quack_utils.h>
 
 #include <FastCRC.h>
 

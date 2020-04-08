@@ -12,7 +12,7 @@
 #include "web_files.h"
 #include "web_info.h"
 
-#include "quack_utils.h"
+#include <quack_utils.h>
 #include "quack_parser.h"
 
 const u16 parseU16(const u8* const str) {

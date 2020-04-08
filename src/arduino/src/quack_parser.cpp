@@ -2,14 +2,14 @@
 #include "quack_parser.h"
 
 #include "quack_codes.h"
-#include "quack_config.h"
+#include <quack_config.h>
 
 // little hack here because of u16 typedef inside USBAPI.h
 #define u16 __u16
 #include <Arduino.h>
 #undef u16
 
-#include "quack_utils.h"
+#include <quack_utils.h>
 
 QuackParser::QuackParser() /*: parsingState{ParsingState::NONE}*/ {
     // no-op

@@ -3,7 +3,7 @@
 #define QUACK_HID_LOCALE_H_
 
 #include <cstddef>
-#include "quack_utils.h"
+#include <quack_utils.h>
 
 struct QuackHIDLocale {
     const u8* ascii;

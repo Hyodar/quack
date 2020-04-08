@@ -10,8 +10,8 @@
 
 #include <FastCRC.h>
 
-#include "quack_config.h"
-#include "quack_utils.h"
+#include <quack_config.h>
+#include <quack_utils.h>
 
 #include "quack_frame.h"
 #include "quack_hid_locale.h"

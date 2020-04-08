@@ -2,7 +2,7 @@
 #ifndef QUACK_H_
 #define QUACK_H_
 
-#include "quack_config.h"
+#include <quack_config.h>
 #include "quack_parser.h"
 #include "quack_interface.h"
 

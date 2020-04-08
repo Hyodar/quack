@@ -9,7 +9,7 @@
 #include <Arduino.h>
 #undef u16
 
-#include "quack_utils.h"
+#include <quack_utils.h>
 
 QuackInterface::QuackBuffer::QuackBuffer() : data{0}, length{0} {
 

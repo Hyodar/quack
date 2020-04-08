@@ -10,7 +10,7 @@
 
 #include <FastCRC.h>
 
-#include "quack_utils.h"
+#include <quack_utils.h>
 
 #include "command_manager.h"
 #include "quack_frame.h"

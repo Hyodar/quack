@@ -2,7 +2,7 @@
 #include "command_manager.h"
 
 #include "quack_codes.h"
-#include "quack_config.h"
+#include <quack_config.h>
 
 // little hack here because of u16 typedef inside USBAPI.h
 #define u16 __u16
@@ -10,7 +10,7 @@
 #undef u16
 #include <unistd.h>
 
-#include "quack_utils.h"
+#include <quack_utils.h>
 
 CommandManager::CommandManager(): quackKeyboard{}, quackDisplay{},
                                   currentDefaultDelay{DEFAULT_DELAY},
