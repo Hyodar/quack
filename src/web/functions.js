@@ -150,14 +150,19 @@ function updateScriptList() {
 }
 
 function saveScript() {
-    hideOptionsMenu();
     const filename = ID("filename-save").value;
 
-    if(!filename) return;
+    if(!filename) {
+        return;
+    }
+    if(filename == "__main__") {
+        alert("Reserved filename");
+        return;
+    }
 
-    setFilename(ID("filename-save").value);
-    lastVersion = flask.getCode();
-    setIsSaved(true);
+    hideOptionsMenu();
+
+    setFilename(filename);
 
     const form = new FormData();
 
@@ -169,8 +174,15 @@ function saveScript() {
         method: "POST",
         body: form,
     }).then(response => {
-        // update script list after saving
-        updateScriptList();
+        lastVersion = flask.getCode();
+        setIsSaved(true);
+        
+        // update filename-open options
+        const options = ID("filename-open").options;
+        if(!Array.from(options).find(el => el.value == filename)) {
+            options.add(filename);
+        }
+
         return response.text();
     }).then(
         text => console.log(text)
