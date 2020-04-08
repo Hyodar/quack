@@ -48,11 +48,14 @@ body {
 }
 .smooth-height-top {
     transform-origin: top;
-    transition: transform 0.08s ease-out, filter 0.08s ease, max-height 0.12s ease-out;
+    transition: transform 0.08s ease-out, filter 0.08s ease, max-height 0.12s;
 }
 .no-height {
     max-height: 0px;
     transform: scaleY(0);
+}
+.dont-display {
+    display: none;
 }
 .font-16 {
     font-size: 16px;

@@ -1,12 +1,4 @@
 
-const flask = new CodeFlask('#editor', {
-    language: 'js',
-    lineNumbers: true,
-    handleTabs: true
-});
-
-flask.onUpdate(compareVersions);
-
 const commands = [
     "DEFAULTDELAY", "DELAY", "STRING", "DISPLAY", "REPEAT", "KEYS"
 ];
@@ -41,15 +33,15 @@ let lastVersion = "";
 function compareVersions(code) {
     if(lastVersion) {
         if(lastVersion.length != code.length) {
-            updateIsSaved(false);
+            setIsSaved(false);
         }
         else {
-            updateIsSaved(lastVersion == code);
+            setIsSaved(lastVersion == code);
         }
     }
 }
 
-function updateIsSaved(isSaved) {
+function setIsSaved(isSaved) {
     ID("is-saved").innerText = (isSaved)? "" : "*";
 }
 
@@ -65,6 +57,18 @@ function setFilename(filename) {
     ID("filename").innerText = filename;
 }
 
+function setOpenOptions(newOptions) {
+    const options = ID("filename-open").options;
+
+    while(options.length) {
+        options.remove();
+    }
+
+    newOptions.forEach(el => {
+        options.add(el);
+    });
+}
+
 function showOptionsMenu() {
     ID("options-menu").style.filter = "opacity(1)";
     ID("options-menu").style.transform = "scaleY(1)";
@@ -74,20 +78,16 @@ function showOptionsMenu() {
 function hideOptionsMenu() {
     ID("options-menu").style.filter = "opacity(0)";
     ID("options-menu").style.transform = "scaleY(0)";
-    ID("options-menu").style.maxHeight = "0";
+    ID("options-menu").style.maxHeight = "0px";
+
+    Array.from(ID("options-menu").children).forEach(
+        child => child.style.display = "none"
+    );
 }
 
-function saveScript() {
+function openFilenameInput() {
     showOptionsMenu();
-    ID("save-container").style.visibility = "visible";
-}
-
-function inputFilename() {
-    setFilename(ID("filename-save").value);
-    lastVersion = flask.getCode();
-    updateIsSaved(true);
-    hideOptionsMenu();
-    ID("save-container").style.visibility = "hidden";
+    ID("save-container").style.display = "unset";
 }
 
 function preProcessCode(content) {
@@ -134,6 +134,49 @@ function preProcessCode(content) {
     return lines.join("\n");
 }
 
+function updateScriptList() {
+    const form = new FormData();
+
+    form.append("Magic", 0xF00DBEEF);
+
+    fetch("/list", {
+        method: "POST",
+        body: form,
+    }).then(
+        response => response.json()
+    ).then(
+        obj => setOpenOptions(obj.dirFiles)
+    );
+}
+
+function saveScript() {
+    hideOptionsMenu();
+    const filename = ID("filename-save").value;
+
+    if(!filename) return;
+
+    setFilename(ID("filename-save").value);
+    lastVersion = flask.getCode();
+    setIsSaved(true);
+
+    const form = new FormData();
+
+    form.append("Filename", filename);
+    form.append("Code", lastVersion);
+    form.append("CodeLength", lastVersion.length);
+    
+    fetch("/save", {
+        method: "POST",
+        body: form,
+    }).then(response => {
+        // update script list after saving
+        updateScriptList();
+        return response.text();
+    }).then(
+        text => console.log(text)
+    );
+}
+
 function runScript() {
     const form = new FormData();
     const code = preProcessCode(flask.getCode());
@@ -158,3 +201,81 @@ function runScript() {
         html => console.log(html)
     );
 }
+
+function stopScript() {
+    const form = new FormData();
+
+    form.append("Magic", 0xF00DBEEF);
+
+    fetch("/stop", {
+        method: "POST",
+        body: form,
+    }).then(
+        response => response.text()
+    ).then(
+        html => console.log(html)
+    );
+}
+
+function uploadScript() {
+    ID("upload-input").click();
+}
+
+function openScript() {
+    const scriptName = ID("filename-open").value;
+
+    const form = new FormData();
+
+    form.append("Filename", scriptName);
+
+    fetch("/open", {
+        method: "POST",
+        body: form,
+    }).then(
+        response => response.text()
+    ).then(text => {
+        flask.updateCode(text);
+        lastVersion = text;
+        setFilename(scriptName);
+    });
+
+    hideOptionsMenu();
+}
+
+function loadScriptList() {
+    showOptionsMenu();
+    ID("open-container").style.display = "unset";
+}
+
+function handleUpload(event) {
+    const file = ID("upload-input").files[0];
+
+    console.log(file);
+
+    const fileReader = new FileReader();
+
+    fileReader.onload = fileEvent => {
+        const text = fileEvent.target.result;
+        flask.updateCode(text);
+        
+        setIsSaved(false);
+        setFilename(file.name);
+        lastVersion = ""
+    };
+
+    fileReader.readAsText(file, "UTF-8");
+}
+
+const flask = new CodeFlask('#editor', {
+    language: 'js',
+    lineNumbers: true,
+    handleTabs: true
+});
+
+flask.onUpdate(compareVersions);
+
+// update script list on startup
+updateScriptList();
+
+// set file upload callback
+ID("upload-input").addEventListener("change", handleUpload);
