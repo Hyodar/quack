@@ -51,24 +51,21 @@ QuackInterface::waitResponse() {
 void
 QuackInterface::send(QuackParser::QuackLine* line) {
     quackLine = line;
+    send();
+}
 
-    const u8* const buf = line->data.getBuffer();
-    const u16 length = line->data.getLength() + HEADER_SIZE;
+void
+QuackInterface::send() const {
+    const u8* const buf = quackLine->data.getBuffer();
+    const u16 length = quackLine->data.getLength() + HEADER_SIZE;
 
     Serial2.write(FRAME_SEPARATOR);
     for(u16 i = 0; i < length; i++) Serial2.write(buf[i]);
     Serial2.write(FRAME_SEPARATOR);
 
     Serial.write(0);
-    DEBUGGING_PRINTSTR(line->data.getBuffer(), line->data.getLength() + HEADER_SIZE);
+    DEBUGGING_PRINTSTR(buf, length + HEADER_SIZE);
     DEBUGGING_PRINTF("\n");
-}
-
-void
-QuackInterface::resend() const {
-    // Serial2.write(FRAME_SEPARATOR);
-    // Serial2.write(quackLine->data.getBuffer(), quackLine->data.getLength() + HEADER_SIZE);
-    // Serial2.write(FRAME_SEPARATOR);
 }
 
 void

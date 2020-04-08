@@ -31,7 +31,7 @@ public:
     void waitResponse();
 
     void send(QuackParser::QuackLine* line);
-    void resend() const;
+    void send() const;
 
     void freeLine();
 

@@ -30,7 +30,7 @@ Quack::runInterface() {
     }
     else if(status == QuackInterface::Status::RESPONSE_RESEND) {
         DEBUGGING_PRINTF("[QUACK] RESPONSE_RESEND, resending frame.\n");
-        quackInterface.resend();
+        quackInterface.send();
         quackInterface.setStatus(QuackInterface::Status::WAITING_RESPONSE);
     }
     else {
