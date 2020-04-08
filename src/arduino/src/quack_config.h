@@ -11,7 +11,7 @@
 // #define HID_ENABLED
 #define ARDUINO_ENABLED
 #define SERIAL_ENABLED
-// #define DISPLAY_ENABLED
+#define DISPLAY_ENABLED
 #define ESP_ENABLED
 
 #define DEBUGGING_ENABLED

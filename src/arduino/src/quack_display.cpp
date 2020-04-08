@@ -2,6 +2,7 @@
 #include "quack_display.h"
 
 QuackDisplay::QuackDisplay() : display{DISPLAY_WIDTH, DISPLAY_HEIGHT, &Wire, OLED_RESET} {
+    // no-op
 }
 
 void
@@ -54,6 +55,7 @@ QuackDisplay::begin() {
 
 void
 QuackDisplay::write(const u8* const str, const u16 len) {
+    display.stopscroll();
     display.clearDisplay();
 
 #ifdef DISPLAY_DEBUGGING
@@ -75,4 +77,6 @@ QuackDisplay::write(const u8* const str, const u16 len) {
 #ifdef DISPLAY_DEBUGGING
     DEBUGGING_PRINT(F("[DISPLAY] Displaying.\n"));
 #endif
+
+    display.startscrollright(0x00, 0x0F);
 }

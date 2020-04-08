@@ -4,22 +4,32 @@
 
 #include "quack_config.h"
 
-#define DISPLAY_WIDTH   0x80
-#define DISPLAY_HEIGHT  0x20
-
-#define OLED_ADDRESS        0x3C
-#define OLED_TEXT_SIZE      1
-#define OLED_TEXT_COLOR     SSD1306_WHITE
-#define OLED_CURSOR_POS_X   0
-#define OLED_CURSOR_POS_Y   0
-#define OLED_CP437          true
-#define OLED_RESET          4
+#ifndef DISPLAY_ENABLED
+#define SSD1306_WHITE 1
+#endif
 
 #ifdef DISPLAY_ENABLED
 
+// little hack here because of u16 typedef inside USBAPI.h
+#define u16 __u16
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Wire.h>
+#include <Arduino.h>
+#undef u16
+
+#include "quack_utils.h"
+
+const u8 DISPLAY_WIDTH      = 0x80;
+const u8 DISPLAY_HEIGHT     = 0x20;
+
+const u8 OLED_ADDRESS       = 0x3C;
+const u8 OLED_TEXT_SIZE     = 1;
+const u8 OLED_TEXT_COLOR    = SSD1306_WHITE;
+const u8 OLED_CURSOR_POS_X  = 0;
+const u8 OLED_CURSOR_POS_Y  = 0;
+const u8 OLED_RESET         = 4;
+const bool OLED_CP437       = true;
 
 #else
 
@@ -81,7 +91,7 @@ static _Wire Wire;
 #endif
 
 class QuackDisplay {
-
+    
 private:
     Adafruit_SSD1306 display;
 
