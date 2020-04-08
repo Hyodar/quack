@@ -5,6 +5,8 @@ const flask = new CodeFlask('#editor', {
     handleTabs: true
 });
 
+flask.onUpdate(compareVersions);
+
 const commands = [
     "DEFAULTDELAY", "DELAY", "STRING", "DISPLAY", "REPEAT", "KEYS"
 ];
@@ -34,25 +36,58 @@ const translate = {
     "REPLAY": "REPEAT",
 };
 
+let lastVersion = "";
+
+function compareVersions(code) {
+    if(lastVersion) {
+        if(lastVersion.length != code.length) {
+            updateIsSaved(false);
+        }
+        else {
+            updateIsSaved(lastVersion == code);
+        }
+    }
+}
+
+function updateIsSaved(isSaved) {
+    ID("is-saved").innerText = (isSaved)? "" : "*";
+}
+
+function ID(id) {
+    return document.getElementById(id);
+}
+
+function getFilename() {
+    return ID("filename").innerText;
+}
+
+function setFilename(filename) {
+    ID("filename").innerText = filename;
+}
+
 function showOptionsMenu() {
-    document.getElementById("options-menu").style.filter = "opacity(1)";
-    document.getElementById("options-menu").style.transform = "scaleY(1)";
-    document.getElementById("options-menu").style.maxHeight = "100px";
+    ID("options-menu").style.filter = "opacity(1)";
+    ID("options-menu").style.transform = "scaleY(1)";
+    ID("options-menu").style.maxHeight = "100px";
 }
 
 function hideOptionsMenu() {
-    document.getElementById("options-menu").style.filter = "opacity(0)";
-    document.getElementById("options-menu").style.transform = "scaleY(0)";
-    document.getElementById("options-menu").style.maxHeight = "0";
+    ID("options-menu").style.filter = "opacity(0)";
+    ID("options-menu").style.transform = "scaleY(0)";
+    ID("options-menu").style.maxHeight = "0";
 }
 
 function saveScript() {
     showOptionsMenu();
-    document.getElementById("filename-container").style.visibility = "visible";
+    ID("save-container").style.visibility = "visible";
 }
 
-function saveFile() {
+function inputFilename() {
+    setFilename(ID("filename-save").value);
+    lastVersion = flask.getCode();
+    updateIsSaved(true);
     hideOptionsMenu();
+    ID("save-container").style.visibility = "hidden";
 }
 
 function preProcessCode(content) {
@@ -110,6 +145,7 @@ function runScript() {
 
     if(code.length >= 1000) {
         alert("You can't run a script with more than 1KB without saving.");
+        alert("TODO increase this limit to - maybe - 18KB? This way we could send all of them through run_raw and preprocess it using JS");
         return;
     }
 

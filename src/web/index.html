@@ -14,8 +14,9 @@
             <button class="btn square-btn" onclick="openScript()">Open</button>
         </div>
         <div id="options-menu" class="smooth-height-top no-height" style="background-color: #606060; color: white; padding: 5px;">
-            <code id="filename-container" style="font-size: 16px; visibility: hidden;">File name: <input id="filename-save"></input> <button class="btn" onclick="saveFile()">Go</button></code>
+            <code id="save-container" class="font-16" style="visibility: hidden;">File name: <input id="filename-save"></input> <button class="btn" onclick="inputFilename()">Go</button></code>
         </div>
+        <code id="filename" class="font-16 pad-5" style="background-color: #606060; color: white;">Temporary script</code><span style="color: white" id="is-saved"></span>
         <div id="editor"></div>
     </body>
     <script src="functions.js"></script>

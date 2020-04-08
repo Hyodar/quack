@@ -29,8 +29,8 @@ HEADER_MODEL = """
 #ifndef WEB_FILES_H_
 #define WEB_FILES_H_
 
-#include "quack_config.h"
-#include "quack_utils.h"
+#include <quack_config.h>
+#include <quack_utils.h>
 
 // ======================== GZIP Compressed Web Files ========================
 {arrays}

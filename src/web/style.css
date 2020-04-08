@@ -54,3 +54,9 @@ body {
     max-height: 0px;
     transform: scaleY(0);
 }
+.font-16 {
+    font-size: 16px;
+}
+.pad-5 {
+    padding: 5px;
+}
