@@ -37,13 +37,13 @@ const translate = {
 function showOptionsMenu() {
     document.getElementById("options-menu").style.filter = "opacity(1)";
     document.getElementById("options-menu").style.transform = "scaleY(1)";
-    document.getElementById("options-menu").style.height = "auto";
+    document.getElementById("options-menu").style.maxHeight = "100px";
 }
 
 function hideOptionsMenu() {
     document.getElementById("options-menu").style.filter = "opacity(0)";
     document.getElementById("options-menu").style.transform = "scaleY(0)";
-    document.getElementById("options-menu").style.height = "unset";
+    document.getElementById("options-menu").style.maxHeight = "0";
 }
 
 function saveScript() {
