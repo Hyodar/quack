@@ -22,7 +22,7 @@ void
 loop3(void* params) {
     for(;;) {
         quack.runDisplay();
-        delay(10);
+        delay(7);
     }
 }
 
