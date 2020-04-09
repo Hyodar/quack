@@ -6,14 +6,17 @@
 #include "quack_codes.h"
 #include "locale_us.h"
 
+#include <cstring>
 #include <Arduino.h>
+
+const char* const LINE_SEPARATOR = "\n";
 
 QuackParser::QuackLine::QuackLine() : lineOrder{0}, state{QuackLineState::FREE_TO_PARSE} {
     // no-op
 }
 
 QuackParser::QuackParser() : activeLine{0}, nextOrder{0}, orderCount{0},
-                             keyboardLocale{&locale_us}, buffer{0}, bufferLength{0},
+                             keyboardLocale{&locale_us}, buffer{0},
                              quackDisplay{nullptr} {
     // no-op
 }
@@ -118,14 +121,14 @@ QuackParser::replaceKeyword(const u8* const str, const u16 len) {
 }
 
 void
-QuackParser::parseKeysParams(const u8* const str, const u16 len) {
+QuackParser::parseKeysParams(const u8* const str) {
     // replace keys by their HID combinations and return
     // the new length
 
     u16 start = 0;
     u16 length = 0;
 
-    for(u16 i = 0; i < len; i++, length++) {
+    for(u16 i = 0; str[i]; i++, length++) {
         if(str[i] == ' ') {
             replaceKeyword(str + start, length);
             
@@ -134,19 +137,19 @@ QuackParser::parseKeysParams(const u8* const str, const u16 len) {
         }
     }
 
-    if(len) {
+    if(length) {
         // got to end of line, but didn't parse last key
-        replaceKeyword(str + start, len);
+        replaceKeyword(str + start, length);
     }
 
 }
 
 void
-QuackParser::parseStringParams(const u8* const str, const u16 len) {
+QuackParser::parseStringParams(const u8* const str) {
     // replace keys by their HID combinations and return
     // the new length
 
-    for(u16 i = 0; i < len; i++) {
+    for(u16 i = 0; str[i]; i++) {
         replaceKey(str[i]);
     }
 
@@ -203,14 +206,14 @@ QuackParser::updateActiveLine() {
 }
 
 const bool
-QuackParser::parse(const u8* const str, const u16 len, const bool continuation) {
+QuackParser::parse(const u8* const str, const bool continuation) {
     if(!updateActiveLine()) {
         return false;
     }
 
     LINE.reset();
 
-    for(u16 i = 0; i < len; i++) DEBUGGING_PRINTF("%c", str[i]);
+    for(u16 i = 0; str[i]; i++) DEBUGGING_PRINTF("%c", str[i]);
     DEBUGGING_PRINTF("\n");
 
     // structure: <COMMAND_NAME> <PARAMS>
@@ -223,7 +226,7 @@ QuackParser::parse(const u8* const str, const u16 len, const bool continuation) 
 
     if(commandCode == COMMAND_DISPLAY) {
         // this one is processed here
-        quackDisplay->write((str + cursor), (len - cursor));
+        quackDisplay->write(str + cursor);
         quackLines[activeLine].state = QuackLineState::FREE_TO_PARSE;
         return true;
     }
@@ -232,13 +235,13 @@ QuackParser::parse(const u8* const str, const u16 len, const bool continuation) 
     LINE.setCommandCode(commandCode);
     
     if(commandCode == COMMAND_STRING) {
-        parseStringParams(str + cursor, len - cursor);
+        parseStringParams(str + cursor);
     }
     else if(commandCode == COMMAND_KEYS) {
-        parseKeysParams(str + cursor, len - cursor);
+        parseKeysParams(str + cursor);
     }
     else {
-        LINE.copyBuffer((str + cursor), (len - cursor));
+        LINE.copyBuffer(str + cursor);
     }
 
     LINE.serialize(&CRC16);
@@ -277,43 +280,25 @@ QuackParser::canParse() {
 
 void
 QuackParser::parsingLoop() {
-    if(!bufferLength) return;
+    if(!buffer[0]) return;
 
-    u16 length = 1;
-    u16 start = 0;
-    
-    for(;;) {
-        while((start + length) < bufferLength && buffer[start + length] != '\n') {
-            length++;
-        }
-
-        DEBUGGING_PRINTF("Can I parse?\n");
-
-        while(!canParse()) {
-            // wait
-        }
-
-        DEBUGGING_PRINTF("Can parse\n");
-
-        parse(buffer + start, length);
-
-        if((start + length) >= bufferLength) {
-            break;
-        }
-
-        start = start + length + 1; // skip '\n'
-        length = 1;
+    u8* str = (u8*) strtok((char*) buffer, LINE_SEPARATOR);
+    while(str != NULL) {
+        while(!canParse()) {}
+        parse(str);
+        str = (u8*) strtok(NULL, LINE_SEPARATOR);
     }
 
-    bufferLength = 0;
+    buffer[0] = '\0';
 }
 
 void
 QuackParser::fillBuffer(const u8* const str, const u16 len) {
-    DEBUGGING_PRINTF("Buffer: ");
+    DEBUGGING_PRINTF("Buffer: \"");
     for(u16 i = 0; i < len; i++) {
         DEBUGGING_PRINTF("%c", str[i]);
-        buffer[bufferLength++] = str[i];
+        buffer[i] = str[i];
     }
-    DEBUGGING_PRINTF("\n");
+    DEBUGGING_PRINTF("\"\n");
+    buffer[len + 1] = '\0';
 }

@@ -82,6 +82,16 @@ QuackDisplay::write(const u8* const str, const u16 len) {
 }
 
 void
+QuackDisplay::write(const u8* const str) {
+    u16 i = 0;
+    for(; i < 100 && str[i]; i++) displayString[i] = str[i];
+    
+    displayStringLen = i;
+    minDisplayPosition = - 6 * OLED_TEXT_SIZE * displayStringLen;
+    displayPosition = minDisplayPosition;
+}
+
+void
 QuackDisplay::scroll() {
     if(NOT displayString[0]) return;
 

@@ -23,12 +23,13 @@ QuackFrame::addParameterByte(const u8 byte) {
 }
 
 void
-QuackFrame::copyBuffer(const u8* const buf, const u16 bufLength) {
-    for(u16 i = 0; i < bufLength; i++) {
+QuackFrame::copyBuffer(const u8* const buf) {
+    u16 i;
+    for(i = 0; buf[i]; i++) {
         buffer[HEADER_SIZE + length + i] = buf[i];
     }
 
-    length += bufLength;
+    length += i;
 }
 
 void

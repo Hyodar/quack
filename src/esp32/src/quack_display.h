@@ -92,6 +92,7 @@ public:
     void begin();
 
     void write(const u8* const str, const u16 len);
+    void write(const u8* const str);
 
     void scroll();
 };

@@ -22,7 +22,7 @@ public:
 
     void setCommandCode(const u8 commandCode);
     void addParameterByte(const u8 byte);
-    void copyBuffer(const u8* const buf, const u16 bufLength);
+    void copyBuffer(const u8* const buf);
     void serialize(FastCRC16* CRC16);
     void reset();
 
