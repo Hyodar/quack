@@ -80,12 +80,20 @@ class QuackDisplay {
 private:
     Adafruit_SSD1306 display;
 
+    u8 displayString[100];
+    u8 displayStringLen;
+
+    i16 displayPosition;
+    i16 minDisplayPosition;
+
 public:
     QuackDisplay();
 
     void begin();
 
     void write(const u8* const str, const u16 len);
+
+    void scroll();
 };
 
 #endif

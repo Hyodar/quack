@@ -19,13 +19,22 @@ loop2(void* params) {
 }
 
 void
+loop3(void* params) {
+    for(;;) {
+        quack.runDisplay();
+        delay(10);
+    }
+}
+
+void
 setup() {
     // quackParser.parse(DECLARE_STR("STRING abcde"));
     quack.begin();
     quackWebserver.begin(quack.getParser());
 
-    // create new task in FreeRTOS API
+    // create new tasks in FreeRTOS API
     xTaskCreatePinnedToCore(loop2, "loop2", 8192, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(loop3, "loop3", 8192, NULL, 1, NULL, 1);
 }
 
 void

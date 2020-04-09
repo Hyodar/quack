@@ -14,8 +14,9 @@
 #include <quack_utils.h>
 
 #include "quack_frame.h"
-#include "quack_display.h"
 #include "quack_hid_locale.h"
+
+class QuackDisplay;
 
 class QuackParser {
 
@@ -54,7 +55,7 @@ private:
     u8 buffer[1000];
     u16 bufferLength;
 
-    QuackDisplay quackDisplay;
+    QuackDisplay* quackDisplay;
 
     const bool updateActiveLine();
     const u16 getCommandCode(const u8* const str, const u8 len, bool continuation) const;
@@ -67,7 +68,7 @@ private:
 public:
     QuackParser();
 
-    void begin();
+    void begin(QuackDisplay* _quackDisplay);
 
     const bool parse(const u8* const str, const u16 len, const bool continuation=false);
     QuackParser::QuackLine* getProcessedLine();

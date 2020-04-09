@@ -5,14 +5,17 @@ const u8 DISPLAY_WIDTH      = 0x80;
 const u8 DISPLAY_HEIGHT     = 0x20;
 
 const u8 OLED_ADDRESS       = 0x3C;
-const u8 OLED_TEXT_SIZE     = 1;
+const u8 OLED_TEXT_SIZE     = 2;
 const u8 OLED_TEXT_COLOR    = SSD1306_WHITE;
 const u8 OLED_CURSOR_POS_X  = 0;
-const u8 OLED_CURSOR_POS_Y  = 0;
+const u8 OLED_CURSOR_POS_Y  = 5;
+const u8 OLED_SCROLL_STEP   = 1;
 const i8 OLED_RESET         = -1;
 const bool OLED_CP437       = true;
 
-QuackDisplay::QuackDisplay() : display{DISPLAY_WIDTH, DISPLAY_HEIGHT, &Wire, OLED_RESET} {
+QuackDisplay::QuackDisplay() : display{DISPLAY_WIDTH, DISPLAY_HEIGHT, &Wire, OLED_RESET},
+                               displayString{0}, displayStringLen{0}, displayPosition{0},
+                               minDisplayPosition{0} {
     // no-op
 }
 
@@ -22,6 +25,8 @@ QuackDisplay::begin() {
         DEBUGGING_PRINTF("[DISPLAY] [!] SSD1306 allocation failed.\n");
         for(;;); // Don't proceed, loop forever
     }
+
+    display.clearDisplay();
 
 #ifdef DISPLAY_DEBUGGING
     DEBUGGING_PRINTF("[DISPLAY] Initializing with address on ");
@@ -62,32 +67,36 @@ QuackDisplay::begin() {
     DEBUGGING_PRINT(OLED_CP437);
     DEBUGGING_PRINTF(".\n");
 #endif
+
+    display.setTextWrap(false);
 }
 
 void
 QuackDisplay::write(const u8* const str, const u16 len) {
+
+    displayStringLen = (len <= 100)? len : 100;
+
+    for(u16 i = 0; i < displayStringLen; i++) displayString[i] = str[i];
+    minDisplayPosition = - 6 * OLED_TEXT_SIZE * len;
+    displayPosition = minDisplayPosition;
+}
+
+void
+QuackDisplay::scroll() {
+    if(NOT displayString[0]) return;
+
     display.clearDisplay();
-    display.stopscroll();
 
-#ifdef DISPLAY_DEBUGGING
-    DEBUGGING_PRINT(F("[DISPLAY] Clearing.\n"));
-#endif
+    display.setCursor(OLED_CURSOR_POS_X + displayPosition, OLED_CURSOR_POS_Y);
 
-#ifdef DISPLAY_DEBUGGING
-    DEBUGGING_PRINT(F("[DISPLAY] Writing '"));
-    DEBUGGING_PRINTSTR(str, len);
-    DEBUGGING_PRINT(F("'.\n"));
-#endif
-
-    for(u16 i = 0; i < len; i++) {
-        display.write(str[i]);
+    for(u16 i = 0; i < displayStringLen; i++) {
+        display.write(displayString[i]);
     }
 
     display.display();
 
-#ifdef DISPLAY_DEBUGGING
-    DEBUGGING_PRINT(F("[DISPLAY] Displaying.\n"));
-#endif
-
-    display.startscrollright(0x00, 0x0F);
+    displayPosition += OLED_SCROLL_STEP;
+    if(displayPosition >= DISPLAY_WIDTH) {
+        displayPosition = minDisplayPosition;
+    }
 }

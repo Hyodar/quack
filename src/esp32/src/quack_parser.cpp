@@ -1,6 +1,7 @@
 
 #include "quack_parser.h"
 
+#include "quack_display.h"
 #include "usb_hid_keys.h"
 #include "quack_codes.h"
 #include "locale_us.h"
@@ -12,13 +13,14 @@ QuackParser::QuackLine::QuackLine() : lineOrder{0}, state{QuackLineState::FREE_T
 }
 
 QuackParser::QuackParser() : activeLine{0}, nextOrder{0}, orderCount{0},
-                             keyboardLocale{&locale_us}, buffer{0}, bufferLength{0} {
+                             keyboardLocale{&locale_us}, buffer{0}, bufferLength{0},
+                             quackDisplay{nullptr} {
     // no-op
 }
 
 void
-QuackParser::begin() {
-    quackDisplay.begin();
+QuackParser::begin(QuackDisplay* _quackDisplay) {
+    quackDisplay = _quackDisplay;
 }
 
 /*
@@ -156,7 +158,7 @@ QuackParser::getCommandCode(const u8* const str, const u8 len, const bool contin
     // but could probably use some improvements
     
     if(len == 6) {
-        // LOCALE, STRING, REPEAT
+        // ~LOCALE~, STRING, REPEAT
         if(str[0] == 'S') {
             if(continuation) return COMMAND_CONTINUESTRING;
             return COMMAND_STRING;
@@ -221,7 +223,7 @@ QuackParser::parse(const u8* const str, const u16 len, const bool continuation) 
 
    if(commandCode == COMMAND_DISPLAY) {
        // this one is processed here
-       quackDisplay.write((str + cursor), (len - cursor));
+       quackDisplay->write((str + cursor), (len - cursor));
        quackLines[activeLine].state = QuackLineState::FREE_TO_PARSE;
        return true;
    }

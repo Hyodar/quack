@@ -6,7 +6,8 @@
 void
 Quack::begin() {
     quackInterface.begin();
-    quackParser.begin();
+    quackParser.begin(&quackDisplay);
+    quackDisplay.begin();
 }
 
 void
@@ -37,6 +38,11 @@ Quack::runInterface() {
         // WAITING_RESPONSE
         quackInterface.waitResponse();
     }
+}
+
+void
+Quack::runDisplay() {
+    quackDisplay.scroll();
 }
 
 QuackParser*
