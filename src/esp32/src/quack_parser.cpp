@@ -221,12 +221,12 @@ QuackParser::parse(const u8* const str, const u16 len, const bool continuation) 
     u8 commandCode = getCommandCode(str, cursor, continuation);
     cursor++; // skip space char
 
-   if(commandCode == COMMAND_DISPLAY) {
-       // this one is processed here
-       quackDisplay->write((str + cursor), (len - cursor));
-       quackLines[activeLine].state = QuackLineState::FREE_TO_PARSE;
-       return true;
-   }
+    if(commandCode == COMMAND_DISPLAY) {
+        // this one is processed here
+        quackDisplay->write((str + cursor), (len - cursor));
+        quackLines[activeLine].state = QuackLineState::FREE_TO_PARSE;
+        return true;
+    }
 
     quackLines[activeLine].lineOrder = orderCount++;
     LINE.setCommandCode(commandCode);
@@ -301,7 +301,7 @@ QuackParser::parsingLoop() {
             break;
         }
 
-        start = length + 1; // skip '\n'
+        start = start + length + 1; // skip '\n'
         length = 1;
     }
 
