@@ -9,7 +9,7 @@ const u8 OLED_TEXT_SIZE     = 1;
 const u8 OLED_TEXT_COLOR    = SSD1306_WHITE;
 const u8 OLED_CURSOR_POS_X  = 0;
 const u8 OLED_CURSOR_POS_Y  = 0;
-const u8 OLED_RESET         = 4;
+const i8 OLED_RESET         = -1;
 const bool OLED_CP437       = true;
 
 QuackDisplay::QuackDisplay() : display{DISPLAY_WIDTH, DISPLAY_HEIGHT, &Wire, OLED_RESET} {
@@ -19,55 +19,55 @@ QuackDisplay::QuackDisplay() : display{DISPLAY_WIDTH, DISPLAY_HEIGHT, &Wire, OLE
 void
 QuackDisplay::begin() {
     if(!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {
-        DEBUGGING_PRINT(F("[DISPLAY] [!] SSD1306 allocation failed.\n"));
+        DEBUGGING_PRINTF("[DISPLAY] [!] SSD1306 allocation failed.\n");
         for(;;); // Don't proceed, loop forever
     }
 
 #ifdef DISPLAY_DEBUGGING
-    DEBUGGING_PRINT(F("[DISPLAY] Initializing with address on "));
+    DEBUGGING_PRINTF("[DISPLAY] Initializing with address on ");
     DEBUGGING_PRINT(OLED_ADDRESS, HEX);
-    DEBUGGING_PRINT(F(".\n"));
+    DEBUGGING_PRINT(".\n");
 #endif
 
     display.setTextSize(OLED_TEXT_SIZE);
 
 #ifdef DISPLAY_DEBUGGING
-    DEBUGGING_PRINT(F("[DISPLAY] Setting text scale to "));
+    DEBUGGING_PRINTF("[DISPLAY] Setting text scale to ");
     DEBUGGING_PRINT(OLED_TEXT_SIZE);
-    DEBUGGING_PRINT(F(".\n"));
+    DEBUGGING_PRINTF(".\n");
 #endif
 
     display.setTextColor(OLED_TEXT_COLOR);
 
 #ifdef DISPLAY_DEBUGGING
-    DEBUGGING_PRINT(F("[DISPLAY] Setting text color to "));
+    DEBUGGING_PRINTF("[DISPLAY] Setting text color to ");
     DEBUGGING_PRINT(OLED_TEXT_COLOR, HEX);
-    DEBUGGING_PRINT(F(".\n"));
+    DEBUGGING_PRINTF(".\n");
 #endif
 
     display.setCursor(OLED_CURSOR_POS_X, OLED_CURSOR_POS_Y);
 
 #ifdef DISPLAY_DEBUGGING
-    DEBUGGING_PRINT(F("[DISPLAY] Setting cursor to ("));
+    DEBUGGING_PRINTF("[DISPLAY] Setting cursor to (");
     DEBUGGING_PRINT(OLED_CURSOR_POS_X);
-    DEBUGGING_PRINT(F(", "));
+    DEBUGGING_PRINTF(", ");
     DEBUGGING_PRINT(OLED_CURSOR_POS_Y);
-    DEBUGGING_PRINT(F(").\n"));
+    DEBUGGING_PRINTF(").\n");
 #endif
 
     display.cp437(true);
 
 #ifdef DISPLAY_DEBUGGING
-    DEBUGGING_PRINT(F("[DISPLAY] Setting cp to "));
+    DEBUGGING_PRINTF("[DISPLAY] Setting cp to ");
     DEBUGGING_PRINT(OLED_CP437);
-    DEBUGGING_PRINT(F(".\n"));
+    DEBUGGING_PRINTF(".\n");
 #endif
 }
 
 void
 QuackDisplay::write(const u8* const str, const u16 len) {
-    display.stopscroll();
     display.clearDisplay();
+    display.stopscroll();
 
 #ifdef DISPLAY_DEBUGGING
     DEBUGGING_PRINT(F("[DISPLAY] Clearing.\n"));

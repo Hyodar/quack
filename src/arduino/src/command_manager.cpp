@@ -21,7 +21,8 @@ CommandManager::CommandManager(): quackKeyboard{}, quackDisplay{},
 void
 CommandManager::begin() {
     quackKeyboard.begin();
-    quackDisplay.begin();
+    // display moved to ESP
+    // quackDisplay.begin();
 }
 
 void

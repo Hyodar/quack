@@ -18,7 +18,7 @@ QuackParser::QuackParser() : activeLine{0}, nextOrder{0}, orderCount{0},
 
 void
 QuackParser::begin() {
-    // no-op
+    quackDisplay.begin();
 }
 
 /*
@@ -205,6 +205,7 @@ QuackParser::parse(const u8* const str, const u16 len, const bool continuation) 
     if(!updateActiveLine()) {
         return false;
     }
+
     LINE.reset();
 
     for(u16 i = 0; i < len; i++) DEBUGGING_PRINTF("%c", str[i]);
@@ -213,21 +214,17 @@ QuackParser::parse(const u8* const str, const u16 len, const bool continuation) 
     // structure: <COMMAND_NAME> <PARAMS>
     u16 cursor = 0;
 
-    while(str[cursor] != ' ') {
-        cursor++;
-    }
+    while(str[cursor] != ' ') cursor++;
 
     u8 commandCode = getCommandCode(str, cursor, continuation);
     cursor++; // skip space char
 
-    /*
-    if(commandCode == COMMAND_LOCALE) {
-        // this one is processed here
-        changeLocale(str);
-        quackLines[activeLine].state = QuackLineState::FREE_TO_PARSE;
-        return;
-    }
-    */
+   if(commandCode == COMMAND_DISPLAY) {
+       // this one is processed here
+       quackDisplay.write((str + cursor), (len - cursor));
+       quackLines[activeLine].state = QuackLineState::FREE_TO_PARSE;
+       return true;
+   }
 
     quackLines[activeLine].lineOrder = orderCount++;
     LINE.setCommandCode(commandCode);
@@ -256,7 +253,7 @@ QuackParser::getProcessedLine() {
             if(quackLines[i].state == QuackLineState::DONE_PARSING) {
                 quackLines[i].state = QuackLineState::SENDING;
                 nextOrder++;
-                return &(quackLines[i]);
+                return quackLines + i;
             }
             return nullptr;
         }

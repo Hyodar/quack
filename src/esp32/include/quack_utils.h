@@ -14,7 +14,8 @@
 #define pgm_read_byte(address_short) *(address_short)
 #endif
 
-#define DEBUGGING_PRINTF Serial.printf
+#define DEBUGGING_PRINTF(...) Serial.printf(__VA_ARGS__)
+#define DEBUGGING_PRINT(...) Serial.print(__VA_ARGS__)
 #define DEBUGGING_PRINTSTR(str, len) for(u16 i = 0; i < (len); i++) Serial.printf("%d ", (str)[i]);
 
 #define PACKED __attribute__ ((packed))

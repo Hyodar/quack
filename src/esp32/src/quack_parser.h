@@ -14,6 +14,7 @@
 #include <quack_utils.h>
 
 #include "quack_frame.h"
+#include "quack_display.h"
 #include "quack_hid_locale.h"
 
 class QuackParser {
@@ -52,6 +53,8 @@ private:
 
     u8 buffer[1000];
     u16 bufferLength;
+
+    QuackDisplay quackDisplay;
 
     const bool updateActiveLine();
     const u16 getCommandCode(const u8* const str, const u8 len, bool continuation) const;
