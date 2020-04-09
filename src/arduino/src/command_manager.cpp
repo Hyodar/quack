@@ -2,17 +2,8 @@
 #include "command_manager.h"
 
 #include "quack_codes.h"
-#include <quack_config.h>
 
-// little hack here because of u16 typedef inside USBAPI.h
-#define u16 __u16
-#include <Arduino.h>
-#undef u16
-#include <unistd.h>
-
-#include <quack_utils.h>
-
-CommandManager::CommandManager(): quackKeyboard{}, quackDisplay{},
+CommandManager::CommandManager(): quackKeyboard{},
                                   currentDefaultDelay{DEFAULT_DELAY},
                                   repeatNum{0} {
     // no-op
@@ -93,11 +84,6 @@ CommandManager::command(const u8 commandCode, const u8* const param, const u16 l
 
         REPEAT_IF_NECESSARY(string(param, len))
     }
-    else if(commandCode == COMMAND_DISPLAY) {
-        display(param, len);
-
-        REPEAT_IF_NECESSARY(display(param, len))
-    }
     else {
         keys(param, len);
 
@@ -125,16 +111,6 @@ CommandManager::string(const u8* const param, const u16 len) {
     DEBUGGING_PRINT('\n');
 #endif
     quackKeyboard.write(param, len);
-}
-
-void
-CommandManager::display(const u8* const param, const u16 len) {
-#ifdef COMMAND_DEBUGGING
-    DEBUGGING_PRINT(F("[COMMANDS] Displaying string: "));
-    DEBUGGING_PRINTSTR(param, len);
-    DEBUGGING_PRINT('\n');
-#endif
-    quackDisplay.write(param, len);
 }
 
 void

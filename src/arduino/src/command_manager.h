@@ -9,15 +9,20 @@
 *****************************************************************************/
 
 #include <quack_config.h>
+
+// little hack here because of u16 typedef inside USBAPI.h
+#define u16 __u16
+#include <Arduino.h>
+#undef u16
+
 #include <quack_utils.h>
+
 #include "quack_keyboard.h"
-#include "quack_display.h"
 
 class CommandManager {
 
 private:
     QuackKeyboard quackKeyboard;
-    QuackDisplay quackDisplay;
 
     u32 currentDefaultDelay;
     u32 repeatNum;
@@ -26,7 +31,6 @@ private:
 
     void locale(const u8* const param, const u16 len) const;
     void string(const u8* const param, const u16 len);
-    void display(const u8* const param, const u16 len);
     void keys(const u8* const param, const u16 len);
 
     void doDelay(const u32 param) const;

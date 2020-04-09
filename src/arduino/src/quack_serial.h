@@ -12,7 +12,11 @@
 
 #ifdef SERIAL_ENABLED
 
+#define u16 __u16
 #include <Arduino.h>
+#undef u16
+
+#include <quack_utils.h>
 
 #else
 
