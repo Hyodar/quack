@@ -15,6 +15,8 @@
 #include <quack_utils.h>
 #include "quack_parser.h"
 
+const char* MAGIC = "4027432687";
+
 const u16 parseU16(const u8* const str) {
     u32 n = 0;
     
@@ -126,6 +128,19 @@ QuackWebserver::onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client,
     }
 }
 
+const bool
+QuackWebserver::testMagic(AsyncWebServerRequest* request) const {
+    if(!request->hasParam("Magic", true)) {
+        return false;
+    }
+    else {
+        if(request->getParam("Magic", true)->value() != MAGIC) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void
 QuackWebserver::begin(QuackParser* _parser) {
     
@@ -197,16 +212,55 @@ QuackWebserver::begin(QuackParser* _parser) {
     });
 
     server.on("/run_raw", HTTP_POST, [this](AsyncWebServerRequest* request) {
+        DEBUGGING_PRINTF("Received run raw command\n");
+        if(!request->hasParam("Code", true) || !request->hasParam("Code-Length", true)) {
+            request->send(400);
+            return;
+        }
+
         request->send(200);
 
-        DEBUGGING_PRINTF("Received run raw command\n");
-        if(request->hasParam("Code", true) && request->hasParam("CodeLength", true)) {
-            const u8* const code = (const u8*) request->getParam("Code", true)->value().c_str();
-            const u16 length = parseU16((const u8*) request->getParam("CodeLength", true)->value().c_str());
+        const u8* const code = (const u8*) request->getParam("Code", true)->value().c_str();
+        const u16 length = parseU16((const u8*) request->getParam("Code-Length", true)->value().c_str());
 
-            DEBUGGING_PRINTF("Filling buffer\n");
-            parser->fillBuffer(code, length);
+        DEBUGGING_PRINTF("Filling buffer\n");
+        parser->fillBuffer(code, length);
+    });
+
+    server.on("/run_file", [this](AsyncWebServerRequest* request) {
+        if(!request->hasParam("Filename", true)) {
+            request->send(400);
+            return;
         }
+        
+        request->send(200);
+    });
+
+    server.on("/stop", [this](AsyncWebServerRequest* request) {
+        if(!testMagic(request)) {
+            request->send(400);
+            return;
+        }
+
+        request->send(200);
+    });
+
+    server.on("/list", [this](AsyncWebServerRequest* request) {
+        if(!testMagic(request)) {
+            request->send(400);
+            return;
+        }
+
+        request->send(200);
+    });
+
+    server.on("/save", [this](AsyncWebServerRequest* request) {
+        if(!request->hasParam("Script-File", true, true)) {
+            request->send(400);
+            return;
+        }
+
+        request->send(200);
     });
 
     server.onNotFound([this](AsyncWebServerRequest* request) {
