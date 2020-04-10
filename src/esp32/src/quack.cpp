@@ -25,7 +25,7 @@ Quack::runInterface() {
         if(line) {
             DEBUGGING_PRINTF("[QUACK] RESPONSE_SUCCESS, sending next.\n");
             quackInterface.send(line);
-            line->state = QuackParser::QuackLineState::WAITING_RESPONSE;
+            line->state = QuackParser::QuackLine::State::WAITING_RESPONSE;
             quackInterface.setStatus(QuackInterface::Status::WAITING_RESPONSE);
         }
     }

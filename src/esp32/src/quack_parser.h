@@ -21,17 +21,23 @@ class QuackDisplay;
 class QuackParser {
 
 public:
-    enum QuackLineState {
-        FREE_TO_PARSE,
-        PARSING,
-        DONE_PARSING,
-        SENDING,
-        WAITING_RESPONSE
+    enum State {
+        BUFFER_PARSING,
+        FILE_PARSING,
+        NONE,
     };
 
     struct QuackLine {
+        enum State {
+            FREE_TO_PARSE,
+            PARSING,
+            DONE_PARSING,
+            SENDING,
+            WAITING_RESPONSE,
+        };
+
         u16 lineOrder;
-        QuackLineState state;
+        State state;
         QuackFrame data;
 
         QuackLine();

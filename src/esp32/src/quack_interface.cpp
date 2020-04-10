@@ -42,7 +42,7 @@ QuackInterface::waitResponse() {
             }
             else if(byte == FINISHED_PARSING) {
                 status = Status::RESPONSE_SUCCESS;
-                quackLine->state = QuackParser::QuackLineState::FREE_TO_PARSE;
+                quackLine->state = QuackParser::QuackLine::State::FREE_TO_PARSE;
             }
         }
     }
@@ -72,7 +72,7 @@ void
 QuackInterface::freeLine() {
     if(quackLine) {
         DEBUGGING_PRINTF("[INTERFACE] Setting quackLine to FREE_TO_PARSE.\n");
-        quackLine->state = QuackParser::QuackLineState::FREE_TO_PARSE;
+        quackLine->state = QuackParser::QuackLine::State::FREE_TO_PARSE;
         quackLine = nullptr;
     }
 }

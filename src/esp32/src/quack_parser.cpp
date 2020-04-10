@@ -11,7 +11,7 @@
 
 const char* const LINE_SEPARATOR = "\n";
 
-QuackParser::QuackLine::QuackLine() : lineOrder{0}, state{QuackLineState::FREE_TO_PARSE} {
+QuackParser::QuackLine::QuackLine() : lineOrder{0}, state{QuackLine::State::FREE_TO_PARSE} {
     // no-op
 }
 
@@ -194,9 +194,9 @@ QuackParser::getCommandCode(const u8* const str, const u8 len, const bool contin
 const bool
 QuackParser::updateActiveLine() {
     for(u8 i = 0; i < QUACKLINES_BUFFER; i++) {
-        if(quackLines[i].state == QuackLineState::FREE_TO_PARSE) {
+        if(quackLines[i].state == QuackLine::State::FREE_TO_PARSE) {
             activeLine = i;
-            quackLines[i].state = QuackLineState::PARSING;
+            quackLines[i].state = QuackLine::State::PARSING;
 
             return true;
         }
@@ -227,7 +227,7 @@ QuackParser::parse(const u8* const str, const bool continuation) {
     if(commandCode == COMMAND_DISPLAY) {
         // this one is processed here
         quackDisplay->write(str + cursor);
-        quackLines[activeLine].state = QuackLineState::FREE_TO_PARSE;
+        quackLines[activeLine].state = QuackLine::State::FREE_TO_PARSE;
         return true;
     }
 
@@ -246,7 +246,7 @@ QuackParser::parse(const u8* const str, const bool continuation) {
 
     LINE.serialize(&CRC16);
 
-    quackLines[activeLine].state = QuackLineState::DONE_PARSING;
+    quackLines[activeLine].state = QuackLine::State::DONE_PARSING;
 
     return true;
 }
@@ -255,8 +255,8 @@ QuackParser::QuackLine*
 QuackParser::getProcessedLine() {
     for(u16 i = 0; i < QUACKLINES_BUFFER; i++) {
         if(quackLines[i].lineOrder == nextOrder) {
-            if(quackLines[i].state == QuackLineState::DONE_PARSING) {
-                quackLines[i].state = QuackLineState::SENDING;
+            if(quackLines[i].state == QuackLine::State::DONE_PARSING) {
+                quackLines[i].state = QuackLine::State::SENDING;
                 nextOrder++;
                 return quackLines + i;
             }
@@ -270,7 +270,7 @@ QuackParser::getProcessedLine() {
 const bool
 QuackParser::canParse() {
     for(u16 i = 0; i < QUACKLINES_BUFFER; i++) {
-        if(quackLines[i].state == QuackParser::QuackLineState::FREE_TO_PARSE) {
+        if(quackLines[i].state == QuackParser::QuackLine::State::FREE_TO_PARSE) {
             return true;
         }
     }
