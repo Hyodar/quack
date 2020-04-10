@@ -30,6 +30,17 @@ const translate = {
 
 let lastVersion = "";
 
+function doRequest(path, method, body, typeCallback, dataCallback) {
+    return fetch(path, {
+        method: method,
+        body: body
+    }).then(
+        typeCallback
+    ).then(
+        dataCallback
+    );
+}
+
 function compareVersions(code) {
     if(lastVersion) {
         if(lastVersion.length != code.length) {
@@ -88,6 +99,8 @@ function hideOptionsMenu() {
 function openFilenameInput() {
     showOptionsMenu();
     ID("save-container").style.display = "unset";
+
+    ID("filename-save").value = getFilename();
 }
 
 function preProcessCode(content) {
@@ -134,58 +147,60 @@ function preProcessCode(content) {
     return lines.join("\n");
 }
 
+function deProcessCode(content) {
+    let lines = content.split('\n');
+
+    for(let i = lines.length - 1; i >= 0; i++) {
+        const command = el.split(' ')[0];
+
+        if(command == "REPEAT") {
+            const temp = lines[i + 1];
+            lines[i + 1] = lines[i];
+            lines[i] = temp;
+        }
+    }
+}
+
 function updateScriptList() {
     const form = new FormData();
 
     form.append("Magic", 0xF00DBEEF);
 
-    fetch("/list", {
-        method: "POST",
-        body: form,
-    }).then(
-        response => response.json()
-    ).then(
-        obj => setOpenOptions(obj.dirFiles)
+    doRequest("/list", "POST", form,
+              response => response.json(),
+              json => setOpenOptions(json.dirFiles)
     );
 }
 
-function saveScript() {
-    const filename = ID("filename-save").value;
-
+function saveScript(filename) {
     if(!filename) {
         return;
     }
-    if(filename == "__main__") {
-        alert("Reserved filename");
-        return;
-    }
-
-    hideOptionsMenu();
-
-    setFilename(filename);
 
     const form = new FormData();
 
-    form.append("Filename", filename);
-    form.append("Code", lastVersion);
-    form.append("CodeLength", lastVersion.length);
-    
-    fetch("/save", {
-        method: "POST",
-        body: form,
-    }).then(response => {
-        lastVersion = flask.getCode();
-        setIsSaved(true);
-        
-        // update filename-open options
-        const options = ID("filename-open").options;
-        if(!Array.from(options).find(el => el.value == filename)) {
-            options.add(filename);
-        }
+    hideOptionsMenu();
+    setFilename(filename);
 
-        return response.text();
-    }).then(
-        text => console.log(text)
+    const preProcessedCode = preProcessCode(lastVersion);
+    form.append("Filename", filename);
+    form.append("Code", preProcessedCode);
+    form.append("CodeLength", preProcessedCode.length);
+    
+    doRequest("/save", "POST", form,
+              response => {
+                lastVersion = flask.getCode();
+                setIsSaved(true);
+                
+                // update filename-open options
+                const options = ID("filename-open").options;
+                if(!Array.from(options).find(el => el.value == filename)) {
+                    options.add(filename);
+                }
+
+                return response.text();
+              },
+              text => console.log(`/save response: ${text}`)
     );
 }
 
@@ -195,23 +210,29 @@ function runScript() {
 
     console.log(`Resulting Duckyscript:\n${code}`);
 
-    form.append("Code", code);
-    form.append("CodeLength", code.length);
+    if(code.length <= 1000) {
+        form.append("Code", code);
+        form.append("CodeLength", code.length);
+        
+        doRequest("/run_raw", "POST", form,
+            response => response.text(),
+            text => console.log(`/run_raw response: ${text}`)
+        );
 
-    if(code.length >= 1000) {
-        alert("You can't run a script with more than 1KB without saving.");
-        alert("TODO increase this limit to - maybe - 18KB? This way we could send all of them through run_raw and preprocess it using JS");
         return;
     }
 
-    fetch("/run_raw", {
-        method: "POST",
-        body: form,
-    }).then(
-        response => response.text()
-    ).then(
-        html => console.log(html)
-    );
+    saveScript(getFilename());
+    
+    // give esp a little time to save the script
+    setTimeout(() => {
+        form.append("Filename", getFilename());
+        
+        doRequest("/run_file", "POST", form,
+            response => response.text(),
+            text => console.log(`/run_file response: ${text}`)
+        );
+    }, 500);
 }
 
 function stopScript() {
@@ -219,13 +240,9 @@ function stopScript() {
 
     form.append("Magic", 0xF00DBEEF);
 
-    fetch("/stop", {
-        method: "POST",
-        body: form,
-    }).then(
-        response => response.text()
-    ).then(
-        html => console.log(html)
+    doRequest("/stop", "POST", form,
+              response => response.text(),
+              text => console.log(`/stop response: ${text}`)
     );
 }
 
@@ -237,19 +254,19 @@ function openScript() {
     const scriptName = ID("filename-open").value;
 
     const form = new FormData();
-
     form.append("Filename", scriptName);
 
-    fetch("/open", {
-        method: "POST",
-        body: form,
-    }).then(
-        response => response.text()
-    ).then(text => {
-        flask.updateCode(text);
-        lastVersion = text;
-        setFilename(scriptName);
-    });
+    doRequest("/open", "POST", form,
+              response => response.blob(),
+              blob => {
+                const fileReader = new FileReader();
+
+                const text = fileReader.readAsText(blob);
+                flask.updateCode(deProcessCode(text));
+                lastVersion = text;
+                setFilename(scriptName);
+              }
+    );
 
     hideOptionsMenu();
 }
@@ -277,17 +294,3 @@ function handleUpload(event) {
 
     fileReader.readAsText(file, "UTF-8");
 }
-
-const flask = new CodeFlask('#editor', {
-    language: 'js',
-    lineNumbers: true,
-    handleTabs: true
-});
-
-flask.onUpdate(compareVersions);
-
-// update script list on startup
-updateScriptList();
-
-// set file upload callback
-ID("upload-input").addEventListener("change", handleUpload);
