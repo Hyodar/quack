@@ -185,7 +185,7 @@ function saveScript(filename) {
     const preProcessedCode = preProcessCode(lastVersion);
     form.append("Filename", filename);
     form.append("Code", preProcessedCode);
-    form.append("CodeLength", preProcessedCode.length);
+    form.append("Code-Length", preProcessedCode.length);
     
     doRequest("/save", "POST", form,
               response => {
@@ -212,7 +212,7 @@ function runScript() {
 
     if(code.length <= 1000) {
         form.append("Code", code);
-        form.append("CodeLength", code.length);
+        form.append("Code-Length", code.length);
         
         doRequest("/run_raw", "POST", form,
             response => response.text(),
