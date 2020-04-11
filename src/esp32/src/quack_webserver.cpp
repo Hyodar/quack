@@ -15,17 +15,7 @@
 #include <quack_utils.h>
 #include "quack_parser.h"
 
-const char* MAGIC = "4027432687";
-
-const u16 parseU16(const u8* const str) {
-    u32 n = 0;
-    
-    for(u16 i = 0; str[i] != '\0'; i++) {
-        n = (n*10) + (str[i] - '0');
-    }
-
-    return n;
-}
+const char* MAGIC = "4027432687"; // 0xF00DBEEF
 
 QuackWebserver::QuackWebserver() : server{80}, ws{"/ws"}, events{"/events"}, parser{nullptr} {
     // no-op
@@ -327,33 +317,7 @@ QuackWebserver::begin(QuackParser* _parser) {
 
     server.addHandler(&events);
 
-    server.addHandler(new SPIFFSEditor(SPIFFS, http_username, http_password));
-
-    server.onFileUpload([](AsyncWebServerRequest* request, const String& filename,
-                           size_t index, uint8_t* data, size_t len, bool final) {
-        if(!index) {
-            DEBUGGING_PRINTF("UploadStart: %s\n", filename.c_str());
-        }
-
-        DEBUGGING_PRINTF("%s", (const char*)data);
-
-        if(final) {
-            DEBUGGING_PRINTF("UploadEnd: %s (%u)\n", filename.c_str(), index+len);
-        }
-    });
-
-    server.onRequestBody([](AsyncWebServerRequest* request, uint8_t* data,
-                            size_t len, size_t index, size_t total){
-        if(!index) {
-            DEBUGGING_PRINTF("BodyStart: %u\n", total);
-        }
-        
-        DEBUGGING_PRINTF("%s", (const char*)data);
-
-        if(index + len == total) {
-            DEBUGGING_PRINTF("BodyEnd: %u\n", total);
-        }
-    });
+    // server.addHandler(new SPIFFSEditor(SPIFFS, http_username, http_password));
 
     server.begin();
 }
