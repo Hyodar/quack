@@ -150,8 +150,8 @@ function preProcessCode(content) {
 function deProcessCode(content) {
     let lines = content.split('\n');
 
-    for(let i = lines.length - 1; i >= 0; i++) {
-        const command = el.split(' ')[0];
+    for(let i = lines.length - 1; i >= 0; i--) {
+        const command = lines[i].split(' ')[0];
 
         if(command == "REPEAT") {
             const temp = lines[i + 1];
@@ -159,6 +159,8 @@ function deProcessCode(content) {
             lines[i] = temp;
         }
     }
+
+    return lines.join('\n');
 }
 
 function updateScriptList() {
