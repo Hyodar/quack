@@ -75,8 +75,8 @@ function setOpenOptions(newOptions) {
         options.remove();
     }
 
-    newOptions.forEach(el => {
-        options.add(el);
+    newOptions.forEach((el, idx) => {
+        options.add(new Option(el, el));
     });
 }
 
@@ -177,6 +177,10 @@ function saveScript(filename) {
         return;
     }
 
+    if(!filename.startsWith("/")) {
+        filename = "/" + filename;
+    }
+
     hideOptionsMenu();
     setFilename(filename);
 
@@ -196,7 +200,7 @@ function saveScript(filename) {
                // update filename-open options
                const options = ID("filename-open").options;
                if(!Array.from(options).find(el => el.value == filename)) {
-                   options.add(filename);
+                   options.add(new Option(filename, filename));
                }
 
                return response.text();
@@ -251,7 +255,7 @@ function uploadScript() {
 }
 
 function openScript() {
-    const scriptName = ID("filename-open").value;
+    let scriptName = ID("filename-open").value;
     if(!scriptName.startsWith("/")) {
         scriptName = "/" + scriptName;
     }
