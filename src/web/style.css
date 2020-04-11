@@ -1,65 +1,206 @@
+/*****************************************************************************
+  Custom CSS
+*****************************************************************************/
 
 body {
-    background-color: dimgray;
+    background-image: linear-gradient(145deg, #1D1F20, #404348);
+    touch-action: pan-x pan-y;
+    overflow: hidden;
+    font-family: Consolas, "Liberation Mono", Monaco, "Lucida Console", monospace;
 }
+
 .btn {
-    /*background-color: #505050;*/
-    background: linear-gradient(45deg, #505050, #606060);
     box-shadow: 1px 3px 3px 2px rgba(0, 0, 0, 0.15);
-    color: rgb(197, 197, 197);
-    border: 1px solid rgb(126, 126, 126);
-    border-radius: 5px;
-    padding: 8px;
-    padding-left: 15px;
-    padding-right: 15px;
-    margin: 8px;
-    text-transform: uppercase;
-    font-family: monospace;
-    font-size: large;
-    cursor: pointer;
+    background-image: linear-gradient(145deg, #1D1F20, #404348);
+    border: 1px solid grey;
+    border-radius: 10px;
+    padding: 5px 10px 5px 10px;
+    color: white;
+    font-size: 18px;
 }
-.square-btn {
-    height: 60px;
-}
-.square-btn:hover {
-    background: linear-gradient(45deg, #454545, #555555);
-}
+
 .logo {
-    color: rgb(197, 197, 197);
-    margin: 0px;
-    margin-right: 100px;
-    margin-left: 30px;
-    font-family: monospace;
+    color: #ffffff;
     font-size: 28px;
     text-transform: uppercase;
-    font-weight: 500;
-    border: 2.4px solid #a9a9a9;
-    padding: 10px;
-    border-radius: 35px;
-    background: linear-gradient(90deg, #585858, #707070);
-    box-shadow: 0px 0px 7px 2px #00000038;
+    font-weight: light;
     align-self: center;
 }
-.nav {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    background-color: dimgray;
+
+.codeflask {
+    max-height: 80%;
 }
+
 .smooth-height-top {
     transform-origin: top;
     transition: transform 0.08s ease-out, filter 0.08s ease, max-height 0.12s;
 }
+
 .no-height {
     max-height: 0px;
     transform: scaleY(0);
 }
+
 .dont-display {
     display: none;
 }
+
 .font-16 {
     font-size: 16px;
 }
+
 .pad-5 {
     padding: 5px;
+}
+
+#options-menu {
+    background-color: #ffffff0f;
+}
+
+#sidemenu-btn {
+    color: #c2c2c2;
+    font-size: 25px;
+    padding: 10px;
+    padding-bottom: 3px;
+    margin-right: 20px;
+    cursor: pointer;
+}
+
+#filename,
+#is-saved,
+#options-menu {
+    color: #ffffff;
+}
+
+#filename {
+    background-color: #ffffff14;
+    margin: 10px;
+}
+
+#options-menu {
+    padding: 5px;
+    margin-bottom: 10px;
+}
+
+.flex-container {
+    display: flex;
+}
+
+.flex-row {
+    flex-direction: row;
+}
+
+/*****************************************************************************
+  Slideout.js default CSS
+*****************************************************************************/
+
+body {
+    width: 100%;
+    height: 100%;
+}
+
+.slideout-menu {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 256px;
+    min-height: 100vh;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    z-index: 0;
+    display: none;
+}
+
+.slideout-menu-left {
+    left: 0;
+}
+
+.slideout-menu-right {
+    right: 0;
+}
+
+.slideout-panel {
+    position: relative;
+    z-index: 1;
+    will-change: transform;
+    background-image: linear-gradient(145deg, #232527, #404348);
+    min-height: 100vh;
+    transition: padding-left 0.5s ease;
+}
+
+.slideout-open,
+.slideout-open body,
+.slideout-open .slideout-panel {
+    overflow: hidden;
+}
+
+.slideout-open .slideout-menu {
+    display: block;
+}
+
+/*****************************************************************************
+  Modificated Slideout.js example
+*****************************************************************************/
+
+.menu {
+    font-size: 18px;
+    color: rgb(197, 197, 197);
+    padding: 5px;
+    text-transform: uppercase;
+    background-color: #1D1F20;
+    background-image: linear-gradient(145deg, #1D1F20, #404348);
+    overflow-y: hidden;
+}
+
+a {
+    cursor: pointer;
+}
+
+.menu-header {
+    border-bottom: 1px solid #2a2d2f;
+    padding: 20px;
+    background-size: 32px;
+}
+
+.menu-header-title {
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.menu-section {
+    margin: 25px 0;
+}
+
+.menu-section-title {
+    text-transform: uppercase;
+    color: #85888d;
+    font-weight: 200;
+    font-size: 13px;
+    letter-spacing: 1px;
+    padding: 0 20px;
+    margin: 0;
+}
+
+.menu-section-list {
+    padding: 0;
+    margin: 10px 0;
+    list-style: none;
+}
+
+.menu-section-list a {
+    padding: 10px 20px;
+    color: #fff;
+    display: block;
+    border-radius: 5px;
+}
+
+.menu-section-list a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.panel {
+    text-align: center;
+    padding-top: 5px;
+    min-height: 100%;
 }

@@ -1,24 +1,51 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Hello World!</title>
+        <meta charset="utf-8">
+        <meta http-equiv="cleartype" content="on">
+        <meta name="MobileOptimized" content="320">
+        <meta name="HandheldFriendly" content="True">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
         <script src="codeflask.min.js"></script>
+        <script src="slideout.min.js"></script>
         <link rel="stylesheet" type="text/css" href="style.css"/>
     </head>
     <body>
-        <div class="nav">
-            <h2 class="logo">Quack</h2>
-            <button class="btn square-btn" onclick="openFilenameInput()">Save</button>
-            <button class="btn square-btn" onclick="runScript()">Run</button>
-            <button class="btn square-btn" onclick="stopScript()">Stop</button>
-            <button class="btn square-btn" onclick="uploadScript()">Upload<input id="upload-input" type="file" hidden /></button>
-            <button class="btn square-btn" onclick="loadScriptList()">Open</button>
-        </div>
-        <div id="options-menu" class="smooth-height-top no-height" style="background-color: #606060; color: white; padding: 5px;">
-            <code id="save-container" class="font-16 dont-display">File name: <input id="filename-save"></input> <button class="btn" onclick="saveScript(ID('filename-save').value)">Go</button></code>
-            <code id="open-container" class="font-16 dont-display">File name: <select id="filename-open"></select> <button class="btn" onclick="openScript()">Go</button></code>
-        </div>
-        <code id="filename" class="font-16 pad-5" style="background-color: #606060; color: white;">Temporary script</code><span style="color: white" id="is-saved"></span>
-        <div id="editor"></div>
+        <input id="upload-input" type="file" hidden />
+        <nav id="menu" class="menu">
+            <header class="menu-header">
+                <span class="menu-header-title">Menu</span>
+            </header>
+
+            <section class="menu-section">
+                <h3 class="menu-section-title">Actions</h3>
+                <ul class="menu-section-list" onclick="slideout.close();">
+                    <li><a onclick="openFilenameInput()">Save</a></li>
+                    <li><a onclick="runScript()">Run</a></li>
+                    <li><a onclick="stopScript()">Stop</a></li>
+                    <li><a onclick="uploadScript()">Upload</a></li>
+                    <li><a onclick="loadScriptList()">Open</a></li>
+                </ul>
+            </section>
+
+        </nav>
+
+        <main id="panel">
+            <div class="flex-container flex-row">
+                <span id="sidemenu-btn">&#9776;</span>
+                <span id="logo" class="logo">Quack</span>
+            </div>
+            <div id="options-menu" class="font-16 smooth-height-top no-height">
+                File name: 
+                    <span id="save-container"><input id="filename-save"></input> <button class="btn" onclick="confirmSave()">Go</button></span>
+                    <span id="open-container"><select id="filename-open"></select> <button class="btn" onclick="openScript()">Go</button></span>
+                </div>
+            </div>
+            <code id="filename" class="font-16 pad-5">Temporary script</code><span id="is-saved"></span>
+            <div id="editor"></div>
+        </main>
     </body>
     <script src="index.js"></script>
 </html>

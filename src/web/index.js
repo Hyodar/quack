@@ -80,25 +80,35 @@ function setOpenOptions(newOptions) {
     });
 }
 
-function showOptionsMenu() {
+function showOptionsMenu(childId) {
     ID("options-menu").style.filter = "opacity(1)";
     ID("options-menu").style.transform = "scaleY(1)";
     ID("options-menu").style.maxHeight = "100px";
+    hideOtherOptions(childId);
 }
 
 function hideOptionsMenu() {
     ID("options-menu").style.filter = "opacity(0)";
     ID("options-menu").style.transform = "scaleY(0)";
     ID("options-menu").style.maxHeight = "0px";
+    hideOtherOptions();
+}
 
+function hideOtherOptions(childId=null) {
     Array.from(ID("options-menu").children).forEach(
-        child => child.style.display = "none"
+        child => {
+            if(child.id != childId) {
+                child.style.display = "none";
+            }
+            else {
+                child.style.display = "unset";
+            }
+        }
     );
 }
 
 function openFilenameInput() {
-    showOptionsMenu();
-    ID("save-container").style.display = "unset";
+    showOptionsMenu("save-container");
 
     ID("filename-save").value = getFilename();
 }
@@ -211,6 +221,10 @@ function saveScript(filename) {
     );
 }
 
+function confirmSave() {
+    return saveScript(ID('filename-save').value);
+}
+
 function runScript() {
     const form = new FormData();
     const code = preProcessCode(flask.getCode());
@@ -279,8 +293,7 @@ function openScript() {
 }
 
 function loadScriptList() {
-    showOptionsMenu();
-    ID("open-container").style.display = "unset";
+    showOptionsMenu("open-container");
 }
 
 function handleUpload(event) {
@@ -315,3 +328,28 @@ updateScriptList();
 
 // set file upload callback
 ID("upload-input").addEventListener("change", handleUpload);
+
+const slideout = new Slideout({
+    panel: ID("panel"),
+    menu: ID("menu"),
+    padding: 256,
+    tolerance: 70,
+});
+
+const _slideoutOpen = slideout.open.bind(slideout);
+const _slideoutClose = slideout.close.bind(slideout);
+
+slideout.open = () => {
+    document.querySelector(".slideout-panel").style.paddingLeft = "25px";
+    return _slideoutOpen();
+}
+
+slideout.close = () => {
+    document.querySelector(".slideout-panel").style.paddingLeft = "5px";
+    return _slideoutClose();
+}
+
+// Toggle button
+ID("sidemenu-btn").addEventListener('click', function() {
+    slideout.toggle();
+});
