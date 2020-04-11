@@ -16,15 +16,18 @@
 #include "quack_frame.h"
 #include "quack_hid_locale.h"
 
+#include <FS.h>
+#include <SPIFFS.h>
+
 class QuackDisplay;
 
 class QuackParser {
 
 public:
     enum State {
-        BUFFER_PARSING,
-        FILE_PARSING,
-        NONE,
+        NONE           = 0,
+        BUFFER_PARSING = 1,
+        FILE_PARSING   = 2,
     };
 
     struct QuackLine {
@@ -45,8 +48,7 @@ public:
 
 private:
 
-    // CommandManager commandManager;
-    // ParsingState parsingState;
+    State state;
     
     QuackLine quackLines[QUACKLINES_BUFFER];
 
@@ -60,6 +62,8 @@ private:
 
     u8 buffer[1000 + 1];
 
+    fs::File activeFile;
+
     QuackDisplay* quackDisplay;
 
     const bool updateActiveLine();
@@ -68,18 +72,23 @@ private:
     void parseStringParams(const u8* const str);
     void replaceKeyword(const u8* const str, const u16 len);
     void replaceKey(const u8 str);
-    // void changeLocale(const u8* const str);
+    
+    const bool parse(const u8* const str, const bool continuation=false);
+    const bool canParse();
+
 
 public:
     QuackParser();
 
     void begin(QuackDisplay* _quackDisplay);
 
-    const bool parse(const u8* const str, const bool continuation=false);
     QuackParser::QuackLine* getProcessedLine();
-    const bool canParse();
     void parsingLoop();
-    void fillBuffer(const u8* const str, const u16 len);
+
+    void fillBuffer(const u8* const str);
+    void setFile(const char* const filename);
+    
+    void stop();
 };
 
 #endif

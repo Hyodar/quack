@@ -15,9 +15,10 @@ QuackParser::QuackLine::QuackLine() : lineOrder{0}, state{QuackLine::State::FREE
     // no-op
 }
 
-QuackParser::QuackParser() : activeLine{0}, nextOrder{0}, orderCount{0},
+QuackParser::QuackParser() : state{QuackParser::State::NONE},
+                             activeLine{0}, nextOrder{0}, orderCount{0},
                              keyboardLocale{&locale_us}, buffer{0},
-                             quackDisplay{nullptr} {
+                             activeFile{}, quackDisplay{nullptr} {
     // no-op
 }
 
@@ -25,14 +26,6 @@ void
 QuackParser::begin(QuackDisplay* _quackDisplay) {
     quackDisplay = _quackDisplay;
 }
-
-/*
-void
-QuackParser::changeLocale(const u8* str) {
-    // change locale here
-    // possible inputs: "US", "BR"?
-}
-*/
 
 #define LINE quackLines[activeLine].data
 
@@ -187,8 +180,11 @@ QuackParser::getCommandCode(const u8* const str, const u8 len, const bool contin
         return COMMAND_KEYS;
     }
 
-    return COMMAND_DEFAULTDELAY;
+    if(str[0] == 'D') {
+        return COMMAND_DEFAULTDELAY;
+    }
 
+    return COMMAND_NONE;
 }
 
 const bool
@@ -224,11 +220,16 @@ QuackParser::parse(const u8* const str, const bool continuation) {
     u8 commandCode = getCommandCode(str, cursor, continuation);
     cursor++; // skip space char
 
-    if(commandCode == COMMAND_DISPLAY) {
-        // this one is processed here
-        quackDisplay->write(str + cursor);
-        quackLines[activeLine].state = QuackLine::State::FREE_TO_PARSE;
-        return true;
+    if(commandCode <= COMMAND_DISPLAY) {
+        if(commandCode == COMMAND_DISPLAY) {
+            quackDisplay->write(str + cursor);
+            quackLines[activeLine].state = QuackLine::State::FREE_TO_PARSE;
+            return true;
+        }
+        else { // COMMAND_NONE
+            quackLines[activeLine].state = QuackLine::State::FREE_TO_PARSE;
+            return true;
+        }
     }
 
     quackLines[activeLine].lineOrder = orderCount++;
@@ -280,25 +281,60 @@ QuackParser::canParse() {
 
 void
 QuackParser::parsingLoop() {
-    if(!buffer[0]) return;
-
-    u8* str = (u8*) strtok((char*) buffer, LINE_SEPARATOR);
-    while(str != NULL) {
-        while(!canParse()) {}
-        parse(str);
-        str = (u8*) strtok(NULL, LINE_SEPARATOR);
+    if(!state) {
+        return;
     }
+    
+    if(state == QuackParser::State::BUFFER_PARSING) {
 
-    buffer[0] = '\0';
+        u8* str = (u8*) strtok((char*) buffer, LINE_SEPARATOR);
+
+        while(str != NULL && state) {
+
+            while(!canParse()) {}
+            parse(str);
+
+            str = (u8*) strtok(NULL, LINE_SEPARATOR);
+        }
+
+        state = QuackParser::State::NONE;
+    }
+    else { // FILE_PARSING
+        
+        u16 bytesRead;
+
+        while(activeFile.available() && state) {
+            bytesRead = activeFile.readBytesUntil('\n', buffer, sizeof(buffer) - 1);
+            buffer[bytesRead] = '\0';
+
+            while(!canParse()) {}
+            parse(buffer);
+        }
+
+        activeFile.close();
+        state = QuackParser::State::NONE;
+    }
 }
 
 void
-QuackParser::fillBuffer(const u8* const str, const u16 len) {
-    DEBUGGING_PRINTF("Buffer: \"");
-    for(u16 i = 0; i < len; i++) {
-        DEBUGGING_PRINTF("%c", str[i]);
-        buffer[i] = str[i];
-    }
-    DEBUGGING_PRINTF("\"\n");
-    buffer[len + 1] = '\0';
+QuackParser::fillBuffer(const u8* const str) {
+    
+    strcpy((char*) buffer, (char*) str);
+    
+    DEBUGGING_PRINTF("Buffer: {\n%s}\n", buffer);
+
+    state = QuackParser::State::BUFFER_PARSING;
+}
+
+void
+QuackParser::stop() {
+    state = QuackParser::State::NONE;
+}
+
+void
+QuackParser::setFile(const char* const filename) {
+    DEBUGGING_PRINTF("Setting file to %s\n", filename);
+    activeFile = SPIFFS.open(filename, "r");
+
+    state = QuackParser::State::FILE_PARSING;
 }

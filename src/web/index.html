@@ -2,7 +2,6 @@
     <head>
         <title>Hello World!</title>
         <script src="codeflask.min.js"></script>
-        <script src="functions.js"></script>
         <link rel="stylesheet" type="text/css" href="style.css"/>
     </head>
     <body>
@@ -15,7 +14,7 @@
             <button class="btn square-btn" onclick="loadScriptList()">Open</button>
         </div>
         <div id="options-menu" class="smooth-height-top no-height" style="background-color: #606060; color: white; padding: 5px;">
-            <code id="save-container" class="font-16 dont-display">File name: <input id="filename-save"></input> <button class="bt" onclick="saveScript(ID('filename-save').value)">Go</button></code>
+            <code id="save-container" class="font-16 dont-display">File name: <input id="filename-save"></input> <button class="btn" onclick="saveScript(ID('filename-save').value)">Go</button></code>
             <code id="open-container" class="font-16 dont-display">File name: <select id="filename-open"></select> <button class="btn" onclick="openScript()">Go</button></code>
         </div>
         <code id="filename" class="font-16 pad-5" style="background-color: #606060; color: white;">Temporary script</code><span style="color: white" id="is-saved"></span>

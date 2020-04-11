@@ -213,54 +213,96 @@ QuackWebserver::begin(QuackParser* _parser) {
 
     server.on("/run_raw", HTTP_POST, [this](AsyncWebServerRequest* request) {
         DEBUGGING_PRINTF("Received run raw command\n");
-        if(!request->hasParam("Code", true) || !request->hasParam("Code-Length", true)) {
-            request->send(400);
+        if(!request->hasParam("Code", true)) {
+            request->send(400, "text/plain", "Wrong parameters");
             return;
         }
 
-        request->send(200);
-
-        const u8* const code = (const u8*) request->getParam("Code", true)->value().c_str();
-        const u16 length = parseU16((const u8*) request->getParam("Code-Length", true)->value().c_str());
+        request->send(200, "text/plain", "Received RUN_RAW command");
 
         DEBUGGING_PRINTF("Filling buffer\n");
-        parser->fillBuffer(code, length);
+        parser->fillBuffer((const u8* const) request->getParam("Code", true)->value().c_str());
     });
 
     server.on("/run_file", [this](AsyncWebServerRequest* request) {
         if(!request->hasParam("Filename", true)) {
-            request->send(400);
+            request->send(400, "text/plain", "Wrong parameters");
             return;
         }
         
-        request->send(200);
+        parser->setFile((const char* const) request->getParam("Filename", true)->value().c_str());
+        request->send(200, "text/plain", "Received RUN_FILE command");
     });
 
     server.on("/stop", [this](AsyncWebServerRequest* request) {
         if(!testMagic(request)) {
-            request->send(400);
+            request->send(400, "text/plain", "Wrong parameters");
             return;
         }
 
-        request->send(200);
+        parser->stop();
+        request->send(200, "text/plain", "Received STOP command");
     });
 
     server.on("/list", [this](AsyncWebServerRequest* request) {
         if(!testMagic(request)) {
-            request->send(400);
+            request->send(400, "text/plain", "Wrong parameters");
             return;
         }
 
-        request->send(200);
+        DEBUGGING_PRINTF("Listing directory: \n");
+
+        fs::File root = SPIFFS.open("/");
+        String json = "{\n\"dirFiles\": [";
+
+        File file = root.openNextFile();
+        
+        while(file){
+            if(!file.isDirectory()){
+                json += '"';
+                json += file.name();
+                json += '"';
+            }
+            file = root.openNextFile();
+
+            if(file) {
+                json += ",";
+            }
+        }
+
+        json += "]\n}";
+        root.close();
+
+        DEBUGGING_PRINTF("Resulting JSON output: %s\n", json.c_str());
+
+        request->send(200, "application/json", json);
     });
 
     server.on("/save", [this](AsyncWebServerRequest* request) {
         if(!request->hasParam("Script-File", true, true)) {
-            request->send(400);
+            request->send(400, "text/plain", "Wrong parameters");
             return;
         }
 
-        request->send(200);
+        request->send(200, "text/plain", "Received SAVE command");
+    });
+
+    server.on("/open", [this](AsyncWebServerRequest* request) {
+        if(!request->hasParam("Filename", true)) {
+            request->send(400, "text/plain", "Wrong parameters");
+            return;
+        }
+
+        if(!SPIFFS.exists(request->getParam("Filename", true)->value())) {
+            request->send(404, "text/plain", "File not found");
+            return;
+        }
+
+        request->send(
+            SPIFFS,
+            request->getParam("Filename", true)->value(),
+            "text/plain"
+        );
     });
 
     server.onNotFound([this](AsyncWebServerRequest* request) {
