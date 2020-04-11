@@ -278,13 +278,25 @@ QuackWebserver::begin(QuackParser* _parser) {
         request->send(200, "application/json", json);
     });
 
-    server.on("/save", [this](AsyncWebServerRequest* request) {
+    server.on("/save", HTTP_POST, [this](AsyncWebServerRequest* request) {
         if(!request->hasParam("Script-File", true, true)) {
             request->send(400, "text/plain", "Wrong parameters");
             return;
         }
 
         request->send(200, "text/plain", "Received SAVE command");
+    }, [](AsyncWebServerRequest* request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
+        if(!index){
+            request->_tempFile = SPIFFS.open(filename, "w");
+        }
+        if(request->_tempFile){
+            if(len){
+                request->_tempFile.write(data, len);
+            }
+            if(final){
+                request->_tempFile.close();
+            }
+        }
     });
 
     server.on("/open", [this](AsyncWebServerRequest* request) {
