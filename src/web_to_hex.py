@@ -2,8 +2,8 @@
 from pathlib import Path
 from gzip import compress as gzip_compress
 from css_html_js_minify import html_minify
-from css_html_js_minify import js_minify
 from css_html_js_minify import css_minify
+from jsmin import jsmin
 
 WEB_PATH = "./web"
 TARGET_FILE = "./esp32/src/web_files.h"
@@ -49,17 +49,14 @@ RESPONSE_TYPES = {
 }
 
 def minify(file, content):
-    """
+    if file.suffix == '.js':
+        return jsmin(content)
     if file.suffix == '.html':
         return html_minify(content)
-    if file.suffix == '.js':
-        return js_minify(content)
     if file.suffix == '.css':
         return css_minify(content)
-    """
-
+    
     return content
-
 
 def get_response_info(file):
     if file.stem.isdigit():
