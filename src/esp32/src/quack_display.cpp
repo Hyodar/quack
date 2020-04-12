@@ -26,8 +26,6 @@ QuackDisplay::begin() {
         for(;;); // Don't proceed, loop forever
     }
 
-    display.clearDisplay();
-
 #ifdef DISPLAY_DEBUGGING
     DEBUGGING_PRINTF("[DISPLAY] Initializing with address on ");
     DEBUGGING_PRINT(OLED_ADDRESS, HEX);
@@ -69,6 +67,8 @@ QuackDisplay::begin() {
 #endif
 
     display.setTextWrap(false);
+
+    display.clearDisplay();
 }
 
 void
