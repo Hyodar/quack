@@ -35,7 +35,6 @@ body {
 #filename {
     font-size: 16px;
     padding: 5px;
-    text-transform: uppercase;
 }
 
 #options-menu {
@@ -45,6 +44,7 @@ body {
     max-height: 0px;
     transform: scaleY(0);
     font-size: 18px;
+    text-transform: uppercase;
 }
 
 #sidemenu-btn {

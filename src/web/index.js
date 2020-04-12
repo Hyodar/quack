@@ -323,6 +323,13 @@ const editor = CodeMirror.fromTextArea(ID("editor"), {
     scrollbarStyle: null,
     mode: "javascript",
     theme: "darcula",
+    lint: {
+        onUpdateLinting: (annotationsNotSorted, annotations, cm) => {
+            // when linter is done, error handling can be done here.
+            // probably the run and save "Go" buttons should be disabled
+            // and an error message could be displayed with alert(errMsg)
+        }
+    },
 });
 
 editor.on("change", () => compareVersions(editor.getValue()));
