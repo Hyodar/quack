@@ -11,9 +11,9 @@ body {
 
 .btn {
     box-shadow: 1px 3px 3px 2px rgba(0, 0, 0, 0.15);
-    background-image: linear-gradient(145deg, #1D1F20, #404348);
-    border: 1px solid grey;
-    border-radius: 10px;
+    background-color: transparent;
+    border: 1px solid #5a5a5a;
+    border-radius: 5px;
     padding: 5px 10px 5px 10px;
     color: white;
     font-size: 18px;
@@ -27,34 +27,22 @@ body {
     align-self: center;
 }
 
-.codeflask {
-    max-height: 80%;
-}
-
-.smooth-height-top {
-    transform-origin: top;
-    transition: transform 0.08s ease-out, filter 0.08s ease, max-height 0.12s;
-}
-
-.no-height {
-    max-height: 0px;
-    transform: scaleY(0);
-}
-
 .dont-display {
     display: none;
 }
 
-.font-16 {
+#filename {
     font-size: 16px;
-}
-
-.pad-5 {
     padding: 5px;
 }
 
 #options-menu {
-    background-color: #ffffff0f;
+    background-color: #ffffff05;
+    transform-origin: top;
+    transition: transform 0.08s ease-out, filter 0.08s ease, max-height 0.12s;
+    max-height: 0px;
+    transform: scaleY(0);
+    font-size: 18px;
 }
 
 #sidemenu-btn {
@@ -203,4 +191,14 @@ a {
     text-align: center;
     padding-top: 5px;
     min-height: 100%;
+}
+
+/*****************************************************************************
+  CodeMirror
+*****************************************************************************/
+
+.CodeMirror {
+    font-size: 18px;
+    height: 80vh;
+    cursor: text;
 }

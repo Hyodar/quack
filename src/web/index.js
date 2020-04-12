@@ -196,7 +196,7 @@ function saveScript(filename) {
     hideOptionsMenu();
     setFilename(filename);
 
-    const preProcessedCode = preProcessCode(flask.getCode());
+    const preProcessedCode = preProcessCode(editor.getValue());
     const file = new File([preProcessedCode], filename, {
         type: "text/plain",
     });
@@ -206,16 +206,16 @@ function saveScript(filename) {
    
     doRequest("/save", "POST", form,
              response => {
-               lastVersion = flask.getCode();
-               setIsSaved(true);
-               
-               // update filename-open options
-               const options = ID("filename-open").options;
-               if(!Array.from(options).find(el => el.value == filename)) {
-                   options.add(new Option(filename, filename));
-               }
+                lastVersion = editor.getValue();
+                setIsSaved(true);
+                
+                // update filename-open options
+                const options = ID("filename-open").options;
+                if(!Array.from(options).find(el => el.value == filename)) {
+                    options.add(new Option(filename, filename));
+                }
 
-               return response.text();
+                return response.text();
              },
              text => console.log(`/save response: ${text}`)
     );
@@ -227,7 +227,7 @@ function confirmSave() {
 
 function runScript() {
     const form = new FormData();
-    const code = preProcessCode(flask.getCode());
+    const code = preProcessCode(editor.getValue());
 
     console.log(`Resulting Duckyscript:\n${code}`);
 
@@ -282,7 +282,7 @@ function openScript() {
     doRequest("/open", "POST", form,
               response => response.text(),
               text => {
-                flask.updateCode(deProcessCode(text));
+                editor.setValue(deProcessCode(text));
                 lastVersion = text;
                 setIsSaved(true);
                 setFilename(scriptName);
@@ -305,7 +305,7 @@ function handleUpload(event) {
 
     fileReader.onload = fileEvent => {
         const text = fileEvent.target.result;
-        flask.updateCode(text);
+        editor.setValue(text);
         
         setIsSaved(false);
         setFilename(file.name);
@@ -315,13 +315,19 @@ function handleUpload(event) {
     fileReader.readAsText(file, "UTF-8");
 }
 
-const flask = new CodeFlask('#editor', {
-    language: 'js',
+const editor = CodeMirror.fromTextArea(ID("editor"), {
     lineNumbers: true,
-    handleTabs: true
+    styleActiveLine: true,
+    matchBrackets: true,
+    scrollPastEnd: true,
+    scrollbarStyle: null,
+    mode: "javascript",
+    theme: "darcula",
 });
 
-flask.onUpdate(compareVersions);
+editor.on("change", () => compareVersions(editor.getValue()));
+// set attribute on editor to ignore slideout touch event inside it
+document.querySelector(".CodeMirror").setAttribute("data-slideout-ignore", "");
 
 // update script list on startup
 updateScriptList();

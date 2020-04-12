@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
     <head>
         <title>Hello World!</title>
         <meta charset="utf-8">
@@ -8,10 +9,14 @@
         <meta name="HandheldFriendly" content="True">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-        <script src="codeflask.min.js"></script>
         <script src="slideout.min.js"></script>
+        <script src="codemirror.min.js"></script>
+        <script src="scrollpastend.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="codemirror.min.css"/>
+        <link rel="stylesheet" type="text/css" href="darcula_modified.min.css"/>
         <link rel="stylesheet" type="text/css" href="style.css"/>
     </head>
+
     <body>
         <input id="upload-input" type="file" hidden />
         <nav id="menu" class="menu">
@@ -29,7 +34,6 @@
                     <li><a onclick="loadScriptList()">Open</a></li>
                 </ul>
             </section>
-
         </nav>
 
         <main id="panel">
@@ -37,15 +41,18 @@
                 <span id="sidemenu-btn">&#9776;</span>
                 <span id="logo" class="logo">Quack</span>
             </div>
-            <div id="options-menu" class="font-16 smooth-height-top no-height">
-                File name: 
-                    <span id="save-container"><input id="filename-save"></input> <button class="btn" onclick="confirmSave()">Go</button></span>
-                    <span id="open-container"><select id="filename-open"></select> <button class="btn" onclick="openScript()">Go</button></span>
-                </div>
+
+            <div id="options-menu">File name: 
+                <span id="save-container"><input id="filename-save"></input> <button class="btn" onclick="confirmSave()">Go</button></span>
+                <span id="open-container"><select id="filename-open"></select> <button class="btn" onclick="openScript()">Go</button></span>
             </div>
-            <code id="filename" class="font-16 pad-5">Temporary script</code><span id="is-saved"></span>
-            <div id="editor"></div>
+
+            <code id="filename">Temporary script</code><span id="is-saved"></span>
+            
+            <textarea id="editor"></textarea>
         </main>
     </body>
+
     <script src="index.js"></script>
+
 </html>
