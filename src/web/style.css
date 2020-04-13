@@ -7,10 +7,6 @@
 }
 
 body {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    overflow-y: scroll;
-    overflow-x: hidden;
     background-image: linear-gradient(145deg, #1D1F20, #404348);
     touch-action: pan-x pan-y;
     font-family: Consolas, "Liberation Mono", Monaco, "Lucida Console", monospace;
@@ -87,6 +83,18 @@ body {
     flex-direction: row;
 }
 
+.toggle {
+    transition: background-color 0.05s ease;
+}
+
+.toggle-on {
+    background-color: #ffffff14;
+}
+
+.toggle-off {
+    background-color: #ffffff00;
+}
+
 /*****************************************************************************
   Slideout.js default CSS
 *****************************************************************************/
@@ -127,8 +135,12 @@ body {
 
 .slideout-open,
 .slideout-open body,
-.slideout-open .slideout-panel {
-    overflow: hidden;
+.slideout-open .slideout-panel,
+body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 .slideout-open .slideout-menu {
@@ -146,7 +158,6 @@ body {
     text-transform: uppercase;
     background-color: #1D1F20;
     background-image: linear-gradient(145deg, #1D1F20, #404348);
-    overflow-y: hidden;
 }
 
 a {

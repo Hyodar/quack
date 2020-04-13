@@ -1,6 +1,6 @@
 
 const commands = [
-    "DEFAULTDELAY", "DELAY", "STRING", "DISPLAY", "REPEAT", "KEYS"
+    "DEFAULTDELAY", "DELAY", "STRING", "DISPLAY", "REPEAT", "KEYS",
 ];
 
 const keys = [
@@ -10,7 +10,7 @@ const keys = [
     "DOWN", "DOWNARROW", "LEFT", "LEFTARROW", "RIGHT",
     "RIGHTARROW", "TAB", "END", "ESC", "ESCAPE", "SPACE",
     "PAUSE", "BREAK", "CAPSLOCK", "NUMLOCK", "PRINTSCREEN",
-    "SCROLLLOCK"
+    "SCROLLLOCK",
 ];
 
 const translateKey = {
@@ -20,7 +20,7 @@ const translateKey = {
     "LEFT": "LEFTARROW",
     "RIGHT": "RIGHTARROW",
     "ESCAPE": "ESC",
-    "BREAK": "PAUSE"
+    "BREAK": "PAUSE",
 };
 
 const translate = {
@@ -313,6 +313,29 @@ function handleUpload(event) {
     };
 
     fileReader.readAsText(file, "UTF-8");
+}
+
+function toggle(element, toggleOn, toggleOff) {
+    const classes = element.classList;
+    if(classes.contains("toggle-on")) {
+        classes.replace("toggle-on", "toggle-off");
+        toggleOff();
+    }
+    else {
+        classes.replace("toggle-off", "toggle-on");
+        toggleOn();
+    }
+}
+
+function setTheme(newTheme) {
+    editor.setOption("theme", newTheme);
+}
+
+function toggleTheme() {
+    toggle(ID("active-theme"),
+        () => setTheme("darcula"), 
+        () => setTheme("default"),
+    );
 }
 
 const editor = CodeMirror.fromTextArea(ID("editor"), {
