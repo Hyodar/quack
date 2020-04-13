@@ -84,6 +84,7 @@ body {
 }
 
 .toggle {
+    justify-content: space-between;
     transition: background-color 0.05s ease;
 }
 
@@ -91,8 +92,18 @@ body {
     background-color: #ffffff14;
 }
 
+.toggle-on::after {
+    content: "On";
+    color: rgb(139, 139, 139);
+}
+
 .toggle-off {
     background-color: #ffffff00;
+}
+
+.toggle-off::after {
+    content: "Off";
+    color: rgb(139, 139, 139);
 }
 
 /*****************************************************************************
@@ -199,7 +210,7 @@ a {
 .menu-section-list a {
     padding: 10px 20px;
     color: #fff;
-    display: block;
+    display: flex;
     border-radius: 5px;
 }
 
