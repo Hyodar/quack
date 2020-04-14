@@ -64,7 +64,7 @@ QuackParser::replaceKeyword(const u8* const str, const u16 len) {
 
     else if(len == 4) {
         if(str[0] == 'C') LINE.addParameterByte(KEY_LEFTCTRL);
-        else if(str[0]) LINE.addParameterByte(KEY_HOME);
+        else if(str[0] == 'H') LINE.addParameterByte(KEY_HOME);
         else LINE.addParameterByte(KEY_PROPS);
     }
 
