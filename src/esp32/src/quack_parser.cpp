@@ -50,66 +50,110 @@ QuackParser::replaceKey(const u8 str) {
 
 void
 QuackParser::replaceKeyword(const u8* const str, const u16 len) {
-    if(len == 1) {
-        replaceKey(*str);
-        return;
-    }
-
-    else if(len == 3)  {
-        if(str[0] == 'A') LINE.addParameterByte(KEY_LEFTALT);
-        else if(str[0] == 'E') LINE.addParameterByte(KEY_END);
-        else if(str[0] == 'G') LINE.addParameterByte(KEY_LEFTMETA);
-        else LINE.addParameterByte(KEY_TAB);
-    }
-
-    else if(len == 4) {
-        if(str[0] == 'C') LINE.addParameterByte(KEY_LEFTCTRL);
-        else if(str[0] == 'H') LINE.addParameterByte(KEY_HOME);
-        else LINE.addParameterByte(KEY_PROPS);
-    }
-
-    else if(len == 5) {
-        if(str[0] == 'E') LINE.addParameterByte(KEY_ENTER);
-        else if(str[0] == 'P') LINE.addParameterByte(KEY_PAUSE);
-        else if(str[0] == 'S' && str[1] == 'H') LINE.addParameterByte(KEY_LEFTSHIFT);
-        else LINE.addParameterByte(KEY_SPACE);
-    }
-
-    else if(len == 6) {
-        if(str[0] == 'D') LINE.addParameterByte(KEY_BACKSPACE);
-        else if(str[0] == 'E') LINE.addParameterByte(KEY_ESC);
-        else if(str[0] == 'I') LINE.addParameterByte(KEY_INSERT);
-        else LINE.addParameterByte(KEY_PAGEUP);
-    }
-
-    else if(len == 7) {
-        if(str[0] == 'N') LINE.addParameterByte(KEY_NUMLOCK);
-        else LINE.addParameterByte(KEY_UP);
-    }
-
-    else if(len == 8) {
-        if(str[0] == 'C') LINE.addParameterByte(KEY_CAPSLOCK);
-        else LINE.addParameterByte(KEY_PAGEDOWN);
-    }
-
-    else if(len == 9) {
-        if(str[0] == 'L') LINE.addParameterByte(KEY_LEFT);
-        else LINE.addParameterByte(KEY_DOWN);
-    }
-
-    else if(len >= 10) {
-        if(str[0] == 'R') LINE.addParameterByte(KEY_RIGHT);
-        else if(str[0] == 'S') LINE.addParameterByte(KEY_SCROLLLOCK);
-        else LINE.addParameterByte(KEY_SYSRQ);
-    }
-
-    else if(str[0] == 'F') {
-        if(len == 2) {
+    switch (len) {
+        case 1:
+            replaceKey(*str);
+            break;
+        case 2:
             LINE.addParameterByte(KEY_F1 + (str[1] - '1'));
-        }
-        else {
-            LINE.addParameterByte(KEY_F10 + (str[2] - '0'));
-        }
+            break;
+        case 3:
+            switch(str[0]) {
+                case 'A':
+                    LINE.addParameterByte(KEY_LEFTALT);
+                    break;
+                case 'T':
+                    LINE.addParameterByte(KEY_TAB);
+                    break;
+                case 'F':
+                    LINE.addParameterByte(KEY_F10 + (str[2] - '0'));
+                    break;
+                case 'G':
+                    LINE.addParameterByte(KEY_LEFTMETA);
+                    break;
+                default:
+                    LINE.addParameterByte(KEY_END);
+            }
+            break;
+        case 4:
+            switch(str[0]) {
+                case 'C':
+                    LINE.addParameterByte(KEY_LEFTCTRL);
+                    break;
+                case 'H':
+                    LINE.addParameterByte(KEY_HOME);
+                    break;
+                default:
+                    LINE.addParameterByte(KEY_PROPS);
+            }
+            break;
+        case 5:
+            switch(str[0]) {
+                case 'E':
+                    LINE.addParameterByte(KEY_ENTER);
+                    break;
+                case 'P':
+                    LINE.addParameterByte(KEY_PAUSE);
+                    break;
+                default:
+                    if(str[1] == 'H') {
+                        LINE.addParameterByte(KEY_LEFTSHIFT);
+                    }
+                    else {
+                        LINE.addParameterByte(KEY_SPACE);
+                    }
+            }
+            break;
+        case 6:
+            switch(str[0]) {
+                case 'D':
+                    LINE.addParameterByte(KEY_BACKSPACE);
+                    break;
+                case 'E':
+                    LINE.addParameterByte(KEY_ESC);
+                    break;
+                case 'I':
+                    LINE.addParameterByte(KEY_INSERT);
+                    break;
+                default:
+                    LINE.addParameterByte(KEY_PAGEUP);
+            }
+            break;
+        case 7:
+            if(str[0] == 'N') {
+                LINE.addParameterByte(KEY_NUMLOCK);
+            }
+            else {
+                LINE.addParameterByte(KEY_UP);
+            }    
+            break;
+        case 8:
+            if(str[0] == 'C') {
+                LINE.addParameterByte(KEY_CAPSLOCK);
+            }
+            else {
+                LINE.addParameterByte(KEY_PAGEDOWN);
+            }
+            break;
+        case 9:
+            if(str[0] == 'L') {
+                LINE.addParameterByte(KEY_LEFT);
+            }
+            else {
+                LINE.addParameterByte(KEY_DOWN);
+            }
+            break;
+        default:
+            switch(str[0]) {
+                case 'R':
+                    LINE.addParameterByte(KEY_RIGHT);
+                    break;
+                case 'S':
+                    LINE.addParameterByte(KEY_SCROLLLOCK);
+                    break;
+                default:
+                    LINE.addParameterByte(KEY_SYSRQ);
+            }
     }
 }
 
