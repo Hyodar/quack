@@ -326,6 +326,7 @@ QuackParser::parsingLoop() {
     }
     
     if(state == QuackParser::State::BUFFER_PARSING) {
+        DEBUGGING_PRINTF("[PARSER] Code is smaller than buffer size. Running it raw.\n");
 
         u8* str = (u8*) strtok((char*) buffer, LINE_SEPARATOR);
 
@@ -340,7 +341,7 @@ QuackParser::parsingLoop() {
         state = QuackParser::State::NONE;
     }
     else { // FILE_PARSING
-        
+        DEBUGGING_PRINTF("[PARSER] Code is bigger than buffer size. Running it as file.\n");
         u16 bytesRead;
 
         while(activeFile.available() && state) {
@@ -358,7 +359,6 @@ QuackParser::parsingLoop() {
 
 void
 QuackParser::fillBuffer(const u8* const str) {
-    
     strcpy((char*) buffer, (char*) str);
     
     DEBUGGING_PRINTF("Buffer: {\n%s}\n", buffer);
