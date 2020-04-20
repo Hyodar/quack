@@ -33,6 +33,9 @@
 #define COMMAND_REPEAT          0x29
 #define COMMAND_KEYCODE         0x2a
 
+// Flags
+#define COMMAND_CONTINUE_F      (1 << 7)
+
 #define IS_COMMAND_PARAM_INT(comm) comm >= COMMAND_DELAY
 
 // Locales ========================

@@ -63,19 +63,21 @@ private:
     u8 buffer[1000 + 1];
 
     fs::File activeFile;
+    u8 activeCommand;
 
     QuackDisplay* quackDisplay;
 
     const bool updateActiveLine();
-    const u16 getCommandCode(const u8* const str, const u8 len, bool continuation) const;
+    const u8 getCommandCode(const u8* const str);
     void parseKeysParams(const u8* const str);
     void parseStringParams(const u8* const str);
     void replaceKeyword(const u8* const str, const u16 len);
     void replaceKey(const u8 str);
     
-    const bool parse(const u8* const str, const bool continuation=false);
+    const bool parse(const u8* const str);
     const bool canParse();
 
+    const bool runLocalCommand(const u8* const params);
 
 public:
     QuackParser();

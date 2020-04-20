@@ -25,13 +25,15 @@
 #define COMMAND_LOCALE          0x23
 #define COMMAND_STRING          0x24
 #define COMMAND_KEYS            0x25
-#define COMMAND_CONTINUESTRING  0x26
 
 // Params: number(1)
 #define COMMAND_DELAY           0x27
 #define COMMAND_DEFAULTDELAY    0x28
 #define COMMAND_REPEAT          0x29
 #define COMMAND_KEYCODE         0x2a
+
+// Flags
+#define COMMAND_CONTINUE_F      (1 << 7)
 
 #define IS_COMMAND_PARAM_INT(comm) comm >= COMMAND_DELAY
 

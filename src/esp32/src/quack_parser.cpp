@@ -18,7 +18,8 @@ QuackParser::QuackLine::QuackLine() : lineOrder{0}, state{QuackLine::State::FREE
 QuackParser::QuackParser() : state{QuackParser::State::NONE},
                              activeLine{0}, nextOrder{0}, orderCount{0},
                              keyboardLocale{&locale_us}, buffer{0},
-                             activeFile{}, quackDisplay{nullptr} {
+                             activeFile{}, activeCommand{COMMAND_NONE},
+                             quackDisplay{nullptr} {
     // no-op
 }
 
@@ -159,9 +160,6 @@ QuackParser::replaceKeyword(const u8* const str, const u16 len) {
 
 void
 QuackParser::parseKeysParams(const u8* const str) {
-    // replace keys by their HID combinations and return
-    // the new length
-
     u16 start = 0;
     u16 length = 0;
 
@@ -183,52 +181,47 @@ QuackParser::parseKeysParams(const u8* const str) {
 
 void
 QuackParser::parseStringParams(const u8* const str) {
-    // replace keys by their HID combinations and return
-    // the new length
-
     for(u16 i = 0; str[i]; i++) {
         replaceKey(str[i]);
     }
-
 }
 
-const u16
-QuackParser::getCommandCode(const u8* const str, const u8 len, const bool continuation) const {
+const u8
+QuackParser::getCommandCode(const u8* const str) {
     // tried to parse based on usage frequency here,
     // but could probably use some improvements
-    
-    if(len == 6) {
-        // ~LOCALE~, STRING, REPEAT
-        if(str[0] == 'S') {
-            if(continuation) return COMMAND_CONTINUESTRING;
-            return COMMAND_STRING;
-        }
-        //else if(str[0] == 'R') {
-            return COMMAND_REPEAT;
-        //}
-        //return COMMAND_LOCALE;
+    u16 commandLength = 1;
+    while(str[commandLength - 1] != ' ' && commandLength < sizeof("DEFAULT_DELAY")) {
+        commandLength++;
     }
     
-    if(len == 5) {
-        return COMMAND_DELAY;
-    }
-    
-    if(len == 7) {
-        if(str[0] == 'D') {
-            return COMMAND_DISPLAY;
-        }
-        return COMMAND_KEYCODE;
+    u8 commandCode;
+    switch(commandLength) {
+        case 4:
+            commandCode = COMMAND_KEYS;
+            break;
+        case 5:
+            commandCode = COMMAND_DELAY;
+            break;
+        case 6:
+            commandCode = (str[0] == 'S')? COMMAND_STRING : COMMAND_REPEAT;
+            break;
+        case 7:
+            commandCode = (str[0] == 'D')? COMMAND_DISPLAY : COMMAND_KEYCODE;
+            break;
+        case 13:
+            commandCode = COMMAND_DEFAULTDELAY;
+            break;
+        default:
+            commandCode = (commandLength == sizeof("DEFAULT_DELAY"))
+                          ? activeCommand | COMMAND_CONTINUE_F
+                          : COMMAND_DEFAULTDELAY;
     }
 
-    if(str[0] == 'K') {
-        return COMMAND_KEYS;
-    }
+    activeCommand = commandCode;
+    LINE.setCommandCode(commandCode);
 
-    if(str[0] == 'D') {
-        return COMMAND_DEFAULTDELAY;
-    }
-
-    return COMMAND_NONE;
+    return commandLength;
 }
 
 const bool
@@ -246,27 +239,12 @@ QuackParser::updateActiveLine() {
 }
 
 const bool
-QuackParser::parse(const u8* const str, const bool continuation) {
-    if(!updateActiveLine()) {
-        return false;
-    }
+QuackParser::runLocalCommand(const u8* const params) {
+    // run local commands inside ESP
 
-    LINE.reset();
-
-    for(u16 i = 0; str[i]; i++) DEBUGGING_PRINTF("%c", str[i]);
-    DEBUGGING_PRINTF("\n");
-
-    // structure: <COMMAND_NAME> <PARAMS>
-    u16 cursor = 0;
-
-    while(str[cursor] != ' ') cursor++;
-
-    u8 commandCode = getCommandCode(str, cursor, continuation);
-    cursor++; // skip space char
-
-    if(commandCode <= COMMAND_DISPLAY) {
-        if(commandCode == COMMAND_DISPLAY) {
-            quackDisplay->write(str + cursor);
+    if(activeCommand <= COMMAND_DISPLAY) {
+        if(activeCommand == COMMAND_DISPLAY) {
+            quackDisplay->write(params);
             quackLines[activeLine].state = QuackLine::State::FREE_TO_PARSE;
             return true;
         }
@@ -275,18 +253,36 @@ QuackParser::parse(const u8* const str, const bool continuation) {
             return true;
         }
     }
+    return false;
+}
+
+const bool
+QuackParser::parse(const u8* const str) {
+    if(!updateActiveLine()) {
+        return false;
+    }
+
+    LINE.reset();
+
+    DEBUGGING_PRINTF("%s\n", str);
+
+    const u16 cursor = getCommandCode(str);
+
+    if(runLocalCommand(str + cursor)) {
+        return true;
+    }
 
     quackLines[activeLine].lineOrder = orderCount++;
-    LINE.setCommandCode(commandCode);
     
-    if(commandCode == COMMAND_STRING) {
-        parseStringParams(str + cursor);
-    }
-    else if(commandCode == COMMAND_KEYS) {
-        parseKeysParams(str + cursor);
-    }
-    else {
-        LINE.copyBuffer(str + cursor);
+    switch(activeCommand) {
+        case COMMAND_STRING:
+            parseStringParams(str + cursor);
+            break;
+        case COMMAND_KEYS:
+            parseKeysParams(str + cursor);
+            break;
+        default:
+            LINE.copyBuffer(str + cursor);
     }
 
     LINE.serialize(&CRC16);

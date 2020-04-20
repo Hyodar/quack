@@ -36,61 +36,47 @@ if(repeatNum) {\
 
 void
 CommandManager::command(const u8 commandCode, const u32 param) {
-    if(commandCode == COMMAND_DELAY) {
-        doDelay(param);
-
-        REPEAT_IF_NECESSARY(doDelay(param))
-    }
-    else if(commandCode == COMMAND_DEFAULTDELAY) {
-        defaultDelay(param);
-
-        // no need to repeat this
-        repeatNum = 0;
-
-        // no need to defaultDelay after this
-        return;
-    }
-    else if(commandCode == COMMAND_REPEAT) {
-        repeat(param);
-        
-        // no need to repeat this
-
-        // no need to defaultDelay after this
-        return;
-    }
-    else {
-        keycode(param);
-
-        REPEAT_IF_NECESSARY(keycode(param))
+    const bool isContinuation = (commandCode & COMMAND_CONTINUE_F);
+    
+    switch(commandCode) {
+        case COMMAND_DELAY:
+            doDelay(param);
+            REPEAT_IF_NECESSARY(doDelay(param))
+            break;
+        case COMMAND_DEFAULTDELAY:
+            defaultDelay(param);
+            repeatNum = 0;
+            break;
+        case COMMAND_REPEAT:
+            repeat(param);
+            break;
+        default:
+            keycode(param);
+            REPEAT_IF_NECESSARY(keycode(param))
     }
 
-    doDefaultDelay();
+    if(!isContinuation) doDefaultDelay();
 }
 
 void
 CommandManager::command(const u8 commandCode, const u8* const param, const u16 len) {
-    if(commandCode == COMMAND_LOCALE) {
-        locale(param, len);
+    const bool isContinuation = (commandCode & COMMAND_CONTINUE_F);
 
-        // no need to repeat this
-
-        repeatNum = 0;
-
-        // no need to defaultDelay this
-        return;
-    }
-    else if(commandCode == COMMAND_STRING) {
-        string(param, len);
-
-        REPEAT_IF_NECESSARY(string(param, len))
-    }
-    else {
-        keys(param, len);
-
-        REPEAT_IF_NECESSARY(keys(param, len))
+    switch(commandCode) {
+        case COMMAND_LOCALE:
+            locale(param, len);
+            repeatNum = 0;
+            break;
+        case COMMAND_STRING:
+            string(param, len);
+            REPEAT_IF_NECESSARY(string(param, len))
+            break;
+        default:
+            keys(param, len);
+            REPEAT_IF_NECESSARY(keys(param, len))    
     }
 
-    doDefaultDelay();
+    if(!isContinuation) doDefaultDelay();
 }
 
 void
