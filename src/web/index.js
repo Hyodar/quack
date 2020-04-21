@@ -375,6 +375,7 @@ const editor = CodeMirror.fromTextArea(ID("editor"), {
 editor.on("change", () => compareVersions(editor.getValue()));
 // set attribute on editor to ignore slideout touch event inside it
 document.querySelector(".CodeMirror").setAttribute("data-slideout-ignore", "");
+document.querySelector(".CodeMirror").style.transition = "background 0.2s ease-in-out, color 0.2s ease-in-out";
 
 // update script list on startup
 updateScriptList();
