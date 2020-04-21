@@ -59,6 +59,13 @@ body {
     cursor: pointer;
 }
 
+#play-btn {
+    padding: 10px 20px;
+    font-size: 30px;
+    cursor: pointer;
+    color: #c2c2c2;
+}
+
 #filename,
 #is-saved,
 #options-menu {
@@ -81,6 +88,10 @@ body {
 
 .flex-row {
     flex-direction: row;
+}
+
+.justify-space-between {
+    justify-content: space-between;
 }
 
 .toggle {

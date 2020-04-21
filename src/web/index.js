@@ -44,18 +44,20 @@ async function doRequest(path, method, body, typeCallback, dataCallback) {
 }
 
 function compareVersions(code) {
-    if(lastVersion) {
-        if(lastVersion.length != code.length) {
-            setIsSaved(false);
-        }
-        else {
-            setIsSaved(lastVersion == code);
-        }
+    if(lastVersion.length != code.length) {
+        setIsSaved(false);
+    }
+    else {
+        setIsSaved(lastVersion == code);
     }
 }
 
 function setIsSaved(isSaved) {
     ID("is-saved").innerText = (isSaved)? "" : "*";
+}
+
+function getIsSaved() {
+    return ID("is-saved").innerText == "";
 }
 
 function ID(id) {
@@ -224,7 +226,7 @@ function saveScript(filename) {
 }
 
 function confirmSave() {
-    return saveScript(ID('filename-save').value);
+    saveScript(ID('filename-save').value);
 }
 
 function hasLongLines(code) {
@@ -249,8 +251,15 @@ function runScript() {
 
         return;
     }
-
-    saveScript(getFilename());
+    
+    if(!getIsSaved()) {
+        saveScript(getFilename());
+        timeoutDelay = 500;
+    }
+    else {
+        // in case it was right after SAVE was pressed
+        timeoutDelay = 50;
+    }
     
     // give esp a little time to save the script
     setTimeout(() => {
@@ -260,7 +269,7 @@ function runScript() {
             response => response.text(),
             text => console.log(`/run_file response: ${text}`)
         );
-    }, 500);
+    }, timeoutDelay);
 }
 
 function stopScript() {
