@@ -28,6 +28,8 @@ const translate = {
     "REPLAY": "REPEAT",
 };
 
+const FRAME_PARAM_SIZE = 480;
+
 let lastVersion = "";
 
 async function doRequest(path, method, body, typeCallback, dataCallback) {
@@ -225,13 +227,19 @@ function confirmSave() {
     return saveScript(ID('filename-save').value);
 }
 
+function hasLongLines(code) {
+    return code.split("\n").some(line =>
+        line.split(' ')[1].length >= FRAME_PARAM_SIZE
+    );
+}
+
 function runScript() {
     const form = new FormData();
     const code = preProcessCode(editor.getValue());
 
     console.log(`Resulting Duckyscript:\n${code}`);
 
-    if(code.length <= 1000) {
+    if(code.length <= 1000 && !hasLongLines(code)) {
         form.append("Code", code);
         
         doRequest("/run_raw", "POST", form,

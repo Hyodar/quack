@@ -17,9 +17,9 @@ class QuackInterface {
 
 public:
 
-    #define UNPACK_BUFFER(buffer) buffer->data, buffer->length
+    #define UNPACK_BUFFER(buffer_ptr) (buffer_ptr)->data, (buffer_ptr)->length
     struct QuackBuffer {
-        u8 data[BUFFER_SIZE];
+        u8 data[FRAME_BUFFER_SIZE];
         u16 length;
 
         QuackBuffer();

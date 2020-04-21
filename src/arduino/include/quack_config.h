@@ -23,9 +23,11 @@
 
 #define SERIAL_BAUDRATE         115200
 #define SERIAL1_BAUDRATE        9600
-#define BUFFER_SIZE             480
-#define QUACKLINES_BUFFER       2
+
+#define FRAME_PARAM_SIZE        480
+#define FRAME_HEADER_SIZE       2 + 1 + 2
+#define FRAME_BUFFER_SIZE       (FRAME_HEADER_SIZE + FRAME_PARAM_SIZE)
+
 #define DEFAULT_DELAY           1000
-#define QUACKFRAME_HEADER_SIZE  (2 + 1 + 2)
 
 #endif

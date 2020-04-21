@@ -68,7 +68,7 @@ QuackInterface::update() {
         DEBUGGING_PRINT(F("[INTERFACE] Filling buffer.\n"));
         delay(1000);
 #endif
-        while(available && recBuffer.length <= BUFFER_SIZE) {
+        while(available && recBuffer.length <= FRAME_BUFFER_SIZE) {
             const u8 receivedByte = Serial1.read();
 
 #ifdef INTERFACE_DEBUGGING
@@ -77,7 +77,7 @@ QuackInterface::update() {
             DEBUGGING_PRINT(F(".\n"));
 #endif
             if(receivedByte == FRAME_SEPARATOR) {
-                if(recBuffer.length >= QUACKFRAME_HEADER_SIZE) {
+                if(recBuffer.length >= FRAME_HEADER_SIZE) {
                     // finished getting header
 #ifdef INTERFACE_DEBUGGING
                     DEBUGGING_PRINT(F("[INTERFACE] Received frame from Serial. Changing state to WAITING_START and waiting buffer read.\n"));

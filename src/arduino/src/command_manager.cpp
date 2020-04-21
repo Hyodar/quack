@@ -38,7 +38,7 @@ void
 CommandManager::command(const u8 commandCode, const u32 param) {
     const bool isContinuation = (commandCode & COMMAND_CONTINUE_F);
     
-    switch(commandCode) {
+    switch(commandCode & COMMAND_CODE_MASK) {
         case COMMAND_DELAY:
             doDelay(param);
             REPEAT_IF_NECESSARY(doDelay(param))
@@ -62,7 +62,7 @@ void
 CommandManager::command(const u8 commandCode, const u8* const param, const u16 len) {
     const bool isContinuation = (commandCode & COMMAND_CONTINUE_F);
 
-    switch(commandCode) {
+    switch(commandCode & COMMAND_CODE_MASK) {
         case COMMAND_LOCALE:
             locale(param, len);
             repeatNum = 0;

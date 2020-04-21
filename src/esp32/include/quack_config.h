@@ -24,9 +24,12 @@
 // #define STRING_HELPERS
 // #define USEFUL_REMINDERS
 
+#define FRAME_PARAM_SIZE        480
+#define FRAME_HEADER_SIZE       2 + 1 + 2
+#define FRAME_BUFFER_SIZE       (FRAME_HEADER_SIZE + FRAME_PARAM_SIZE)
+
 #define SERIAL_BAUDRATE     115200
 #define SERIAL2_BAUDRATE    9600
-#define BUFFER_SIZE         480
 #define QUACKLINES_BUFFER   2
 
 #endif

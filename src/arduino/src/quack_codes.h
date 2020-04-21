@@ -35,8 +35,10 @@
 
 // Flags
 #define COMMAND_CONTINUE_F      (1 << 7)
+#define COMMAND_CONTINUE_F      (1 << 7)
+#define COMMAND_CODE_MASK       0b01111111
 
-#define IS_COMMAND_PARAM_INT(comm) comm >= COMMAND_DELAY
+#define IS_COMMAND_PARAM_INT(comm) ((comm) & COMMAND_CODE_MASK) >= COMMAND_DELAY
 
 // Locales ========================
 

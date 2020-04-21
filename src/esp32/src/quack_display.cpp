@@ -69,6 +69,7 @@ QuackDisplay::begin() {
     display.setTextWrap(false);
 
     display.clearDisplay();
+    display.display();
 }
 
 void

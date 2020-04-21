@@ -57,14 +57,14 @@ QuackInterface::send(QuackParser::QuackLine* line) {
 void
 QuackInterface::send() const {
     const u8* const buf = quackLine->data.getBuffer();
-    const u16 length = quackLine->data.getLength() + HEADER_SIZE;
+    const u16 length = quackLine->data.getLength() + FRAME_HEADER_SIZE;
 
     Serial2.write(FRAME_SEPARATOR);
     for(u16 i = 0; i < length; i++) Serial2.write(buf[i]);
     Serial2.write(FRAME_SEPARATOR);
 
     Serial.write(0);
-    DEBUGGING_PRINTSTR(buf, length + HEADER_SIZE);
+    DEBUGGING_PRINTSTR(buf, length + FRAME_HEADER_SIZE);
     DEBUGGING_PRINTF("\n");
 }
 

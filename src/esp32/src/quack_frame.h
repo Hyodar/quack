@@ -7,14 +7,12 @@
 
 #include <FastCRC.h>
 
-#define HEADER_SIZE sizeof(u16) + sizeof(u8) + sizeof(u16)
-
 class QuackFrame {
 
 // | CHECKSUM | COMMAND_CODE | PARAMETER_LENGTH | PARAMETERS |
 
 private:
-    u8 buffer[BUFFER_SIZE + HEADER_SIZE];
+    u8 buffer[FRAME_BUFFER_SIZE];
     u16 length;
     
 public:

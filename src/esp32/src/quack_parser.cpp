@@ -38,6 +38,7 @@ QuackParser::replaceKey(const u8 str) {
         if(modifier) LINE.addParameterByte(modifier);
         return;
     }
+    DEBUGGING_PRINTF("[PARSER] Extended ASCII character: %d\n", str);
 
     for(u8 i = 0; i < keyboardLocale->extendedAsciiLen; i++) {
         if(str == pgm_read_byte(keyboardLocale->extendedAscii + i * 3)) {
@@ -181,6 +182,7 @@ QuackParser::parseKeysParams(const u8* const str) {
 
 void
 QuackParser::parseStringParams(const u8* const str) {
+    DEBUGGING_PRINTF("[PARSER] Generating params for \"%s\"\n", str);
     for(u16 i = 0; str[i]; i++) {
         replaceKey(str[i]);
     }
@@ -190,33 +192,51 @@ const u8
 QuackParser::getCommandCode(const u8* const str) {
     // tried to parse based on usage frequency here,
     // but could probably use some improvements
-    u16 commandLength = 1;
-    while(str[commandLength - 1] != ' ' && commandLength < sizeof("DEFAULT_DELAY")) {
+    u16 commandLength = 0;
+    DEBUGGING_PRINTF("[PARSER] Getting command code. Command: ");
+    while(str[commandLength] != ' ' && commandLength < sizeof("DEFAULT_DELAY") && str[commandLength]) {
+        DEBUGGING_PRINTF("%c", str[commandLength]);
         commandLength++;
     }
-    
+    commandLength++; // skip whitespace
+    DEBUGGING_PRINTF("\n");
+
     u8 commandCode;
-    switch(commandLength) {
-        case 4:
-            commandCode = COMMAND_KEYS;
-            break;
-        case 5:
-            commandCode = COMMAND_DELAY;
-            break;
-        case 6:
-            commandCode = (str[0] == 'S')? COMMAND_STRING : COMMAND_REPEAT;
-            break;
-        case 7:
-            commandCode = (str[0] == 'D')? COMMAND_DISPLAY : COMMAND_KEYCODE;
-            break;
-        case 13:
-            commandCode = COMMAND_DEFAULTDELAY;
-            break;
-        default:
-            commandCode = (commandLength == sizeof("DEFAULT_DELAY"))
-                          ? activeCommand | COMMAND_CONTINUE_F
-                          : COMMAND_DEFAULTDELAY;
+
+    if(!str[commandLength - 1]) {
+        // ended without a whitespace, then it is a continuation
+        commandCode = activeCommand | COMMAND_CONTINUE_F;
+        commandLength = 0;
     }
+    else {
+        switch(commandLength - 1) {
+            case 4:
+                commandCode = COMMAND_KEYS;
+                break;
+            case 5:
+                commandCode = COMMAND_DELAY;
+                break;
+            case 6:
+                commandCode = (str[0] == 'S')? COMMAND_STRING : COMMAND_REPEAT;
+                break;
+            case 7:
+                commandCode = (str[0] == 'D')? COMMAND_DISPLAY : COMMAND_KEYCODE;
+                break;
+            case 13:
+                commandCode = COMMAND_DEFAULTDELAY;
+                break;
+            case sizeof("DEFAULT_DELAY"):
+                // bigger than the biggest command, then it is a continuation
+                commandCode = activeCommand | COMMAND_CONTINUE_F;
+                commandLength = 0;
+                break;
+            default:
+                commandCode = COMMAND_NONE;
+        }
+    }
+
+    DEBUGGING_PRINTF("[PARSER] Resulting command code: %d\n", commandCode);
+    DEBUGGING_PRINTF("[PARSER] Resulting command length: %d\n", commandLength - 1);
 
     activeCommand = commandCode;
     LINE.setCommandCode(commandCode);
@@ -228,6 +248,7 @@ const bool
 QuackParser::updateActiveLine() {
     for(u8 i = 0; i < QUACKLINES_BUFFER; i++) {
         if(quackLines[i].state == QuackLine::State::FREE_TO_PARSE) {
+            DEBUGGING_PRINTF("[PARSER] Updated active line to %d\n", i);
             activeLine = i;
             quackLines[i].state = QuackLine::State::PARSING;
 
@@ -269,22 +290,27 @@ QuackParser::parse(const u8* const str) {
     const u16 cursor = getCommandCode(str);
 
     if(runLocalCommand(str + cursor)) {
+        DEBUGGING_PRINTF("[PARSER] Local command processed inside ESP.\n");
         return true;
     }
 
     quackLines[activeLine].lineOrder = orderCount++;
     
-    switch(activeCommand) {
+    switch(activeCommand & COMMAND_CODE_MASK) {
         case COMMAND_STRING:
+            DEBUGGING_PRINTF("[PARSER] Parsing STRING params.\n");
             parseStringParams(str + cursor);
             break;
         case COMMAND_KEYS:
+            DEBUGGING_PRINTF("[PARSER] Parsing KEYS params.\n");
             parseKeysParams(str + cursor);
             break;
         default:
+            DEBUGGING_PRINTF("[PARSER] Copying parameters from buffer to frame.\n");
             LINE.copyBuffer(str + cursor);
     }
 
+    DEBUGGING_PRINTF("[PARSER] Serializing frame %d.\n", activeLine);
     LINE.serialize(&CRC16);
 
     quackLines[activeLine].state = QuackLine::State::DONE_PARSING;
@@ -331,7 +357,6 @@ QuackParser::parsingLoop() {
         u8* str = (u8*) strtok((char*) buffer, LINE_SEPARATOR);
 
         while(str != NULL && state) {
-
             while(!canParse()) {}
             parse(str);
 
@@ -345,7 +370,7 @@ QuackParser::parsingLoop() {
         u16 bytesRead;
 
         while(activeFile.available() && state) {
-            bytesRead = activeFile.readBytesUntil('\n', buffer, sizeof(buffer) - 1);
+            bytesRead = activeFile.readBytesUntil('\n', buffer, FRAME_PARAM_SIZE - 1);
             buffer[bytesRead] = '\0';
 
             while(!canParse()) {}
