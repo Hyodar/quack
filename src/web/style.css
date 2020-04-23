@@ -59,11 +59,21 @@ body {
     cursor: pointer;
 }
 
+#sidemenu-btn::after {
+    font-family: serif;
+    content: "\2630\00FE0E";
+}
+
 #play-btn {
     padding: 10px 20px;
     font-size: 30px;
     cursor: pointer;
     color: #c2c2c2;
+}
+
+#play-btn::after {
+    font-family: serif;
+    content: "\25BA";
 }
 
 #filename,
