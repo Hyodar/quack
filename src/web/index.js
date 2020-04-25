@@ -32,7 +32,7 @@ const translate = {
     "REPLAY": "REPEAT",
 };
 
-class Toaster {
+class Toast {
     static Mode = Object.freeze({
         "SUCCESS": "#10ff0061",
         "ERROR": "#ff000094",
@@ -41,11 +41,11 @@ class Toaster {
     });
 
     constructor(id) {
-        this.toast = ID(id);
+        this.el = ID(id);
         this.timeout = null;
         this.active = true;
 
-        this.toast.onclick = this.click.bind(this);
+        this.el.onclick = this.click.bind(this);
     }
 
     toggle() {
@@ -62,23 +62,23 @@ class Toaster {
     }
 
     click() {
-        this.toast.style.right = "-60vw";
+        this.el.style.right = "-60vw";
     }
 
     hide() {
-        this.toast.style.opacity = "0";
-        this.toast.style.width = "0px";
-        this.toast.style.visibility = "hidden";
+        this.el.style.opacity = "0";
+        this.el.style.width = "0px";
+        this.el.style.visibility = "hidden";
         
         this.timeout = null;
     }
 
     reset() {
-        this.toast.style.right = "0px";
+        this.el.style.right = "0px";
 
-        this.toast.style.opacity = "1";
-        this.toast.style.width = "";
-        this.toast.style.visibility = "visible";
+        this.el.style.opacity = "1";
+        this.el.style.width = "";
+        this.el.style.visibility = "visible";
     }
 
     clearTimeout() {
@@ -90,8 +90,8 @@ class Toaster {
     show(text, mode) {
         if(!this.active) return;
 
-        this.toast.innerText = text;
-        this.toast.style.background = mode;
+        this.el.innerText = text;
+        this.el.style.background = mode;
 
         this.reset();
         this.clearTimeout();
@@ -105,7 +105,7 @@ const FRAME_PARAM_SIZE = 480;
 let lastVersion = "";
 
 const eventSource = new EventSource("/events");
-const toaster = new Toaster("toaster");
+const toast = new Toast("toast");
 
 /*****************************************************************************
  * Functions
@@ -499,23 +499,23 @@ ID("sidemenu-btn").addEventListener('click', function() {
 // EventSource ---------------------------------------------------------------
 
 eventSource.addEventListener("open", (e) => {
-    toaster.show("Connected!", Toaster.Mode.SUCCESS);
+    toast.show("Connected!", Toast.Mode.SUCCESS);
 }, false);
 
 eventSource.addEventListener("error", (e) => {
     if(e.target.readyState != EventSource.OPEN) {
-        toaster.show("Connection error!", Toaster.Mode.ERROR);
+        toast.show("Connection error!", Toast.Mode.ERROR);
     }
 }, false);
 
 eventSource.addEventListener("received", () => {
-    toaster.show("Received script!", Toaster.Mode.INFO);
+    toast.show("Received script!", Toast.Mode.INFO);
 }, false);
 
 eventSource.addEventListener("finished", () => {
-    toaster.show("Finished executing!", Toaster.Mode.SUCCESS);
+    toast.show("Finished executing!", Toast.Mode.SUCCESS);
 }, false);
 
 eventSource.addEventListener("ota", (e) => {
-    toaster.show(e.data, Toaster.Mode.ARDUINO_OTA);
+    toast.show(e.data, Toast.Mode.ARDUINO_OTA);
 }, false);

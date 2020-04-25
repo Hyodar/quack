@@ -142,7 +142,7 @@ body {
     color: rgb(139, 139, 139);
 }
 
-#toaster {
+#toast {
     display: block;
     position: fixed;
     z-index: 2;
