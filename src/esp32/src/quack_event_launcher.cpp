@@ -50,7 +50,7 @@ QuackEventLauncher::begin() {
         }
     });
 
-    ArduinoOTA.setHostname(hostName);
+    ArduinoOTA.setHostname(NW_HOSTNAME);
     ArduinoOTA.begin();
 
     // Events ================================================================

@@ -55,14 +55,14 @@ QuackWebserver::begin(QuackParser* _parser, QuackEventLauncher* quackEventLaunch
     // WiFi ==================================================================
 
     WiFi.mode(WIFI_AP_STA);
-    // WiFi.softAP(hostName);
-    WiFi.begin(ssid, password);
+    // WiFi.softAP(NW_HOSTNAME);
+    WiFi.begin(NW_SSID, NW_PASSWORD);
     
     if(WiFi.waitForConnectResult() != WL_CONNECTED) {
         DEBUGGING_PRINTF("STA: Failed!\n");
         WiFi.disconnect(false);
         delay(1000);
-        WiFi.begin(ssid, password);
+        WiFi.begin(NW_SSID, NW_PASSWORD);
     }
 
     Serial.println(WiFi.localIP());
