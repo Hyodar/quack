@@ -120,6 +120,8 @@ body {
 .toggle {
     justify-content: space-between;
     transition: background-color 0.05s ease;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 .toggle-on {
@@ -138,6 +140,21 @@ body {
 .toggle-off::after {
     content: "Off";
     color: rgb(139, 139, 139);
+}
+
+#toaster {
+    display: block;
+    position: fixed;
+    z-index: 2;
+    right: 0px;
+    top: 0px;
+    transition: all 0.4s ease-in-out;
+    width: 50vw;
+    padding: 12px;
+    margin: 6px;
+    border-radius: 6px;
+    color: #ffff;
+    cursor: pointer;
 }
 
 /*****************************************************************************

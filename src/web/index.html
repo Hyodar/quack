@@ -15,6 +15,8 @@
 
     <body>
         <input id="upload-input" type="file" hidden />
+
+        <span id="toaster"></span>
         
         <nav id="menu" class="menu slideout-menu slideout-menu-left">
             <header class="menu-header">
@@ -35,7 +37,8 @@
             <section class="menu-section">
                 <h3 class="menu-section-title">Editor</h3>
                 <ul class="menu-section-list" onclick="slideout.close();">
-                    <li><a id="active-theme" class="toggle toggle-on" onclick="toggleTheme()">Dark Mode</a></li>
+                    <li><a id="theme-toggle" class="toggle toggle-on" onclick="toggleTheme()">Dark Mode</a></li>
+                    <li><a id="notifications-toggle" class="toggle toggle-on" onclick="toaster.toggle()">Notifications</a></li>
                 </ul>
             </section>
         </nav>

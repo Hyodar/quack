@@ -32,18 +32,80 @@ const translate = {
     "REPLAY": "REPEAT",
 };
 
-const ToasterMode = Object.freeze({
-    "SUCCESS": "green",
-    "ERROR": "red",
-    "INFO": "blue",
-    "ARDUINO_OTA": "blue",
-});
+class Toaster {
+    static Mode = Object.freeze({
+        "SUCCESS": "#10ff0061",
+        "ERROR": "#ff000094",
+        "INFO": "#00b9ff94",
+        "ARDUINO_OTA": "#00ffff6b",
+    });
+
+    constructor(id) {
+        this.toast = ID(id);
+        this.timeout = null;
+        this.active = true;
+
+        this.toast.onclick = this.click.bind(this);
+    }
+
+    toggle() {
+        toggle(ID("notifications-toggle"),
+            () => { 
+                this.active = true;
+            },
+            () => {
+                this.active = false;
+                this.clearTimeout();
+                this.hide();
+            },
+        );
+    }
+
+    click() {
+        this.toast.style.right = "-60vw";
+    }
+
+    hide() {
+        this.toast.style.opacity = "0";
+        this.toast.style.width = "0px";
+        this.toast.style.visibility = "hidden";
+        
+        this.timeout = null;
+    }
+
+    reset() {
+        this.toast.style.right = "0px";
+
+        this.toast.style.opacity = "1";
+        this.toast.style.width = "";
+        this.toast.style.visibility = "visible";
+    }
+
+    clearTimeout() {
+        if(this.timeout) {
+            clearTimeout(this.timeout);
+        }
+    }
+
+    show(text, mode) {
+        if(!this.active) return;
+
+        this.toast.innerText = text;
+        this.toast.style.background = mode;
+
+        this.reset();
+        this.clearTimeout();
+
+        this.timeout = setTimeout(this.hide.bind(this), 2000);
+    }
+}
 
 const FRAME_PARAM_SIZE = 480;
 
 let lastVersion = "";
 
 const eventSource = new EventSource("/events");
+const toaster = new Toaster("toaster");
 
 /*****************************************************************************
  * Functions
@@ -113,12 +175,6 @@ function hideOptionsMenu() {
     ID("options-menu").style.transform = "scaleY(0)";
     ID("options-menu").style.maxHeight = "0px";
     hideOtherOptions();
-}
-
-function toaster(text, mode) {
-    const toast = ID("toaster");
-    toast.innerText = text;
-    toast.background = mode;
 }
 
 function hideOtherOptions(childId=null) {
@@ -372,7 +428,7 @@ function setTheme(newTheme) {
 }
 
 function toggleTheme() {
-    toggle(ID("active-theme"),
+    toggle(ID("theme-toggle"),
         () => setTheme("darcula"), 
         () => setTheme("default"),
     );
@@ -430,7 +486,9 @@ slideout.open = () => {
 }
 
 slideout.close = () => {
-    document.querySelector(".slideout-panel").style.paddingLeft = "5px";
+    if(document.querySelector(".slideout-panel").style.paddingLeft) {
+        document.querySelector(".slideout-panel").style.paddingLeft = "5px";
+    }
     return _slideoutClose();
 }
 
@@ -441,23 +499,23 @@ ID("sidemenu-btn").addEventListener('click', function() {
 // EventSource ---------------------------------------------------------------
 
 eventSource.addEventListener("open", (e) => {
-    toaster("Connected!", ToasterMode.SUCCESS);
+    toaster.show("Connected!", Toaster.Mode.SUCCESS);
 }, false);
 
 eventSource.addEventListener("error", (e) => {
     if(e.target.readyState != EventSource.OPEN) {
-        toaster("Connection error!", ToasterMode.ERROR);
+        toaster.show("Connection error!", Toaster.Mode.ERROR);
     }
 }, false);
 
 eventSource.addEventListener("received", () => {
-    toaster("Received script!", ToasterMode.INFO);
+    toaster.show("Received script!", Toaster.Mode.INFO);
 }, false);
 
 eventSource.addEventListener("finished", () => {
-    toaster("Finished executing!", ToasterMode.SUCCESS);
+    toaster.show("Finished executing!", Toaster.Mode.SUCCESS);
 }, false);
 
 eventSource.addEventListener("ota", (e) => {
-    toaster(e.data, ToasterMode.ARDUINO_OTA);
+    toaster.show(e.data, Toaster.Mode.ARDUINO_OTA);
 }, false);
