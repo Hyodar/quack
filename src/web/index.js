@@ -1,4 +1,8 @@
 
+/*****************************************************************************
+ * Globals
+*****************************************************************************/
+
 const commands = [
     "DEFAULTDELAY", "DELAY", "STRING", "DISPLAY", "REPEAT", "KEYS",
 ];
@@ -28,9 +32,22 @@ const translate = {
     "REPLAY": "REPEAT",
 };
 
+const ToasterMode = Object.freeze({
+    "SUCCESS": "green",
+    "ERROR": "red",
+    "INFO": "blue",
+    "ARDUINO_OTA": "blue",
+});
+
 const FRAME_PARAM_SIZE = 480;
 
 let lastVersion = "";
+
+const eventSource = new EventSource("/events");
+
+/*****************************************************************************
+ * Functions
+*****************************************************************************/
 
 async function doRequest(path, method, body, typeCallback, dataCallback) {
     return fetch(path, {
@@ -79,7 +96,7 @@ function setOpenOptions(newOptions) {
         options.remove();
     }
 
-    newOptions.forEach((el, idx) => {
+    newOptions.forEach((el) => {
         options.add(new Option(el, el));
     });
 }
@@ -96,6 +113,12 @@ function hideOptionsMenu() {
     ID("options-menu").style.transform = "scaleY(0)";
     ID("options-menu").style.maxHeight = "0px";
     hideOtherOptions();
+}
+
+function toaster(text, mode) {
+    const toast = ID("toaster");
+    toast.innerText = text;
+    toast.background = mode;
 }
 
 function hideOtherOptions(childId=null) {
@@ -355,6 +378,18 @@ function toggleTheme() {
     );
 }
 
+/*****************************************************************************
+ * Main
+*****************************************************************************/
+
+// update script list on startup
+updateScriptList();
+
+// set file upload callback
+ID("upload-input").addEventListener("change", handleUpload);
+
+// CodeMirror ----------------------------------------------------------------
+
 const editor = CodeMirror.fromTextArea(ID("editor"), {
     lineNumbers: true,
     styleActiveLine: true,
@@ -377,11 +412,7 @@ editor.on("change", () => compareVersions(editor.getValue()));
 document.querySelector(".CodeMirror").setAttribute("data-slideout-ignore", "");
 document.querySelector(".CodeMirror").style.transition = "background 0.2s ease-in-out, color 0.2s ease-in-out";
 
-// update script list on startup
-updateScriptList();
-
-// set file upload callback
-ID("upload-input").addEventListener("change", handleUpload);
+// Slideout ------------------------------------------------------------------
 
 const slideout = new Slideout({
     panel: ID("panel"),
@@ -403,7 +434,30 @@ slideout.close = () => {
     return _slideoutClose();
 }
 
-// Toggle button
 ID("sidemenu-btn").addEventListener('click', function() {
     slideout.toggle();
 });
+
+// EventSource ---------------------------------------------------------------
+
+eventSource.addEventListener("open", (e) => {
+    toaster("Connected!", ToasterMode.SUCCESS);
+}, false);
+
+eventSource.addEventListener("error", (e) => {
+    if(e.target.readyState != EventSource.OPEN) {
+        toaster("Connection error!", ToasterMode.ERROR);
+    }
+}, false);
+
+eventSource.addEventListener("received", () => {
+    toaster("Received script!", ToasterMode.INFO);
+}, false);
+
+eventSource.addEventListener("finished", () => {
+    toaster("Finished executing!", ToasterMode.SUCCESS);
+}, false);
+
+eventSource.addEventListener("ota", (e) => {
+    toaster(e.data, ToasterMode.ARDUINO_OTA);
+}, false);

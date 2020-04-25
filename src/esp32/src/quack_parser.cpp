@@ -2,6 +2,7 @@
 #include "quack_parser.h"
 
 #include "quack_display.h"
+#include "quack_event_launcher.h"
 #include "usb_hid_keys.h"
 #include "quack_codes.h"
 #include "locale_us.h"
@@ -19,13 +20,14 @@ QuackParser::QuackParser() : state{QuackParser::State::NONE},
                              activeLine{0}, nextOrder{0}, orderCount{0},
                              keyboardLocale{&locale_us}, buffer{0},
                              activeFile{}, activeCommand{COMMAND_NONE},
-                             quackDisplay{nullptr} {
+                             quackDisplay{nullptr}, eventLauncher{} {
     // no-op
 }
 
 void
-QuackParser::begin(QuackDisplay* _quackDisplay) {
+QuackParser::begin(QuackDisplay* _quackDisplay, QuackEventLauncher* _eventLauncher) {
     quackDisplay = _quackDisplay;
+    eventLauncher = _eventLauncher;
 }
 
 #define LINE quackLines[activeLine].data
@@ -348,11 +350,13 @@ QuackParser::canParse() {
 void
 QuackParser::parsingLoop() {
     if(!state) {
+        eventLauncher->handleOTA();
         return;
     }
     
     if(state == QuackParser::State::BUFFER_PARSING) {
         DEBUGGING_PRINTF("[PARSER] Code is smaller than buffer size. Running it raw.\n");
+        eventLauncher->launch("received");
 
         u8* str = (u8*) strtok((char*) buffer, LINE_SEPARATOR);
 
@@ -363,10 +367,13 @@ QuackParser::parsingLoop() {
             str = (u8*) strtok(NULL, LINE_SEPARATOR);
         }
 
+        eventLauncher->launch("finished");
         state = QuackParser::State::NONE;
     }
     else { // FILE_PARSING
         DEBUGGING_PRINTF("[PARSER] Code is bigger than buffer size. Running it as file.\n");
+        eventLauncher->launch("received");
+
         u16 bytesRead;
 
         while(activeFile.available() && state) {
@@ -377,6 +384,7 @@ QuackParser::parsingLoop() {
             parse(buffer);
         }
 
+        eventLauncher->launch("finished");
         activeFile.close();
         state = QuackParser::State::NONE;
     }

@@ -20,6 +20,7 @@
 #include <SPIFFS.h>
 
 class QuackDisplay;
+class QuackEventLauncher;
 
 class QuackParser {
 
@@ -66,6 +67,7 @@ private:
     u8 activeCommand;
 
     QuackDisplay* quackDisplay;
+    QuackEventLauncher* eventLauncher;
 
     const bool updateActiveLine();
     const u8 getCommandCode(const u8* const str);
@@ -82,7 +84,7 @@ private:
 public:
     QuackParser();
 
-    void begin(QuackDisplay* _quackDisplay);
+    void begin(QuackDisplay* _quackDisplay, QuackEventLauncher* _eventLauncher);
 
     QuackParser::QuackLine* getProcessedLine();
     void parsingLoop();

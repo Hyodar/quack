@@ -6,6 +6,7 @@
 #include "quack_parser.h"
 #include "quack_interface.h"
 #include "quack_display.h"
+#include "quack_event_launcher.h"
 
 class Quack {
 
@@ -17,6 +18,7 @@ public:
     QuackParser quackParser;
     QuackInterface quackInterface;
     QuackDisplay quackDisplay;
+    QuackEventLauncher quackEventLauncher;
 
 public:
     void begin();
@@ -24,6 +26,7 @@ public:
     void runInterface();
     void runDisplay();
     QuackParser* getParser();
+    QuackEventLauncher* getEventLauncher();
 };
 
 #endif

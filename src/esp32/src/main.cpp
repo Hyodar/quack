@@ -12,7 +12,6 @@ void
 loop2(void* params) {
     Serial.println("[THREADING] Initializing loop2");
     for(;;) {
-        quackWebserver.loop();
         quack.runInterface();
         delay(1); // watchdog
     }
@@ -28,10 +27,8 @@ loop3(void* params) {
 
 void
 setup() {
-    // quackParser.parse(DECLARE_STR("STRING abcde"));
-
     quack.begin();
-    quackWebserver.begin(quack.getParser());
+    quackWebserver.begin(quack.getParser(), quack.getEventLauncher());
 
     // create new tasks in FreeRTOS API
     xTaskCreatePinnedToCore(loop2, "loop2", 8192, NULL, 1, NULL, 0);

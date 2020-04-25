@@ -6,8 +6,9 @@
 void
 Quack::begin() {
     quackInterface.begin();
-    quackParser.begin(&quackDisplay);
+    quackParser.begin(&quackDisplay, &quackEventLauncher);
     quackDisplay.begin();
+    quackEventLauncher.begin();
 }
 
 void
@@ -48,4 +49,9 @@ Quack::runDisplay() {
 QuackParser*
 Quack::getParser() {
     return &quackParser;
+}
+
+QuackEventLauncher*
+Quack::getEventLauncher() {
+    return &quackEventLauncher;
 }
