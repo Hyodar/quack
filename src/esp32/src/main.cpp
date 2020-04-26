@@ -27,6 +27,7 @@ loop3(void* params) {
 
 void
 setup() {
+    quackWebserver.beginWifi();
     quack.begin();
     quackWebserver.begin(quack.getParser(), quack.getEventLauncher());
 

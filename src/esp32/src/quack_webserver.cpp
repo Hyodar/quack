@@ -46,14 +46,7 @@ QuackWebserver::testMagic(AsyncWebServerRequest* request) const {
 }
 
 void
-QuackWebserver::begin(QuackParser* _parser, QuackEventLauncher* quackEventLauncher) {
-    
-    // Parser ================================================================
-
-    parser = _parser;
-
-    // WiFi ==================================================================
-
+QuackWebserver::beginWifi() {
     WiFi.mode(WIFI_AP_STA);
     // WiFi.softAP(NW_HOSTNAME);
     WiFi.begin(NW_SSID, NW_PASSWORD);
@@ -66,6 +59,14 @@ QuackWebserver::begin(QuackParser* _parser, QuackEventLauncher* quackEventLaunch
     }
 
     Serial.println(WiFi.localIP());
+}
+
+void
+QuackWebserver::begin(QuackParser* _parser, QuackEventLauncher* quackEventLauncher) {
+    
+    // Parser ================================================================
+
+    parser = _parser;
 
     // mDNS ==================================================================
 

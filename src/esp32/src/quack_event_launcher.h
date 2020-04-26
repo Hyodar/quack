@@ -14,7 +14,7 @@ public:
 
     void begin();
     void handleOTA();
-    void launch(const char* event, const char* data = nullptr);
+    void launch(const char* event, const char* data = ":D");
 
     AsyncEventSource* getEventSource();
 };

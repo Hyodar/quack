@@ -19,6 +19,7 @@ public:
     QuackWebserver();
 
     void begin(QuackParser* _parser, QuackEventLauncher* quackEventLauncher);
+    void beginWifi();
 
     void reply(AsyncWebServerRequest* request, const int code,
                const char* const type, const uint8_t* const data,
