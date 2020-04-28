@@ -103,6 +103,7 @@ class Toast {
 const FRAME_PARAM_SIZE = 480;
 
 let lastVersion = "";
+let hasErrors = false;
 
 const eventSource = new EventSource("/events");
 const toast = new Toast("toast");
@@ -315,6 +316,11 @@ function hasLongLines(code) {
 }
 
 function runScript() {
+    if(hasErrors) {
+        toast.show("There are errors in your script! Solve them before running.", Toast.Mode.ERROR);
+        return;
+    }
+
     const form = new FormData();
     const code = preProcessCode(editor.getValue());
 
@@ -452,14 +458,20 @@ const editor = CodeMirror.fromTextArea(ID("editor"), {
     matchBrackets: true,
     scrollPastEnd: true,
     scrollbarStyle: null,
-    mode: "javascript",
+    mode: "simplemode",
     theme: "darcula",
+    gutters: ["CodeMirror-lint-markers"],
     lint: {
         onUpdateLinting: (annotationsNotSorted, annotations, cm) => {
             // when linter is done, error handling can be done here.
             // probably the run and save "Go" buttons should be disabled
             // and an error message could be displayed with alert(errMsg)
-        }
+
+            hasErrors = annotations.some((line) => {
+                return line.some(err => err.severity === "error");
+            });
+        },
+        selfContain: IS_MOBILE,
     },
 });
 
@@ -477,24 +489,26 @@ const slideout = new Slideout({
     tolerance: 70,
 });
 
-const _slideoutOpen = slideout.open.bind(slideout);
-const _slideoutClose = slideout.close.bind(slideout);
+if(IS_MOBILE) {
+    const _slideoutOpen = slideout.open.bind(slideout);
+    const _slideoutClose = slideout.close.bind(slideout);
 
-slideout.open = () => {
-    document.querySelector(".slideout-panel").style.paddingLeft = "25px";
-    return _slideoutOpen();
-}
-
-slideout.close = () => {
-    if(document.querySelector(".slideout-panel").style.paddingLeft) {
-        document.querySelector(".slideout-panel").style.paddingLeft = "5px";
+    slideout.open = () => {
+        document.querySelector(".slideout-panel").style.paddingLeft = "25px";
+        return _slideoutOpen();
     }
-    return _slideoutClose();
-}
 
-ID("sidemenu-btn").addEventListener('click', function() {
-    slideout.toggle();
-});
+    slideout.close = () => {
+        if(document.querySelector(".slideout-panel").style.paddingLeft) {
+            document.querySelector(".slideout-panel").style.paddingLeft = "5px";
+        }
+        return _slideoutClose();
+    }
+
+    ID("sidemenu-btn").addEventListener('click', function() {
+        slideout.toggle();
+    });
+}
 
 // EventSource ---------------------------------------------------------------
 

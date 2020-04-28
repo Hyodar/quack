@@ -54,7 +54,7 @@ QuackParser::replaceKey(const u8 str) {
 
 void
 QuackParser::replaceKeyword(const u8* const str, const u16 len) {
-    switch (len) {
+    switch(len) {
         case 1: replaceKey(*str); break;
         case 2: LINE.addParameterByte(KEY_F1 + (str[1] - '1')); break;
         case 3:
