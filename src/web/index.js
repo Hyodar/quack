@@ -32,12 +32,34 @@ const translate = {
     "REPLAY": "REPEAT",
 };
 
+class API {
+    static Resource = Object.freeze({
+        STOP:       "/stop",
+        SAVE:       "/save",
+        RUN_RAW:    "/run_raw",
+        RUN_FILE:   "/run_file",
+        LIST:       "/list",
+        OPEN:       "/open"
+    });
+
+    static async call(resource, request_body) {
+        return fetch(resource, {
+            method: "POST",
+            body: request_body,
+        }).then(response =>
+            (resource != API.Resource.LIST)
+            ? response.text()
+            : response.json()
+        );
+    }
+}
+
 class Toast {
     static Mode = Object.freeze({
-        "SUCCESS": "#10ff0061",
-        "ERROR": "#ff000094",
-        "INFO": "#00b9ff94",
-        "ARDUINO_OTA": "#00ffff6b",
+        SUCCESS: "#10ff0061",
+        ERROR: "#ff000094",
+        INFO: "#00b9ff94",
+        ARDUINO_OTA: "#00ffff6b",
     });
 
     constructor(id) {
@@ -102,8 +124,16 @@ class Toast {
 
 const FRAME_PARAM_SIZE = 480;
 
-let lastVersion = "";
-let hasErrors = false;
+const status = {
+    lastVersion: "",
+    hasErrors: false,
+
+    get isSaved() { ID("is-saved").innerText == "" },
+    set isSaved(val) { return ID("is-saved").innerText = (val)? "" : "*" },
+
+    get filename() { return ID("filename").innerText; },
+    set filename(val) { ID("filename").innerText = val; },
+};
 
 const eventSource = new EventSource("/events");
 const toast = new Toast("toast");
@@ -112,44 +142,17 @@ const toast = new Toast("toast");
  * Functions
 *****************************************************************************/
 
-async function doRequest(path, method, body, typeCallback, dataCallback) {
-    return fetch(path, {
-        method: method,
-        body: body
-    }).then(
-        typeCallback
-    ).then(
-        dataCallback
-    );
-}
-
 function compareVersions(code) {
-    if(lastVersion.length != code.length) {
-        setIsSaved(false);
+    if(status.lastVersion.length != code.length) {
+        status.isSaved = false;
     }
     else {
-        setIsSaved(lastVersion == code);
+        status.isSaved = (status.lastVersion == code);
     }
-}
-
-function setIsSaved(isSaved) {
-    ID("is-saved").innerText = (isSaved)? "" : "*";
-}
-
-function getIsSaved() {
-    return ID("is-saved").innerText == "";
 }
 
 function ID(id) {
     return document.getElementById(id);
-}
-
-function getFilename() {
-    return ID("filename").innerText;
-}
-
-function setFilename(filename) {
-    ID("filename").innerText = filename;
 }
 
 function setOpenOptions(newOptions) {
@@ -165,16 +168,22 @@ function setOpenOptions(newOptions) {
 }
 
 function showOptionsMenu(childId) {
-    ID("options-menu").style.filter = "opacity(1)";
-    ID("options-menu").style.transform = "scaleY(1)";
-    ID("options-menu").style.maxHeight = "100px";
+    Object.assign(ID("options-menu").style, {
+        filter: "opacity(1)",
+        transform: "scaleY(1)",
+        maxHeight: "100px",
+    });
+
     hideOtherOptions(childId);
 }
 
 function hideOptionsMenu() {
-    ID("options-menu").style.filter = "opacity(0)";
-    ID("options-menu").style.transform = "scaleY(0)";
-    ID("options-menu").style.maxHeight = "0px";
+    Object.assign(ID("options-menu").style, {
+        filter: "opacity(0)",
+        transform: "scaleY(0)",
+        maxHeight: "0px",
+    });
+
     hideOtherOptions();
 }
 
@@ -194,7 +203,7 @@ function hideOtherOptions(childId=null) {
 function openFilenameInput() {
     showOptionsMenu("save-container");
 
-    ID("filename-save").value = getFilename();
+    ID("filename-save").value = status.filename;
 }
 
 function preProcessCode(content) {
@@ -262,10 +271,8 @@ function updateScriptList() {
 
     form.append("Magic", 0xF00DBEEF);
 
-    doRequest("/list", "POST", form,
-              response => response.json(),
-              json => setOpenOptions(json.dirFiles)
-    );
+    API.call(API.Resource.LIST, form)
+       .then(json => setOpenOptions(json.dirFiles));
 }
 
 function saveScript(filename) {
@@ -278,7 +285,7 @@ function saveScript(filename) {
     }
 
     hideOptionsMenu();
-    setFilename(filename);
+    status.filename = filename;
 
     const preProcessedCode = preProcessCode(editor.getValue());
     const file = new File([preProcessedCode], filename, {
@@ -288,21 +295,19 @@ function saveScript(filename) {
     const form = new FormData();
     form.append("Script-File", file);
    
-    doRequest("/save", "POST", form,
-             response => {
-                lastVersion = editor.getValue();
-                setIsSaved(true);
-                
-                // update filename-open options
-                const options = ID("filename-open").options;
-                if(!Array.from(options).find(el => el.value == filename)) {
-                    options.add(new Option(filename, filename));
-                }
+    API.call(API.Resource.SAVE, form)
+       .then(text => {
+            status.lastVersion = editor.getValue();
+            status.isSaved = true;
+            
+            // update filename-open options
+            const options = ID("filename-open").options;
+            if(!Array.from(options).find(el => el.value == filename)) {
+                options.add(new Option(filename, filename));
+            }
 
-                return response.text();
-             },
-             text => console.log(`/save response: ${text}`)
-    );
+            console.log(`/save response: ${text}`);
+       });
 }
 
 function confirmSave() {
@@ -316,7 +321,7 @@ function hasLongLines(code) {
 }
 
 function runScript() {
-    if(hasErrors) {
+    if(status.hasErrors) {
         toast.show("There are errors in your script! Solve them before running.", Toast.Mode.ERROR);
         return;
     }
@@ -329,16 +334,14 @@ function runScript() {
     if(code.length <= 1000 && !hasLongLines(code)) {
         form.append("Code", code);
         
-        doRequest("/run_raw", "POST", form,
-            response => response.text(),
-            text => console.log(`/run_raw response: ${text}`)
-        );
+        API.call(API.Resource.RUN_RAW, form)
+           .then(text => console.log(`/run_raw response: ${text}`));
 
         return;
     }
     
-    if(!getIsSaved()) {
-        saveScript(getFilename());
+    if(!status.isSaved) {
+        saveScript(status.filename);
         timeoutDelay = 500;
     }
     else {
@@ -348,12 +351,11 @@ function runScript() {
     
     // give esp a little time to save the script
     setTimeout(() => {
-        form.append("Filename", getFilename());
+        form.append("Filename", status.filename);
         
-        doRequest("/run_file", "POST", form,
-            response => response.text(),
-            text => console.log(`/run_file response: ${text}`)
-        );
+        API.call(API.Resource.RUN_FILE, form)
+           .then(text => console.log(`/run_file response: ${text}`));
+        
     }, timeoutDelay);
 }
 
@@ -362,10 +364,8 @@ function stopScript() {
 
     form.append("Magic", 0xF00DBEEF);
 
-    doRequest("/stop", "POST", form,
-              response => response.text(),
-              text => console.log(`/stop response: ${text}`)
-    );
+    API.call(API.Resource.STOP, form)
+       .then(text => console.log(`/stop response: ${text}`));
 }
 
 function uploadScript() {
@@ -381,15 +381,13 @@ function openScript() {
     const form = new FormData();
     form.append("Filename", scriptName);
 
-    doRequest("/open", "POST", form,
-              response => response.text(),
-              text => {
-                editor.setValue(deProcessCode(text));
-                lastVersion = text;
-                setIsSaved(true);
-                setFilename(scriptName);
-              }
-    );
+    API.call(API.Resource.OPEN, form)
+       .then(text => {
+            editor.setValue(deProcessCode(text));
+            status.lastVersion = text;
+            status.isSaved = true;
+            status.filename = scriptName;
+       });
 
     hideOptionsMenu();
 }
@@ -409,9 +407,9 @@ function handleUpload(event) {
         const text = fileEvent.target.result;
         editor.setValue(text);
         
-        setIsSaved(false);
-        setFilename(file.name);
-        lastVersion = ""
+        status.isSaved = false;
+        status.filename = file.name;
+        status.lastVersion = ""
     };
 
     fileReader.readAsText(file, "UTF-8");
@@ -419,8 +417,7 @@ function handleUpload(event) {
 
 function toggle(element, toggleOn, toggleOff) {
     const classes = element.classList;
-    if(classes.contains("toggle-on")) {
-        classes.replace("toggle-on", "toggle-off");
+    if(classes.replace("toggle-on", "toggle-off")) {
         toggleOff();
     }
     else {
@@ -467,8 +464,8 @@ const editor = CodeMirror.fromTextArea(ID("editor"), {
             // probably the run and save "Go" buttons should be disabled
             // and an error message could be displayed with alert(errMsg)
 
-            hasErrors = annotations.some((line) => {
-                return line.some(err => err.severity === "error");
+            status.hasErrors = annotations.some(line => {
+                return line.some(err => err.severity === "error")
             });
         },
         selfContain: IS_MOBILE,
