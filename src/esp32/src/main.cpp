@@ -19,11 +19,23 @@ loop2(void* params) {
 
 void
 loop3(void* params) {
+    Serial.println("[THREADING] Initializing loop3");
     for(;;) {
         quack.runDisplay();
         delay(7);
     }
 }
+
+#ifdef BLUETOOTH_ENABLED
+void
+loop4(void* params) {
+    Serial.println("[THREADING] Initializing loop4");
+    for(;;) {
+        quack.runBluetooth();
+        delay(1);
+    }
+}
+#endif
 
 void
 setup() {
@@ -34,6 +46,9 @@ setup() {
     // create new tasks in FreeRTOS API
     xTaskCreatePinnedToCore(loop2, "loop2", 8192, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(loop3, "loop3", 8192, NULL, 1, NULL, 1);
+#ifdef BLUETOOTH_ENABLED
+    xTaskCreatePinnedToCore(loop4, "loop4", 8192, NULL, 1, NULL, 0);
+#endif
 }
 
 void

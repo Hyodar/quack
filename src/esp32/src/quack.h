@@ -8,6 +8,10 @@
 #include "quack_display.h"
 #include "quack_event_launcher.h"
 
+#ifdef BLUETOOTH_ENABLED
+#include "quack_bluetooth.h"
+#endif
+
 class Quack {
 
 #ifndef QUACK_DEBUGGING
@@ -19,12 +23,18 @@ public:
     QuackInterface quackInterface;
     QuackDisplay quackDisplay;
     QuackEventLauncher quackEventLauncher;
+#ifdef BLUETOOTH_ENABLED
+    QuackBluetooth quackBluetooth;
+#endif
 
 public:
     void begin();
     void runParser();
     void runInterface();
     void runDisplay();
+#ifdef BLUETOOTH_ENABLED
+    void runBluetooth();
+#endif
     QuackParser* getParser();
     QuackEventLauncher* getEventLauncher();
 };

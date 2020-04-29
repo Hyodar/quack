@@ -7,6 +7,9 @@ void
 Quack::begin() {
     quackInterface.begin();
     quackParser.begin(&quackDisplay, &quackEventLauncher);
+#ifdef BLUETOOTH_ENABLED
+    quackBluetooth.begin(&quackParser);
+#endif
     quackDisplay.begin();
     quackEventLauncher.begin();
 }
@@ -45,6 +48,13 @@ void
 Quack::runDisplay() {
     quackDisplay.scroll();
 }
+
+#ifdef BLUETOOTH_ENABLED
+void
+Quack::runBluetooth() {
+    quackBluetooth.loop();
+}
+#endif
 
 QuackParser*
 Quack::getParser() {
