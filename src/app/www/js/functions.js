@@ -44,26 +44,44 @@ class API {
 
     static bluetoothEnabled = false;
     static callbackQueue = [];
+    static callIDCounter = 0;
+    static canSend = true;
+
+    static _enableBluetooth() {
+        API.bluetoothEnabled = true;
+
+        bluetoothSerial.subscribe(
+            "\0",
+            API.subscribeCallback,
+            API.bluetoothError
+        );
+        
+        toast.show("Bluetooth Enabled!", Toast.Mode.SUCCESS);
+    }
 
     static async enableBluetooth() {
         return new Promise((resolve, reject) => {
-            bluetoothSerial.connect("MyESP32",
-            () => {
-                API.bluetoothEnabled = true;
-
-                bluetoothSerial.subscribe(
-                    "\0",
-                    API.subscribeCallback,
-                    API.bluetoothError
-                );
+            bluetoothSerial.list((pairedDevices) => {
+                const device = pairedDevices.find((el) => el.name === "MyESP32");
                 
-                toast.show("Bluetooth Enabled!", Toast.Mode.SUCCESS);
-                resolve();
+                if(device) {
+                    bluetoothSerial.connect(device.address,
+                    () => {
+                        API._enableBluetooth();
+                        resolve();
+                    },
+                    (err) => {
+                        API.bluetoothError(err);
+                        reject();
+                    });
+                }
+                else {
+                    API.bluetoothError("ESP32 not paired!");
+                    reject();
+                }
             },
-            (err) => {
-                API.bluetoothError(err);
-                reject();
-            })
+            (err) => API.bluetoothError(err)
+            );
         });
     }
 
@@ -77,9 +95,11 @@ class API {
     
     static subscribeCallback(data) {
         const callback = API.callbackQueue.pop();
+        const input = data.slice();
 
+        alert(`input: ${input}, callback: ${callback.id}`);
         if(callback) {
-            callback(data);
+            callback(input.replace('\0', ''));
         }
     }
 
@@ -91,22 +111,52 @@ class API {
         toast.show("Bluetooth Disabled!", Toast.Mode.INFO);
     }
 
-    static call(resource, request_body, ack_callback, resp_callback) {
-        if(this.bluetoothEnabled) {
+    static async delayedBluetoothSend(text) {
+        const chunks = text.match(/.{1,80}/g);
+
+        for(let i = 0; i < chunks.length; i++) {
+            bluetoothSerial.write(chunks[i], API.bluetoothSuccess, API.bluetoothError);
+            await sleep(300);
+        }
+
+        bluetoothSerial.write('\0', API.bluetoothSuccess, API.bluetoothError);
+    }
+
+    static async call(resource, requestBody, ackCallback, respCallback=null) {
+        if(!API.canSend) {
+            toast.show("Still running a command!", Toast.Mode.ERROR);
+            return;
+        }
+
+        if(API.bluetoothEnabled) {
+            API.canSend = false;
+
+            if(ackCallback) {
+                ackCallback.id = `${API.callIDCounter++}|${resource}|ACK`;
+                API.callbackQueue.unshift(ackCallback);
+            }
+
+            if(respCallback) {
+                respCallback.id = `${API.callIDCounter++}|${resource}|RES`
+                API.callbackQueue.unshift(respCallback);
+            }
+
             bluetoothSerial.write(`\0${resource}`, API.bluetoothSuccess, API.bluetoothError);
             
-            for(const value of request_body.values()) {
-                bluetoothSerial.write(`${value}\0`, API.bluetoothSuccess, API.bluetoothError);
+            API.endCommand = true;
+            for(const [key, val] of requestBody.entries()) {
+                if(key == "FileBytes") {
+                    await API.delayedBluetoothSend(val);
+                }
+                else {
+                    bluetoothSerial.write(`${val}\0`, API.bluetoothSuccess, API.bluetoothError);
+                }
             }
 
             bluetoothSerial.write('\0', API.bluetoothSuccess, API.bluetoothError);
-
-            if(ack_callback) {
-                API.callbackQueue.unshift(ack_callback);
-            }
-            if(resp_callback) {
-                API.callbackQueue.unshift(resp_callback);
-            }
+            
+            toast.show("Sent command.", Toast.Mode.INFO);
+            API.canSend = true;
         }
         else {
             toast.show("Bluetooth is not enabled!", Toast.Mode.ERROR);
@@ -116,10 +166,9 @@ class API {
 
 class Toast {
     static Mode = Object.freeze({
-        SUCCESS: "#10ff0061",
-        ERROR: "#ff000094",
-        INFO: "#00b9ff94",
-        ARDUINO_OTA: "#00ffff6b",
+        SUCCESS: "rgba(16, 255, 0, 0.6)",
+        ERROR: "rgba(255, 0, 0, 0.6)",
+        INFO: "rgba(0, 185, 255, 0.6)",
     });
 
     constructor(id) {
@@ -188,8 +237,8 @@ const status = {
     lastVersion: "",
     hasErrors: false,
 
-    get isSaved() { ID("is-saved").innerText == "" },
-    set isSaved(val) { return ID("is-saved").innerText = (val)? "" : "*" },
+    get isSaved() { return ID("is-saved").innerText == ""; },
+    set isSaved(val) { ID("is-saved").innerText = (val)? "" : "*" },
 
     get filename() { return ID("filename").innerText; },
     set filename(val) { ID("filename").innerText = val; },
@@ -198,6 +247,10 @@ const status = {
 /*****************************************************************************
  * Functions
 *****************************************************************************/
+
+async function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 function compareVersions(code) {
     if(status.lastVersion.length != code.length) {
@@ -327,7 +380,7 @@ function updateScriptList() {
     const form = new FormData();
 
     API.call(API.Resource.LIST, form, null,
-             json => setOpenOptions(JSON.parse(json).dirFiles));
+             json => { alert('JSON: ' + json); setOpenOptions(JSON.parse(json).dirFiles); });
 }
 
 function saveScript(filename) {
@@ -346,7 +399,7 @@ function saveScript(filename) {
 
     const form = new FormData();
     form.append("Filename", filename);
-    form.append("Script", preProcessedCode);
+    form.append("FileBytes", preProcessedCode);
    
     API.call(API.Resource.SAVE, form, () => {
         status.lastVersion = editor.getValue();
@@ -386,7 +439,7 @@ function runScript() {
         
         API.call(API.Resource.RUN_RAW, form, () => {
             toast.show("Received command!", Toast.Mode.SUCCESS);
-        })
+        });
 
         return;
     }
@@ -576,4 +629,5 @@ function main() {
     // Toast -----------------------------------------------------------------
 
     toast = new Toast("toast");
+
 }

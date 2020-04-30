@@ -74,8 +74,8 @@ QuackWebserver::begin(QuackParser* _parser, QuackEventLauncher* quackEventLaunch
 
     // SPIFFS ================================================================
 
-    //SPIFFS.format();
-    SPIFFS.begin();
+    // SPIFFS.format();
+    // SPIFFS.begin();
 
     // Server ================================================================
 

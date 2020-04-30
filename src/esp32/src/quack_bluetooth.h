@@ -17,7 +17,6 @@ enum State {
     READING         = 3,
     CONTINUOUS_READ = 4,
     WAITING_END     = 5,
-    STREAM_END      = 6,
 };
 
 enum Resource {

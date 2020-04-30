@@ -43,6 +43,7 @@ loop4(void* params) {
 
 void
 setup() {
+    SPIFFS.begin();
 #ifdef WEBSERVER_ENABLED
     quackWebserver.beginWifi();
 #endif

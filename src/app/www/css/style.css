@@ -62,7 +62,7 @@ body {
 }
 
 #options-menu {
-    background-color: #ffffff05;
+    background-color: rgba(255, 255, 255, 0.01953125);
     transform-origin: top;
     transition: transform 0.08s ease-out, filter 0.08s ease, max-height 0.12s;
     max-height: 0px;
@@ -104,7 +104,7 @@ body {
 }
 
 #filename {
-    background-color: #ffffff14;
+    background-color: rgba(255, 255, 255, 0.078125);
     margin: 10px;
 }
 
@@ -133,7 +133,7 @@ body {
 }
 
 .toggle-on {
-    background-color: #ffffff14;
+    background-color: rgba(255, 255, 255, 0.078125);
 }
 
 .toggle-on::after {
@@ -142,7 +142,7 @@ body {
 }
 
 .toggle-off {
-    background-color: #ffffff00;
+    background-color: rgba(255, 255, 255, 0);
 }
 
 .toggle-off::after {

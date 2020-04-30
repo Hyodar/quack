@@ -342,6 +342,8 @@ QuackParser::parsingLoop() {
 
 void
 QuackParser::fillBuffer(const u8* const str) {
+    DEBUGGING_PRINTF("[PARSER] Filling buffer.");
+
     strcpy((char*) buffer, (char*) str);
     
     DEBUGGING_PRINTF("Buffer: {\n%s}\n", buffer);
