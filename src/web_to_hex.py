@@ -100,13 +100,13 @@ def get_array_name(file):
 
     return name.replace(".", "_").upper()
 
-def main():
+def generate_file(path, target):
 
     arrays = []
     callbacks = []
     get_callbacks = []
 
-    for file in Path(WEB_PATH).glob("*"):
+    for file in Path(path).glob("*"):
         array_name = get_array_name(file)
 
         arrays.append(file_hexarray(file, array_name))
@@ -119,9 +119,11 @@ def main():
         get_callbacks="; \\\n".join(get_callbacks),
     )
 
-    with Path(TARGET_FILE).open(mode='w', encoding="utf-8") as target_file:
+    with Path(target).open(mode='w', encoding="utf-8") as target_file:
         target_file.writelines(lines)
 
+def main():
+    generate_file(WEB_PATH, TARGET_FILE)
 
 if __name__ == '__main__':
     main()
