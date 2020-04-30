@@ -16,10 +16,12 @@
       "cordova-plugin-bluetooth-serial": {}
     },
     "platforms": [
-      "browser"
+      "browser",
+      "android"
     ]
   },
   "dependencies": {
+    "cordova-android": "^8.1.0",
     "cordova-browser": "^6.0.0",
     "cordova-plugin-bluetooth-serial": "0.4.7"
   }
