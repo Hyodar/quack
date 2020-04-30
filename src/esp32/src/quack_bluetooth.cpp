@@ -30,11 +30,13 @@ QuackBluetooth::loop() {
                 break;
 
             case STREAM_START:
-                activeResource = Resource(serial.read());
+                activeResource = Resource(serial.read() - '0');
                 state = READING;
                 break;
 
             case READING:
+                serial.print("ACK");
+                serial.write('\0');
                 readResourceParams();
                 break;
 
@@ -46,7 +48,7 @@ QuackBluetooth::loop() {
                 }
                 else {
                     activeFile.close();
-                    state = STREAM_END;
+                    state = WAITING_END;
                 }
             }
                 break;
@@ -79,7 +81,7 @@ QuackBluetooth::readResourceParams() {
             state = CONTINUOUS_READ;
         }
         else {
-            state = STREAM_END;
+            state = WAITING_END;
         }
     }
 }
@@ -97,7 +99,6 @@ QuackBluetooth::respondRequest() {
             parser->stop();
             break;
         case SAVE:
-            serial.print("ack");
             break;
         case LIST: {
             fs::File root = SPIFFS.open("/");
@@ -122,12 +123,14 @@ QuackBluetooth::respondRequest() {
             root.close();
 
             serial.print(json.c_str());
+            serial.write('\0');
         }
             break;
         case OPEN:
             activeFile = SPIFFS.open((char*) buf);
 
             serial.print(activeFile);
+            serial.write('\0');
 
             activeFile.close();
             break;
