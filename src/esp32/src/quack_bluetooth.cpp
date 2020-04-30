@@ -74,7 +74,8 @@ QuackBluetooth::readResourceParams() {
         state = WAITING_END; // no parameters
     }
     else {
-        bufSize = serial.readBytesUntil('\0', (uint8_t*) buf, 480); // filename
+        // filename or code
+        bufSize = serial.readBytesUntil('\0', (uint8_t*) buf, 480);
         
         if(activeResource == SAVE) {
             activeFile = SPIFFS.open((char*) buf, "w");
