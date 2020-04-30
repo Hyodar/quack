@@ -1,7 +1,9 @@
 
 #include "quack_event_launcher.h"
 
-#include <ArduinoOTA.h>
+// #include <ArduinoOTA.h>
+
+#ifdef WEBSERVER_ENABLED
 
 #include "web_info.h"
 
@@ -16,6 +18,7 @@ void
 QuackEventLauncher::begin() {
     // ArduinoOTA ============================================================
 
+    /*
     ArduinoOTA.onStart([this] {
         eventSource.send("AOTA_UPDATE_START", "ota");
     });
@@ -52,6 +55,7 @@ QuackEventLauncher::begin() {
 
     ArduinoOTA.setHostname(NW_HOSTNAME);
     ArduinoOTA.begin();
+    */
 
     // Events ================================================================
 
@@ -67,10 +71,14 @@ QuackEventLauncher::launch(const char* event, const char* data) {
 
 void
 QuackEventLauncher::handleOTA() {
+    /*
     ArduinoOTA.handle();
+    */
 }
 
 AsyncEventSource*
 QuackEventLauncher::getEventSource() {
     return &eventSource;
 }
+
+#endif

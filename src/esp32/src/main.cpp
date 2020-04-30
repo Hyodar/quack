@@ -1,12 +1,16 @@
 #include <Arduino.h>
 
 #include "quack.h"
+#ifdef WEBSERVER_ENABLED
 #include "quack_webserver.h"
+#endif
 
 #define DECLARE_STR(str) (u8*) str, sizeof(str) - 1
 
 Quack quack;
+#ifdef WEBSERVER_ENABLED
 QuackWebserver quackWebserver;
+#endif
 
 void
 loop2(void* params) {
@@ -39,9 +43,13 @@ loop4(void* params) {
 
 void
 setup() {
+#ifdef WEBSERVER_ENABLED
     quackWebserver.beginWifi();
+#endif
     quack.begin();
+#ifdef WEBSERVER_ENABLED
     quackWebserver.begin(quack.getParser(), quack.getEventLauncher());
+#endif
 
     // create new tasks in FreeRTOS API
     xTaskCreatePinnedToCore(loop2, "loop2", 8192, NULL, 1, NULL, 0);
