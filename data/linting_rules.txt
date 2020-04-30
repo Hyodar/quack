@@ -1,0 +1,6 @@
+probable linting rules:
+
+command_not_none,
+cant_repeat_continuation,
+display_max_length,
+hid_buffer_max_keys,
