@@ -123,44 +123,50 @@ class API {
     }
 
     static async call(resource, requestBody, ackCallback, respCallback=null) {
-        if(!API.canSend) {
-            toast.show("Still running a command!", Toast.Mode.ERROR);
-            return;
-        }
+        return new Promise(async (resolve, reject) => {
 
-        if(API.bluetoothEnabled) {
-            API.canSend = false;
-
-            if(ackCallback) {
-                ackCallback.id = `${API.callIDCounter++}|${resource}|ACK`;
-                API.callbackQueue.unshift(ackCallback);
+            if(!API.canSend) {
+                toast.show("Still running a command!", Toast.Mode.ERROR);
+                reject();
+                return;
             }
 
-            if(respCallback) {
-                respCallback.id = `${API.callIDCounter++}|${resource}|RES`
-                API.callbackQueue.unshift(respCallback);
-            }
+            if(API.bluetoothEnabled) {
+                API.canSend = false;
 
-            bluetoothSerial.write(`\0${resource}`, API.bluetoothSuccess, API.bluetoothError);
-            
-            API.endCommand = true;
-            for(const [key, val] of requestBody.entries()) {
-                if(key == "FileBytes") {
-                    await API.delayedBluetoothSend(val);
+                if(ackCallback) {
+                    ackCallback.id = `${API.callIDCounter++}|${resource}|ACK`;
+                    API.callbackQueue.unshift(ackCallback);
                 }
-                else {
-                    bluetoothSerial.write(`${val}\0`, API.bluetoothSuccess, API.bluetoothError);
-                }
-            }
 
-            bluetoothSerial.write('\0', API.bluetoothSuccess, API.bluetoothError);
-            
-            toast.show("Sent command.", Toast.Mode.INFO);
-            API.canSend = true;
-        }
-        else {
-            toast.show("Bluetooth is not enabled!", Toast.Mode.ERROR);
-        }
+                if(respCallback) {
+                    respCallback.id = `${API.callIDCounter++}|${resource}|RES`
+                    API.callbackQueue.unshift(respCallback);
+                }
+
+                bluetoothSerial.write(`\0${resource}`, API.bluetoothSuccess, API.bluetoothError);
+                
+                API.endCommand = true;
+                for(const [key, val] of requestBody.entries()) {
+                    if(key == "FileBytes") {
+                        await API.delayedBluetoothSend(val);
+                    }
+                    else {
+                        bluetoothSerial.write(`${val}\0`, API.bluetoothSuccess, API.bluetoothError);
+                    }
+                }
+
+                bluetoothSerial.write('\0', API.bluetoothSuccess, API.bluetoothError);
+                
+                toast.show("Sent command.", Toast.Mode.INFO);
+                API.canSend = true;
+                resolve();
+            }
+            else {
+                toast.show("Bluetooth is not enabled!", Toast.Mode.ERROR);
+                reject();
+            }
+        });
     }
 }
 
@@ -383,7 +389,7 @@ function updateScriptList() {
              json => { alert('JSON: ' + json); setOpenOptions(JSON.parse(json).dirFiles); });
 }
 
-function saveScript(filename) {
+async function saveScript(filename) {
     if(!filename) {
         return;
     }
@@ -401,7 +407,7 @@ function saveScript(filename) {
     form.append("Filename", filename);
     form.append("FileBytes", preProcessedCode);
    
-    API.call(API.Resource.SAVE, form, () => {
+    return API.call(API.Resource.SAVE, form, () => {
         status.lastVersion = editor.getValue();
         status.isSaved = true;
         
@@ -445,23 +451,21 @@ function runScript() {
     }
     
     if(!status.isSaved) {
-        saveScript(status.filename);
-        timeoutDelay = 500;
+        saveScript(status.filename)
+        .then(() => {
+            API.call(API.Resource.RUN_FILE, form, () => {
+                toast.show("Received command!", Toast.Mode.SUCCESS);
+            });
+        })
+        .catch(() => {
+            toast.show("Error saving script!", Toast.Mode.ERROR);
+        });
     }
     else {
-        // in case it was right after SAVE was pressed
-        timeoutDelay = 50;
-    }
-    
-    // give esp a little time to save the script
-    setTimeout(() => {
-        form.append("Filename", status.filename);
-        
         API.call(API.Resource.RUN_FILE, form, () => {
             toast.show("Received command!", Toast.Mode.SUCCESS);
-        })
-        
-    }, timeoutDelay);
+        });
+    }
 }
 
 function stopScript() {
