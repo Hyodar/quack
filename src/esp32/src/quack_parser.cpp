@@ -300,7 +300,6 @@ QuackParser::canParse() {
 void
 QuackParser::parsingLoop() {
     if(!state) {
-        eventLauncher->handleOTA();
         return;
     }
     
