@@ -14,7 +14,7 @@ QuackWebserver quackWebserver;
 
 void
 loop2(void* params) {
-    Serial.println("[THREADING] Initializing loop2");
+    DEBUGGING_PRINTF("[THREADING] Initializing loop2");
     for(;;) {
         quack.runInterface();
         delay(1); // watchdog
@@ -23,7 +23,7 @@ loop2(void* params) {
 
 void
 loop3(void* params) {
-    Serial.println("[THREADING] Initializing loop3");
+    DEBUGGING_PRINTF("[THREADING] Initializing loop3");
     for(;;) {
         quack.runDisplay();
         delay(7);
@@ -33,7 +33,7 @@ loop3(void* params) {
 #ifdef BLUETOOTH_ENABLED
 void
 loop4(void* params) {
-    Serial.println("[THREADING] Initializing loop4");
+    DEBUGGING_PRINTF("[THREADING] Initializing loop4");
 
     while(!quack.checkBluetooth()) {
         delay(100);

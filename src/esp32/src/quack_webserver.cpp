@@ -6,7 +6,6 @@
 #include <FS.h>
 #include <ESPmDNS.h>
 #include <WiFi.h>
-#include <SPIFFSEditor.h>
 
 #include "web_files.h"
 #include "web_info.h"
@@ -58,7 +57,7 @@ QuackWebserver::beginWifi() {
         WiFi.begin(NW_SSID, NW_PASSWORD);
     }
 
-    Serial.println(WiFi.localIP());
+    DEBUGGING_PRINT(WiFi.localIP());
 }
 
 void
