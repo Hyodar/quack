@@ -42,10 +42,10 @@ class API {
         OPEN:       "/open"
     });
 
-    static async call(resource, request_body) {
+    static async call(resource, requestBody) {
         return fetch(resource, {
             method: "POST",
-            body: request_body,
+            body: requestBody,
         }).then(response =>
             (resource != API.Resource.LIST)
             ? response.text()
