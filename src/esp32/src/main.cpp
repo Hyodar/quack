@@ -34,6 +34,11 @@ loop3(void* params) {
 void
 loop4(void* params) {
     Serial.println("[THREADING] Initializing loop4");
+
+    while(!quack.checkBluetooth()) {
+        delay(100);
+    }
+
     for(;;) {
         quack.runBluetooth();
         delay(1);

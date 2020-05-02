@@ -153,3 +153,8 @@ QuackBluetooth::respondRequest() {
             break;
     }
 }
+
+const bool
+QuackBluetooth::available() {
+    return serial.available();
+}

@@ -58,6 +58,7 @@ public:
     QuackBluetooth();
     void begin(QuackParser* const quackParser);
     void loop();
+    const bool available();
 
 };
 

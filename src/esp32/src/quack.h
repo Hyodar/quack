@@ -34,6 +34,7 @@ public:
     void runDisplay();
 #ifdef BLUETOOTH_ENABLED
     void runBluetooth();
+    const bool checkBluetooth();
 #endif
     QuackParser* getParser();
     QuackEventLauncher* getEventLauncher();

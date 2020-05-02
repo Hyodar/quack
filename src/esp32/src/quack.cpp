@@ -54,6 +54,11 @@ void
 Quack::runBluetooth() {
     quackBluetooth.loop();
 }
+
+const bool
+Quack::checkBluetooth() {
+    return quackBluetooth.available();
+}
 #endif
 
 QuackParser*
