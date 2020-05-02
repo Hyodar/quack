@@ -14,7 +14,9 @@
 #include "quack_parser.h"
 #include "quack_event_launcher.h"
 
-const char* MAGIC = "4027432687"; // 0xF00DBEEF
+const char* MAGIC   = "4027432687"; // 0xF00DBEEF
+const char* ACK     = "ACK";
+const char* NACK    = "NACK";
 
 QuackWebserver::QuackWebserver() : server{80}, parser{nullptr} {
     // no-op
@@ -84,14 +86,18 @@ QuackWebserver::begin(QuackParser* _parser, QuackEventLauncher* quackEventLaunch
         reply(request, 200, "text/html", INDEX_HTML, sizeof(INDEX_HTML));
     });
 
+    server.onNotFound([this](AsyncWebServerRequest* request) {
+        reply(request, 404, "text/html", HTTP404_HTML, sizeof(HTTP404_HTML));
+    });
+
     server.on("/run_raw", HTTP_POST, [this](AsyncWebServerRequest* request) {
         DEBUGGING_PRINTF("Received run raw command\n");
         if(!request->hasParam("Code", true)) {
-            request->send(400, "text/plain", "Wrong parameters");
+            request->send(400, "text/plain", NACK);
             return;
         }
 
-        request->send(200, "text/plain", "Received RUN_RAW command");
+        request->send(200, "text/plain", ACK);
 
         DEBUGGING_PRINTF("Filling buffer\n");
         parser->fillBuffer((const u8* const) request->getParam("Code", true)->value().c_str());
@@ -99,27 +105,27 @@ QuackWebserver::begin(QuackParser* _parser, QuackEventLauncher* quackEventLaunch
 
     server.on("/run_file", [this](AsyncWebServerRequest* request) {
         if(!request->hasParam("Filename", true)) {
-            request->send(400, "text/plain", "Wrong parameters");
+            request->send(400, "text/plain", NACK);
             return;
         }
         
         parser->setFile((const char* const) request->getParam("Filename", true)->value().c_str());
-        request->send(200, "text/plain", "Received RUN_FILE command");
+        request->send(200, "text/plain", ACK);
     });
 
     server.on("/stop", [this](AsyncWebServerRequest* request) {
         if(!testMagic(request)) {
-            request->send(400, "text/plain", "Wrong parameters");
+            request->send(400, "text/plain", NACK);
             return;
         }
 
         parser->stop();
-        request->send(200, "text/plain", "Received STOP command");
+        request->send(200, "text/plain", ACK);
     });
 
     server.on("/list", [this](AsyncWebServerRequest* request) {
         if(!testMagic(request)) {
-            request->send(400, "text/plain", "Wrong parameters");
+            request->send(400, "text/plain", NACK);
             return;
         }
 
@@ -153,11 +159,10 @@ QuackWebserver::begin(QuackParser* _parser, QuackEventLauncher* quackEventLaunch
 
     server.on("/save", HTTP_POST, [this](AsyncWebServerRequest* request) {
         if(!request->hasParam("Script-File", true, true)) {
-            request->send(400, "text/plain", "Wrong parameters");
+            request->send(400, "text/plain", NACK);
             return;
         }
 
-        request->send(200, "text/plain", "Received SAVE command");
     }, [](AsyncWebServerRequest* request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
         if(!index){
             request->_tempFile = SPIFFS.open(filename, "w");
@@ -167,6 +172,7 @@ QuackWebserver::begin(QuackParser* _parser, QuackEventLauncher* quackEventLaunch
                 request->_tempFile.write(data, len);
             }
             if(final){
+                request->send(200, "text/plain", ACK);
                 request->_tempFile.close();
             }
         }
@@ -174,12 +180,12 @@ QuackWebserver::begin(QuackParser* _parser, QuackEventLauncher* quackEventLaunch
 
     server.on("/open", [this](AsyncWebServerRequest* request) {
         if(!request->hasParam("Filename", true)) {
-            request->send(400, "text/plain", "Wrong parameters");
+            request->send(400, "text/plain", NACK);
             return;
         }
 
         if(!SPIFFS.exists(request->getParam("Filename", true)->value())) {
-            request->send(404, "text/plain", "File not found");
+            request->send(404, "text/plain", NACK);
             return;
         }
 
@@ -188,10 +194,6 @@ QuackWebserver::begin(QuackParser* _parser, QuackEventLauncher* quackEventLaunch
             request->getParam("Filename", true)->value(),
             "text/plain"
         );
-    });
-
-    server.onNotFound([this](AsyncWebServerRequest* request) {
-        reply(request, 404, "text/html", HTTP404_HTML, sizeof(HTTP404_HTML));
     });
 
     server.addHandler(quackEventLauncher->getEventSource());
