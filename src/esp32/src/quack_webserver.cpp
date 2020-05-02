@@ -71,6 +71,7 @@ QuackWebserver::begin(QuackParser* _parser, QuackEventLauncher* quackEventLaunch
 
     // mDNS ==================================================================
 
+    MDNS.begin(NW_HOSTNAME);
     MDNS.addService("http", "tcp", 80);
 
     // SPIFFS ================================================================
