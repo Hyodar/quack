@@ -51,6 +51,8 @@ private:
 
     BluetoothSerial serial;
 
+    bool isEnabled;
+
     void readResourceParams();
     void respondRequest();
 
@@ -58,7 +60,12 @@ public:
     QuackBluetooth();
     void begin(QuackParser* const quackParser);
     void loop();
+    
     const bool available();
+    void sendEvent(const char* const event, const char* const data);
+
+    const bool getIsEnabled() const;
+    void setIsEnabled(const bool _isEnabled);
 
 };
 

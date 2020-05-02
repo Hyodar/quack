@@ -32,6 +32,54 @@ const translate = {
     "REPLAY": "REPEAT",
 };
 
+async function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function ID(id) {
+    return document.getElementById(id);
+}
+
+class ToggleButton {
+
+    static State = Object.freeze({
+        ON:     true,
+        OFF:    false,
+    });
+
+    constructor(id, callbackOn, callbackOff, state=ToggleButton.State.OFF) {
+        this.id = id;
+        this.callbackOn = callbackOn;
+        this.callbackOff = callbackOff;
+        this.state = state;
+    }
+
+    get element() {
+        return ID(this.id);
+    }
+
+    on(runCallback=true) {
+        this.element.classList.replace("toggle-off", "toggle-on");
+        this.state = ToggleButton.State.ON;
+        if(runCallback) this.callbackOn();
+    }
+
+    off(runCallback=true) {
+        this.element.classList.replace("toggle-on", "toggle-off");
+        this.state = ToggleButton.State.OFF;
+        if(runCallback) this.callbackOff();
+    }
+
+    toggle() {
+        if(this.state) {
+            this.off();
+        }
+        else {
+            this.on();
+        }
+    }
+}
+
 class BluetoothAPI {
 
     constructor() {
@@ -87,7 +135,7 @@ class BluetoothAPI {
     }
 
     async call(resource, requestBody) {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             if(!this.canSend) {
                 toast.show("Still running a command!", Toast.Mode.ERROR);
                 reject();
@@ -124,11 +172,19 @@ class BluetoothAPI {
     }
     
     subscribeCallback(data) {
-        const resolve = this.promiseQueue.pop();
-        const input = data.slice();
+        const input = data.slice(2);
 
-        if(resolve) {
-            resolve(input);
+        if(data.startsWith('E|')) {
+            // Event
+            eventSource.bluetoothEmit(input);
+        }
+        else if(data.startsWith('R|')) {
+            // Response
+            const resolve = this.promiseQueue.pop();
+
+            if(resolve) {
+                resolve(input);
+            }
         }
     }
 
@@ -145,6 +201,34 @@ class BluetoothAPI {
 
 }
 
+class APIEventSource {
+    constructor() {
+        this.httpEventSource = null;
+        this.listeners = {};
+    }
+
+    addEventListener(event, callback) {
+        this.listeners[event] = callback;
+    }
+
+    bluetoothEmit(event) {
+        this.listeners[event] && this.listeners[event]();
+    }
+
+    enableWifi() {
+        this.httpEventSource = new EventSource("http://ESP32.local/events");
+
+        for([event, callback] of this.listeners.entries()) {
+            this.httpEventSource.addEventListener(event, callback);
+        }
+    }
+
+    disableWifi() {
+        this.httpEventSource.close();
+        this.httpEventSource = null;
+    }
+}
+
 class WiFiAPI {
 
     constructor() {
@@ -154,10 +238,15 @@ class WiFiAPI {
     enable() {
         // TODO
         // remember to add EventSource
+        return new Promise((resolve, reject) => {
+            eventSource.enableWifi();
+            resolve();
+        });
     }
 
     disable() {
         // TODO
+        eventSource.enableWiFi();
     }
 
     async call(resource, requestBody) {
@@ -186,6 +275,32 @@ class API {
 
     static bluetooth = new BluetoothAPI();
     static wiFi      = new WiFiAPI();
+
+    static bluetoothToggle = new ToggleButton(
+        "bluetooth-toggle",
+        () => {
+            API.enableBluetooth()
+               .then(() => updateScriptList())
+               .catch(() => API.bluetoothToggle.off(false));
+        },
+        () => {
+            API.disableBluetooth();
+        },
+        ToggleButton.State.OFF
+    );
+
+    static wiFiToggle = new ToggleButton(
+        "wifi-toggle",
+        () => {
+            API.enableWiFi()
+               .then(() => updateScriptList())
+               .catch(() => API.wiFiToggle.off(false))
+        },
+        () => {
+            API.disableWiFi();
+        },
+        ToggleButton.State.OFF
+    );
 
     static activeModule = null;
 
@@ -263,11 +378,10 @@ class Toast {
         this.active = true;
 
         this.el.onclick = this.click.bind(this);
-    }
 
-    toggle() {
-        toggle(ID("notifications-toggle"),
-            () => { 
+        this.button = new ToggleButton(
+            "notifications-toggle",
+            () => {
                 this.active = true;
             },
             () => {
@@ -275,6 +389,7 @@ class Toast {
                 this.clearTimeout();
                 this.hide();
             },
+            ToggleButton.State.ON
         );
     }
 
@@ -283,19 +398,22 @@ class Toast {
     }
 
     hide() {
-        this.el.style.opacity = "0";
-        this.el.style.width = "0px";
-        this.el.style.visibility = "hidden";
+        Object.assign(this.el.style, {
+            width:      "0px",
+            opacity:    "0",
+            visibility: "hidden",
+        });
         
         this.timeout = null;
     }
 
     reset() {
-        this.el.style.right = "0px";
-
-        this.el.style.opacity = "1";
-        this.el.style.width = "";
-        this.el.style.visibility = "visible";
+        Object.assign(this.el.style, {
+            width:      "",
+            right:      "0px",
+            opacity:    "1",
+            visibility: "visible",
+        });
     }
 
     clearTimeout() {
@@ -328,15 +446,18 @@ const status = {
 
     get filename() { return ID("filename").innerText; },
     set filename(val) { ID("filename").innerText = val; },
+
+    theme: new ToggleButton(
+        "theme-toggle",
+        () => editor.setOption("theme", "darcula"),
+        () => editor.setOption("theme", "default"),
+        ToggleButton.State.ON
+    ),
 };
 
 /*****************************************************************************
  * Functions
 *****************************************************************************/
-
-async function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 function compareVersions(code) {
     if(status.lastVersion.length != code.length) {
@@ -345,10 +466,6 @@ function compareVersions(code) {
     else {
         status.isSaved = (status.lastVersion == code);
     }
-}
-
-function ID(id) {
-    return document.getElementById(id);
 }
 
 function setOpenOptions(newOptions) {
@@ -466,7 +583,10 @@ function updateScriptList() {
     const form = new FormData();
 
     API.call(API.Resource.LIST, form)
-        .then(json => { alert('JSON: ' + json); setOpenOptions(JSON.parse(json).dirFiles); });
+       .then(json => { 
+           alert('JSON: ' + json);
+           setOpenOptions(JSON.parse(json).dirFiles);
+       });
 }
 
 async function saveScript(filename) {
@@ -493,6 +613,7 @@ async function saveScript(filename) {
         const file = new File([preProcessedCode], filename, {
             type: "text/plain",
         });
+
         form.append("Script-File", file);
     }
    
@@ -617,62 +738,6 @@ function handleUpload(event) {
     fileReader.readAsText(file, "UTF-8");
 }
 
-function toggle(element, toggleOn, toggleOff) {
-    const classes = element.classList;
-    if(classes.replace("toggle-on", "toggle-off")) {
-        toggleOff();
-    }
-    else {
-        classes.replace("toggle-off", "toggle-on");
-        toggleOn();
-    }
-}
-
-function setTheme(newTheme) {
-    editor.setOption("theme", newTheme);
-}
-
-function toggleTheme() {
-    toggle(ID("theme-toggle"),
-        () => setTheme("darcula"), 
-        () => setTheme("default"),
-    );
-}
-
-function toggleBluetooth() {
-    toggle(ID("bluetooth-toggle"), 
-            () => {
-                API.enableBluetooth()
-                .then(() => {
-                    updateScriptList();
-                })
-                .catch(() => {
-                    ID("bluetooth-toggle").classList.replace("toggle-on", "toggle-off");
-                });
-            },
-            () => {
-                API.disableBluetooth();
-            }
-    );
-}
-
-function toggleWiFi() {
-    toggle(ID("wiFi-toggle",
-           () => {
-               API.enableWiFi()
-               .then(() => {
-                   updateScriptList();
-               })
-               .catch(() => {
-                   ID("wiFi-toggle").classList.replace("toggle-on", "toggle-off");
-               });
-           }),
-           () => {
-               API.disableWiFi();
-           }
-    );
-}
-
 /*****************************************************************************
  * Main
 *****************************************************************************/
@@ -746,4 +811,25 @@ function main() {
 
     toast = new Toast("toast");
 
+    // EventSource -----------------------------------------------------------
+
+    eventSource = new APIEventSource();
+
+    eventSource.addEventListener("open", (e) => {
+        toast.show("Connected!", Toast.Mode.SUCCESS);
+    });
+    
+    eventSource.addEventListener("error", (e) => {
+        if(e.target.readyState != EventSource.OPEN) {
+            toast.show("Connection error!", Toast.Mode.ERROR);
+        }
+    });
+    
+    eventSource.addEventListener("received", () => {
+        toast.show("Received script!", Toast.Mode.INFO);
+    });
+    
+    eventSource.addEventListener("finished", () => {
+        toast.show("Finished executing!", Toast.Mode.SUCCESS);
+    });
 }

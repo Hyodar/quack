@@ -44,22 +44,22 @@
             <section class="menu-section">
                 <h3 class="menu-section-title">Editor</h3>
                 <ul class="menu-section-list" onclick="slideout.close();">
-                    <li><a id="theme-toggle" class="toggle toggle-on" onclick="toggleTheme()">Dark Mode</a></li>
+                    <li><a id="theme-toggle" class="toggle toggle-on" onclick="status.theme.toggle()">Dark Mode</a></li>
                 </ul>
             </section>
 
             <section class="menu-section">
                 <h3 class="menu-section-title">General</h3>
                 <ul class="menu-section-list" onclick="slideout.close();">
-                    <li><a id="notifications-toggle" class="toggle toggle-on" onclick="toast.toggle()">Notifications</a></li>
+                    <li><a id="notifications-toggle" class="toggle toggle-on" onclick="toast.button.toggle()">Notifications</a></li>
                 </ul>
             </section>
 
             <section class="menu-section">
                 <h3 class="menu-section-title">Communication</h3>
                 <ul class="menu-section-list" onclick="slideout.close();">
-                    <li><a id="bluetooth-toggle" class="toggle toggle-off" onclick="toggleBluetooth()">Bluetooth</a></li>
-                    <li><a id="wifi-toggle" class="toggle toggle-off" onclick="toggleWiFi()">Wi-Fi</a></li>
+                    <li><a id="bluetooth-toggle" class="toggle toggle-off" onclick="API.bluetoothToggle.toggle()">Bluetooth</a></li>
+                    <li><a id="wifi-toggle" class="toggle toggle-off" onclick="API.wiFiToggle.toggle()">Wi-Fi</a></li>
                 </ul>
             </section>
         </nav>

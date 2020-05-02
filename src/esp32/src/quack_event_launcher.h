@@ -6,31 +6,34 @@
 
 #ifdef WEBSERVER_ENABLED
 #include <ESPAsyncWebServer.h>
-#else
-class AsyncEventSource;
+#endif
+#ifdef BLUETOOTH_ENABLED
+#include <quack_bluetooth.h>
 #endif
 
 class QuackEventLauncher {
 
-#ifdef WEBSERVER_ENABLED
 private:
+#ifdef WEBSERVER_ENABLED
     AsyncEventSource eventSource;
+#endif
+#ifdef BLUETOOTH_ENABLED
+    QuackBluetooth* bluetooth;
+#endif
 
 public:
     QuackEventLauncher();
 
-    void begin();
-    void launch(const char* event, const char* data = ":D");
-
-    AsyncEventSource* getEventSource();
+#ifdef BLUETOOTH_ENABLED
+    void begin(QuackBluetooth* _bluetooth);
 #else
-public:
-    QuackEventLauncher() {}
+    void begin();
+#endif
 
-    void begin() {}
-    void handleOTA() {}
-    void launch(const char* event, const char* data = ":D") {}
-    AsyncEventSource* getEventSource() { return nullptr; }
+    void launch(const char* const event, const char* const data = ":D");
+
+#ifdef WEBSERVER_ENABLED
+    AsyncEventSource* getEventSource();
 #endif
 };
 

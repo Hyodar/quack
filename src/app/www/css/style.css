@@ -142,7 +142,7 @@ body {
 }
 
 .toggle-on {
-    background-color: rgba(255, 255, 255, 0.078125);
+    background-color: rgba(255, 255, 255, 0.12);
 }
 
 .toggle-on::after {

@@ -9,9 +9,11 @@ Quack::begin() {
     quackParser.begin(&quackDisplay, &quackEventLauncher);
 #ifdef BLUETOOTH_ENABLED
     quackBluetooth.begin(&quackParser);
+    quackEventLauncher.begin(&quackBluetooth);
+#else
+    quackEventLauncher.begin();
 #endif
     quackDisplay.begin();
-    quackEventLauncher.begin();
 }
 
 void
@@ -57,7 +59,11 @@ Quack::runBluetooth() {
 
 const bool
 Quack::checkBluetooth() {
-    return quackBluetooth.available();
+    if(quackBluetooth.available()) {
+        quackBluetooth.setIsEnabled(true);
+        return true;
+    }
+    return false;
 }
 #endif
 

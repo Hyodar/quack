@@ -5,7 +5,7 @@
 #include "quack_parser.h"
 
 QuackBluetooth::QuackBluetooth() : parser{nullptr}, state{CONNECTED},
-                                   buf{0}, bufSize{0} {
+                                   buf{0}, bufSize{0}, isEnabled{false} {
     // no-op
 }
 
@@ -44,10 +44,12 @@ QuackBluetooth::loop() {
 
             case READING:
                 if(activeResource != LIST && activeResource != OPEN) {
-                    serial.write((uint8_t*) "ACK", 3);
-                    serial.write('\0');
+                    serial.write((uint8_t*) "R|ACK\0", 6);
                     DEBUGGING_PRINTF("[BLUETOOTH] Sent ACK.\n");
+                } else {
+                    serial.write((uint8_t*) "R|", 2);
                 }
+
                 DEBUGGING_PRINTF("[BLUETOOTH] Going to read resource params.\n");
                 readResourceParams();
                 break;
@@ -157,4 +159,27 @@ QuackBluetooth::respondRequest() {
 const bool
 QuackBluetooth::available() {
     return serial.available();
+}
+
+void
+QuackBluetooth::sendEvent(const char* const event, const char* const data) {
+    if(!serial.hasClient()) {
+        return;
+    }
+    
+    serial.write((uint8_t*) "E|", 2);
+    for(u8 i = 0; event[i]; i++) {
+        serial.write(event[i]);
+    }
+    serial.write('\0');
+}
+
+const bool
+QuackBluetooth::getIsEnabled() const {
+    return isEnabled;
+}
+
+void
+QuackBluetooth::setIsEnabled(const bool _isEnabled) {
+    isEnabled = _isEnabled;
 }
