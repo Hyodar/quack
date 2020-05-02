@@ -32,34 +32,27 @@ const translate = {
     "REPLAY": "REPEAT",
 };
 
-class API {
-    static Resource = Object.freeze({
-        STOP:       1,
-        LIST:       2,
-        RUN_RAW:    3,
-        RUN_FILE:   4,
-        OPEN:       5,
-        SAVE:       6,
-    });
+class BluetoothAPI {
 
-    static bluetoothEnabled = false;
-    static callbackQueue = [];
-    static callIDCounter = 0;
-    static canSend = true;
+    constructor() {
+        this.isEnabled = false;
+        this.canSend = true;
+        this.promiseQueue = [];
+    }
 
-    static _enableBluetooth() {
-        API.bluetoothEnabled = true;
+    _enable() {
+        this.isEnabled = true;
 
         bluetoothSerial.subscribe(
             "\0",
-            API.subscribeCallback,
-            API.bluetoothError
+            this.subscribeCallback,
+            this.error,
         );
         
         toast.show("Bluetooth Enabled!", Toast.Mode.SUCCESS);
     }
 
-    static async enableBluetooth() {
+    async enable() {
         return new Promise((resolve, reject) => {
             bluetoothSerial.list((pairedDevices) => {
                 const device = pairedDevices.find((el) => el.name === "MyESP32");
@@ -67,106 +60,193 @@ class API {
                 if(device) {
                     bluetoothSerial.connect(device.address,
                     () => {
-                        API._enableBluetooth();
+                        this._enable();
                         resolve();
                     },
                     (err) => {
-                        API.bluetoothError(err);
+                        this.error(err);
                         reject();
                     });
                 }
                 else {
-                    API.bluetoothError("ESP32 not paired!");
+                    this.error("ESP32 not paired!");
                     reject();
                 }
             },
-            (err) => API.bluetoothError(err)
+            (err) => this.error(err)
             );
         });
     }
 
-    static bluetoothError(errorMessage = "") {
-        toast.show(`Bluetooth Error! ${errorMessage}`, Toast.Mode.ERROR);
-    }
-
-    static bluetoothSuccess() {
-        // no-op
-    }
-    
-    static subscribeCallback(data) {
-        const callback = API.callbackQueue.pop();
-        const input = data.slice();
-
-        alert(`input: ${input}, callback: ${callback.id}`);
-        if(callback) {
-            callback(input.replace('\0', ''));
-        }
-    }
-
-    static disableBluetooth() {
+    disable() {
         bluetoothSerial.disconnect();
         bluetoothSerial.unsubscribe();
-        API.bluetoothEnabled = false;
+        this.isEnabled = false;
 
         toast.show("Bluetooth Disabled!", Toast.Mode.INFO);
     }
 
-    static async delayedBluetoothSend(text) {
-        const chunks = text.match(/.{1,80}/g);
-
-        for(let i = 0; i < chunks.length; i++) {
-            bluetoothSerial.write(chunks[i], API.bluetoothSuccess, API.bluetoothError);
-            await sleep(300);
-        }
-
-        bluetoothSerial.write('\0', API.bluetoothSuccess, API.bluetoothError);
-    }
-
-    static async call(resource, requestBody, ackCallback, respCallback=null) {
-        return new Promise(async (resolve, reject) => {
-
-            if(!API.canSend) {
+    async call(resource, requestBody) {
+        return new Promise((resolve, reject) => {
+            if(!this.canSend) {
                 toast.show("Still running a command!", Toast.Mode.ERROR);
                 reject();
                 return;
             }
+    
+            this.canSend = false;
+            this.promiseQueue.unshift(resolve);
 
-            if(API.bluetoothEnabled) {
-                API.canSend = false;
-
-                if(ackCallback) {
-                    ackCallback.id = `${API.callIDCounter++}|${resource}|ACK`;
-                    API.callbackQueue.unshift(ackCallback);
+            bluetoothSerial.write(`\0${resource.bluetoothId}`, this.bluetoothSuccess.bind(this), this.error.bind(this));
+            
+            for(const [key, val] of requestBody.entries()) {
+                if(key == "File-Bytes") {
+                    await this.delayedBluetoothSend(val);
                 }
-
-                if(respCallback) {
-                    respCallback.id = `${API.callIDCounter++}|${resource}|RES`
-                    API.callbackQueue.unshift(respCallback);
+                else {
+                    bluetoothSerial.write(`${val}\0`, this.bluetoothSuccess.bind(this), this.error.bind(this));
                 }
-
-                bluetoothSerial.write(`\0${resource}`, API.bluetoothSuccess, API.bluetoothError);
-                
-                API.endCommand = true;
-                for(const [key, val] of requestBody.entries()) {
-                    if(key == "FileBytes") {
-                        await API.delayedBluetoothSend(val);
-                    }
-                    else {
-                        bluetoothSerial.write(`${val}\0`, API.bluetoothSuccess, API.bluetoothError);
-                    }
-                }
-
-                bluetoothSerial.write('\0', API.bluetoothSuccess, API.bluetoothError);
-                
-                toast.show("Sent command.", Toast.Mode.INFO);
-                API.canSend = true;
-                resolve();
             }
-            else {
-                toast.show("Bluetooth is not enabled!", Toast.Mode.ERROR);
-                reject();
-            }
+
+            bluetoothSerial.write('\0', this.bluetoothSuccess.bind(this), this.error.bind(this));
+            
+            toast.show("Sent command.", Toast.Mode.INFO);
+            this.canSendBluetooth = true;
         });
+    }
+    
+    error(errorMessage = "") {
+        toast.show(`Bluetooth Error! ${errorMessage}`, Toast.Mode.ERROR);
+    }
+
+    successCallback() {
+        // no-op
+    }
+    
+    subscribeCallback(data) {
+        const resolve = this.promiseQueue.pop();
+        const input = data.slice();
+
+        if(resolve) {
+            resolve(input);
+        }
+    }
+
+    async delayedBluetoothSend(text) {
+        const chunks = text.match(/.{1,80}/g);
+
+        for(let i = 0; i < chunks.length; i++) {
+            bluetoothSerial.write(chunks[i], this.successCallback.bind(this), this.error.bind(this));
+            await sleep(300);
+        }
+
+        bluetoothSerial.write('\0', this.successCallback.bind(this), this.error.bind(this));
+    }
+
+}
+
+class WiFiAPI {
+
+    constructor() {
+        this.isEnabled = false;
+    }
+
+    enable() {
+        // TODO
+        // remember to add EventSource
+    }
+
+    disable() {
+        // TODO
+    }
+
+    async call(resource, requestBody) {
+        return fetch(resource.url, {
+            method: "POST",
+            body: requestBody,
+        }).then(response => response.text());
+    }
+}
+
+class API {
+    static Resource = Object.freeze({
+        STOP:       { bluetoothId: 1, url: "http://ESP32.local/stop"     },
+        LIST:       { bluetoothId: 2, url: "http://ESP32.local/list"     },
+        RUN_RAW:    { bluetoothId: 3, url: "http://ESP32.local/run_raw"  },
+        RUN_FILE:   { bluetoothId: 4, url: "http://ESP32.local/run_file" },
+        OPEN:       { bluetoothId: 5, url: "http://ESP32.local/open"     },
+        SAVE:       { bluetoothId: 6, url: "http://ESP32.local/save"     },
+    });
+
+    static Module = Object.freeze({
+        NONE:       1,
+        WIFI:       2,
+        BLUETOOTH:  3,
+    });
+
+    static bluetooth = new BluetoothAPI();
+    static wiFi      = new WiFiAPI();
+
+    static activeModule = null;
+
+    static async enableBluetooth() {
+        return new Promise((resolve, reject) => {
+            if(API.wiFi.isEnabled) {
+                API.bluetooth.error("Disable Wi-Fi before enabling bluetooth!");
+                reject();
+                return;
+            }
+
+            API.bluetooth.enable()
+                         .then(() => { API.activeModule = API.bluetooth; resolve(); })
+                         .catch(reject);
+        });
+    }
+
+    static disableBluetooth() {
+        if(API.bluetooth.disable()) {
+            API.activeModule = null;
+        }
+    }
+
+    static async enableWiFi() {
+        return new Promise((resolve, reject) => {
+            if(API.bluetooth.isEnabled) {
+                API.wiFi.error("Disable Bluetooth before enabling Wi-Fi!");
+                reject();
+                return;
+            }
+
+            API.wiFi.enable()
+                    .then(() => { API.activeModule = API.wiFi; resolve(); })
+                    .catch(reject);
+        });
+    }
+
+    static disableWiFi() {
+        if(API.wiFi.disable()) {
+            API.activeModule = null;
+        }
+    }
+
+    static getActiveModule() {
+        if(API.activeModule instanceof WiFiAPI) {
+            return API.Module.WIFI;
+        }
+        if(API.activeModule instanceof BluetoothAPI) {
+            return API.Module.BLUETOOTH;
+        }
+        
+        return API.Module.NONE;
+    }
+
+    static async call(resource, requestBody) {
+        if(!API.activeModule) {
+            toast.show("Enable bluetooth or Wi-Fi first!", Toast.Mode.ERROR);
+            return new Promise((resolve, reject) => { reject(); });
+        }
+
+        return API.activeModule.call(resource, requestBody);
     }
 }
 
@@ -385,8 +465,8 @@ function deProcessCode(content) {
 function updateScriptList() {
     const form = new FormData();
 
-    API.call(API.Resource.LIST, form, null,
-             json => { alert('JSON: ' + json); setOpenOptions(JSON.parse(json).dirFiles); });
+    API.call(API.Resource.LIST, form)
+        .then(json => { alert('JSON: ' + json); setOpenOptions(JSON.parse(json).dirFiles); });
 }
 
 async function saveScript(filename) {
@@ -405,18 +485,28 @@ async function saveScript(filename) {
 
     const form = new FormData();
     form.append("Filename", filename);
-    form.append("FileBytes", preProcessedCode);
+
+    if(API.getActiveModule() == API.Module.BLUETOOTH) {
+        form.append("File-Bytes", preProcessedCode);
+    }
+    else {
+        const file = new File([preProcessedCode], filename, {
+            type: "text/plain",
+        });
+        form.append("Script-File", file);
+    }
    
-    return API.call(API.Resource.SAVE, form, () => {
-        status.lastVersion = editor.getValue();
-        status.isSaved = true;
-        
-        // update filename-open options
-        const options = ID("filename-open").options;
-        if(!Array.from(options).find(el => el.value == filename)) {
-            options.add(new Option(filename, filename));
-        }
-    });
+    return API.call(API.Resource.SAVE, form)
+              .then(() => {
+                   status.lastVersion = editor.getValue();
+                   status.isSaved = true;
+                   
+                   // update filename-open options
+                   const options = ID("filename-open").options;
+                   if(!Array.from(options).find(el => el.value == filename)) {
+                       options.add(new Option(filename, filename));
+                   }
+              });
 }
 
 function confirmSave() {
@@ -443,7 +533,8 @@ function runScript() {
     if(code.length <= 450) {
         form.append("Code", code);
         
-        API.call(API.Resource.RUN_RAW, form, () => {
+        API.call(API.Resource.RUN_RAW, form)
+           .then(() => {
             toast.show("Received command!", Toast.Mode.SUCCESS);
         });
 
@@ -453,7 +544,8 @@ function runScript() {
     if(!status.isSaved) {
         saveScript(status.filename)
         .then(() => {
-            API.call(API.Resource.RUN_FILE, form, () => {
+            API.call(API.Resource.RUN_FILE, form)
+               .then(() => {
                 toast.show("Received command!", Toast.Mode.SUCCESS);
             });
         })
@@ -462,7 +554,8 @@ function runScript() {
         });
     }
     else {
-        API.call(API.Resource.RUN_FILE, form, () => {
+        API.call(API.Resource.RUN_FILE, form)
+           .then(() => {
             toast.show("Received command!", Toast.Mode.SUCCESS);
         });
     }
@@ -471,9 +564,10 @@ function runScript() {
 function stopScript() {
     const form = new FormData();
 
-    API.call(API.Resource.STOP, form, () => {
+    API.call(API.Resource.STOP, form)
+        .then(() => {
         toast.show("Stopped script execution!", Toast.Mode.SUCCESS);
-    })
+    });
 }
 
 function uploadScript() {
@@ -489,11 +583,12 @@ function openScript() {
     const form = new FormData();
     form.append("Filename", scriptName);
 
-    API.call(API.Resource.OPEN, form, null, text => {
-        editor.setValue(deProcessCode(text));
-        status.lastVersion = text;
-        status.isSaved = true;
-        status.filename = scriptName;
+    API.call(API.Resource.OPEN, form)
+       .then(text => {
+            editor.setValue(deProcessCode(text));
+            status.lastVersion = text;
+            status.isSaved = true;
+            status.filename = scriptName;
     });
 
     hideOptionsMenu();
@@ -558,6 +653,23 @@ function toggleBluetooth() {
             () => {
                 API.disableBluetooth();
             }
+    );
+}
+
+function toggleWiFi() {
+    toggle(ID("wiFi-toggle",
+           () => {
+               API.enableWiFi()
+               .then(() => {
+                   updateScriptList();
+               })
+               .catch(() => {
+                   ID("wiFi-toggle").classList.replace("toggle-on", "toggle-off");
+               });
+           }),
+           () => {
+               API.disableWiFi();
+           }
     );
 }
 
