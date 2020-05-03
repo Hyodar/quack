@@ -5,7 +5,7 @@
 #include "quack_parser.h"
 
 QuackBluetooth::QuackBluetooth() : parser{nullptr}, state{CONNECTED},
-                                   buf{0}, bufSize{0}, isEnabled{false} {
+                                   buf{0}, bufSize{0} {
     // no-op
 }
 
@@ -163,10 +163,6 @@ QuackBluetooth::available() {
 
 void
 QuackBluetooth::sendEvent(const char* const event, const char* const data) {
-    if(!serial.hasClient()) {
-        return;
-    }
-    
     serial.write((uint8_t*) "E|", 2);
     for(u8 i = 0; event[i]; i++) {
         serial.write(event[i]);
@@ -175,11 +171,6 @@ QuackBluetooth::sendEvent(const char* const event, const char* const data) {
 }
 
 const bool
-QuackBluetooth::getIsEnabled() const {
-    return isEnabled;
-}
-
-void
-QuackBluetooth::setIsEnabled(const bool _isEnabled) {
-    isEnabled = _isEnabled;
+QuackBluetooth::hasClient() {
+    return serial.hasClient();
 }

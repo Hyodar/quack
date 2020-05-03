@@ -32,13 +32,25 @@ QuackEventLauncher::begin() {
 
 void
 QuackEventLauncher::launch(const char* const event, const char* const data) {
+#if defined(WEBSERVER_ENABLED) && defined(BLUETOOTH_ENABLED)
+    if(bluetooth->hasClient()) {
+        bluetooth->sendEvent(event, data);
+    }
+    else {
+        eventSource.send(data, event, millis());
+    }
+
+#else
+
 #ifdef WEBSERVER_ENABLED
     eventSource.send(data, event, millis());
 #endif
 #ifdef BLUETOOTH_ENABLED
-    if(bluetooth->getIsEnabled()) {
+    if(bluetooth->hasClient()) {
         bluetooth->sendEvent(event, data);
     }
+#endif
+
 #endif
 }
 

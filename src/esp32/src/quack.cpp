@@ -59,11 +59,7 @@ Quack::runBluetooth() {
 
 const bool
 Quack::checkBluetooth() {
-    if(quackBluetooth.available()) {
-        quackBluetooth.setIsEnabled(true);
-        return true;
-    }
-    return false;
+    return quackBluetooth.available();
 }
 #endif
 
