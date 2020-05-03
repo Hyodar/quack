@@ -102,18 +102,18 @@ class BluetoothAPI {
                 "moe moe kyun"
             );
 
-            eventSource.addEventListener("right-bt-pwd", () => {
+            eventSource.addEventListener("bt-right-pwd", () => {
                 toast.show("Successfully logged in bluetooth serial!", Toast.Mode.SUCCESS);
                 resolve();
-                eventSource.removeEventListener("right-bt-pwd");
-                eventSource.removeEventListener("wrong-bt-pwd");
+                eventSource.removeEventListener("bt-right-pwd");
+                eventSource.removeEventListener("bt-wrong-pwd");
             });
 
-            eventSource.addEventListener("wrong-bt-pwd", () => {
+            eventSource.addEventListener("bt-wrong-pwd", () => {
                 toast.show("Wrong bluetooth password!", Toast.Mode.ERROR);
                 reject();
-                eventSource.removeEventListener("right-bt-pwd");
-                eventSource.removeEventListener("wrong-bt-pwd");
+                eventSource.removeEventListener("bt-right-pwd");
+                eventSource.removeEventListener("bt-wrong-pwd");
             });
         });
     }
@@ -883,7 +883,7 @@ function main() {
         toast.show("Finished executing!", Toast.Mode.SUCCESS);
     });
 
-    eventSource.addEventListener("max-bt-pwd-tries", () => {
+    eventSource.addEventListener("bt-max-pwd-tries", () => {
         toast.show("Maximum number of bluetooth password tries exceeded! Reset the device.", Toast.Mode.ERROR);
     });
 }

@@ -34,14 +34,14 @@ QuackBluetooth::loop() {
                 if(!buf[bufSize - 1]) {
                     // string ended
                     if(strcmp((char*) buf, BLUETOOTH_PASSWORD) == 0) {
-                        sendEvent("right-bt-pwd", nullptr);
+                        sendEvent("bt-right-pwd", nullptr);
                         state = CONNECTED;
                     }
                     else {
-                        sendEvent("wrong-bt-pwd", nullptr);
+                        sendEvent("bt-wrong-pwd", nullptr);
                         bufSize = 0;
                         if(passwordTries >= BLUETOOTH_MAX_PASSWORD_TRIES) {
-                            sendEvent("max-bt-pwd-tries", nullptr);
+                            sendEvent("bt-max-pwd-tries", nullptr);
                             serial.end();
                         }
                         else {
