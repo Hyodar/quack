@@ -15,6 +15,9 @@
 #define ESP_ENABLED
 
 #define BLUETOOTH_ENABLED
+#define BLUETOOTH_PASSWORD           "moe moe kyun"
+#define BLUETOOTH_MAX_PASSWORD_TRIES 5
+
 #define WEBSERVER_ENABLED
 
 // #define TESTING_WITHOUT_KEYBOARD

@@ -1,11 +1,13 @@
 
 #include "quack_bluetooth.h"
 
+#include <cstring>
+
 #include <quack_utils.h>
 #include "quack_parser.h"
 
-QuackBluetooth::QuackBluetooth() : parser{nullptr}, state{CONNECTED},
-                                   buf{0}, bufSize{0} {
+QuackBluetooth::QuackBluetooth() : parser{nullptr}, state{READING_PASSWORD},
+                                   buf{0}, bufSize{0}, passwordTries{1} {
     // no-op
 }
 
@@ -26,6 +28,29 @@ void
 QuackBluetooth::loop() {
     while(serial.available()) {
         switch(state) {
+            case READING_PASSWORD:
+                buf[bufSize++] = serial.read();
+
+                if(!buf[bufSize - 1]) {
+                    // string ended
+                    if(strcmp((char*) buf, BLUETOOTH_PASSWORD) == 0) {
+                        sendEvent("bt-logged-on", nullptr);
+                        state = CONNECTED;
+                    }
+                    else {
+                        sendEvent("wrong-bt-pwd", nullptr);
+                        bufSize = 0;
+                        if(passwordTries >= BLUETOOTH_MAX_PASSWORD_TRIES) {
+                            sendEvent("max-bt-pwd-tries", nullptr);
+                            serial.end();
+                        }
+                        else {
+                            passwordTries++;
+                        }
+                    }
+                }
+                break;
+
             case CONNECTED:
                 if(serial.read() == '\0') {
                     bufSize = 0;

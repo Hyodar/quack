@@ -15,7 +15,8 @@
       "cordova-plugin-inappbrowser": {},
       "cordova-plugin-bluetooth-serial": {},
       "cordova-plugin-statusbar": {},
-      "cordova-plugin-splashscreen": {}
+      "cordova-plugin-splashscreen": {},
+      "wifiwizard2": {}
     },
     "platforms": [
       "browser",
@@ -26,7 +27,10 @@
     "cordova-android": "^8.1.0",
     "cordova-browser": "^6.0.0",
     "cordova-plugin-bluetooth-serial": "0.4.7",
+    "cordova-plugin-dialog": "0.0.1",
     "cordova-plugin-splashscreen": "git+https://github.com/goinnn/cordova-plugin-splashscreen.git#4.0.0#colors",
-    "cordova-plugin-statusbar": "2.4.3"
+    "cordova-plugin-statusbar": "2.4.3",
+    "cordova-plugin-wifiwizard2": "3.1.1",
+    "es6-promise-plugin": "4.1.0"
   }
 }

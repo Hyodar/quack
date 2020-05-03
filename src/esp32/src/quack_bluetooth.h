@@ -12,11 +12,12 @@ class QuackParser;
 class QuackBluetooth {
 
 enum State {
-    CONNECTED       = 1,
-    STREAM_START    = 2,
-    READING         = 3,
-    CONTINUOUS_READ = 4,
-    WAITING_END     = 5,
+    READING_PASSWORD    = 0,
+    CONNECTED           = 1,
+    STREAM_START        = 2,
+    READING             = 3,
+    CONTINUOUS_READ     = 4,
+    WAITING_END         = 5,
 };
 
 enum Resource {
@@ -50,6 +51,8 @@ private:
     File activeFile;
 
     BluetoothSerial serial;
+
+    u8 passwordTries;
 
     void readResourceParams();
     void respondRequest();

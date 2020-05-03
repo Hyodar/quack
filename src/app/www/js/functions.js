@@ -88,28 +88,64 @@ class BluetoothAPI {
         this.promiseQueue = [];
     }
 
-    _enable() {
-        this.isEnabled = true;
+    async sendPassword() {
+        return new Promise((resolve, reject) => {
+            
+            navigator.notification.prompt(
+                "Please enter the bluetooth password.",
+                (results) => {
+                    bluetoothSerial.write(results.input1, this.bluetoothSuccess.bind(this), this.error.bind(this));
+                    bluetoothSerial.write('\0', this.bluetoothSuccess.bind(this), this.error.bind(this));
+                },
+                "Bluetooth Password",
+                ["Enter"],
+                "moe moe kyun"
+            );
 
+            eventSource.addEventListener("right-bt-pwd", () => {
+                toast.show("Successfully logged in bluetooth serial!", Toast.Mode.SUCCESS);
+                resolve();
+                eventSource.removeEventListener("right-bt-pwd");
+                eventSource.removeEventListener("wrong-bt-pwd");
+            });
+
+            eventSource.addEventListener("wrong-bt-pwd", () => {
+                toast.show("Wrong bluetooth password!", Toast.Mode.ERROR);
+                reject();
+                eventSource.removeEventListener("right-bt-pwd");
+                eventSource.removeEventListener("wrong-bt-pwd");
+            });
+        });
+    }
+
+    async _enable() {
+        
         bluetoothSerial.subscribe(
             "\0",
             this.subscribeCallback,
             this.error,
         );
-        
-        toast.show("Bluetooth Enabled!", Toast.Mode.SUCCESS);
+
+        return this.sendPassword();
     }
 
     async enable() {
         return new Promise((resolve, reject) => {
             bluetoothSerial.list((pairedDevices) => {
                 const device = pairedDevices.find((el) => el.name === "MyESP32");
-                
+
                 if(device) {
                     bluetoothSerial.connect(device.address,
                     () => {
-                        this._enable();
-                        resolve();
+                        this._enable()
+                            .then(() => { 
+                                this.isEnabled = true; resolve();
+                            })
+                            .catch(() => { 
+                                bluetoothSerial.unsubscribe();
+                                bluetoothSerial.disconnect();
+                                reject();
+                            });
                     },
                     (err) => {
                         this.error(err);
@@ -211,11 +247,15 @@ class APIEventSource {
         this.listeners[event] = callback;
     }
 
+    removeEventListener(event) {
+        this.listeners[event] = undefined;
+    }
+
     bluetoothEmit(event) {
         this.listeners[event] && this.listeners[event]();
     }
 
-    enableWifi() {
+    enableWiFi() {
         this.httpEventSource = new EventSource("http://ESP32.local/events");
 
         for([event, callback] of this.listeners.entries()) {
@@ -223,7 +263,7 @@ class APIEventSource {
         }
     }
 
-    disableWifi() {
+    disableWiFi() {
         this.httpEventSource.close();
         this.httpEventSource = null;
     }
@@ -236,17 +276,27 @@ class WiFiAPI {
     }
 
     enable() {
-        // TODO
-        // remember to add EventSource
         return new Promise((resolve, reject) => {
-            eventSource.enableWifi();
-            resolve();
+            WifiWizard2.getConnectedSSID()
+            .then((ssid) => {
+                if(ssid === "NW_ESP32") {
+                    eventSource.enableWiFi();
+                    toast.show("Wi-Fi module is enabled!", Toast.Mode.SUCCESS);
+                    resolve();
+                }
+                else {
+                    toast.show("Please connect yourself to NW_ESP32!", Toast.Mode.ERROR);
+                    reject();
+                }
+            })
+            .catch((err) => {
+                toast.show(`Wi-Fi connection error: ${err}`, Toast.Mode.ERROR);
+            });
         });
     }
 
     disable() {
-        // TODO
-        eventSource.enableWiFi();
+        eventSource.disableWiFi();
     }
 
     async call(resource, requestBody) {
@@ -307,7 +357,7 @@ class API {
     static async enableBluetooth() {
         return new Promise((resolve, reject) => {
             if(API.wiFi.isEnabled) {
-                API.bluetooth.error("Disable Wi-Fi before enabling bluetooth!");
+                API.bluetooth.error("Disable Wi-Fi module before enabling Bluetooth!");
                 reject();
                 return;
             }
@@ -327,7 +377,7 @@ class API {
     static async enableWiFi() {
         return new Promise((resolve, reject) => {
             if(API.bluetooth.isEnabled) {
-                API.wiFi.error("Disable Bluetooth before enabling Wi-Fi!");
+                API.wiFi.error("Disable Bluetooth module before enabling Wi-Fi!");
                 reject();
                 return;
             }
@@ -357,7 +407,7 @@ class API {
 
     static async call(resource, requestBody) {
         if(!API.activeModule) {
-            toast.show("Enable bluetooth or Wi-Fi first!", Toast.Mode.ERROR);
+            toast.show("Enable bluetooth or Wi-Fi module first!", Toast.Mode.ERROR);
             return new Promise((resolve, reject) => { reject(); });
         }
 
@@ -831,5 +881,9 @@ function main() {
     
     eventSource.addEventListener("finished", () => {
         toast.show("Finished executing!", Toast.Mode.SUCCESS);
+    });
+
+    eventSource.addEventListener("max-bt-pwd-tries", () => {
+        toast.show("Maximum number of bluetooth password tries exceeded! Reset the device.", Toast.Mode.ERROR);
     });
 }
