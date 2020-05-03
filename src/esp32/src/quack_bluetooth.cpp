@@ -34,7 +34,7 @@ QuackBluetooth::loop() {
                 if(!buf[bufSize - 1]) {
                     // string ended
                     if(strcmp((char*) buf, BLUETOOTH_PASSWORD) == 0) {
-                        sendEvent("bt-logged-on", nullptr);
+                        sendEvent("right-bt-pwd", nullptr);
                         state = CONNECTED;
                     }
                     else {
