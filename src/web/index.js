@@ -8,29 +8,31 @@ const commands = [
 ];
 
 const keys = [
-    "CTRL", "CONTROL", "SHIFT", "ALT", "WINDOWS",
-    "GUI", "ENTER", "MENU", "APP", "DELETE", "HOME",
-    "INSERT", "PAGEUP", "PAGEDOWN", "UP", "UPARROW",
-    "DOWN", "DOWNARROW", "LEFT", "LEFTARROW", "RIGHT",
-    "RIGHTARROW", "TAB", "END", "ESC", "ESCAPE", "SPACE",
-    "PAUSE", "BREAK", "CAPSLOCK", "NUMLOCK", "PRINTSCREEN",
+    "CTRL",     "CONTROL",      "SHIFT",    "ALT",
+    "WINDOWS",  "GUI",          "ENTER",    "MENU",
+    "APP",      "DELETE",       "HOME",     "INSERT",
+    "PAGEUP",   "PAGEDOWN",     "UP",       "UPARROW",
+    "DOWN",     "DOWNARROW",    "LEFT",     "LEFTARROW",
+    "RIGHT",    "RIGHTARROW",   "TAB",      "END",
+    "ESC",      "ESCAPE",       "SPACE",    "PAUSE",
+    "BREAK",    "CAPSLOCK",     "NUMLOCK",  "PRINTSCREEN",
     "SCROLLLOCK",
 ];
 
-const translateKey = {
-    "CONTROL": "CTRL",
-    "UP": "UPARROW",
-    "DOWN": "DOWNARROW",
-    "LEFT": "LEFTARROW",
-    "RIGHT": "RIGHTARROW",
-    "ESCAPE": "ESC",
-    "BREAK": "PAUSE",
-};
+const translateKey = Object.freeze({
+    "CONTROL":  "CTRL",
+    "UP":       "UPARROW",
+    "DOWN":     "DOWNARROW",
+    "LEFT":     "LEFTARROW",
+    "RIGHT":    "RIGHTARROW",
+    "ESCAPE":   "ESC",
+    "BREAK":    "PAUSE",
+});
 
-const translate = {
-    "DEFAULT_DELAY": "DEFAULTDELAY",
-    "REPLAY": "REPEAT",
-};
+const translate = Object.freeze({
+    "DEFAULT_DELAY":    "DEFAULTDELAY",
+    "REPLAY":           "REPEAT",
+});
 
 class API {
     static Resource = Object.freeze({

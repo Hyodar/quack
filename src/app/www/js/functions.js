@@ -8,29 +8,31 @@ const commands = [
 ];
 
 const keys = [
-    "CTRL", "CONTROL", "SHIFT", "ALT", "WINDOWS",
-    "GUI", "ENTER", "MENU", "APP", "DELETE", "HOME",
-    "INSERT", "PAGEUP", "PAGEDOWN", "UP", "UPARROW",
-    "DOWN", "DOWNARROW", "LEFT", "LEFTARROW", "RIGHT",
-    "RIGHTARROW", "TAB", "END", "ESC", "ESCAPE", "SPACE",
-    "PAUSE", "BREAK", "CAPSLOCK", "NUMLOCK", "PRINTSCREEN",
+    "CTRL",     "CONTROL",      "SHIFT",    "ALT",
+    "WINDOWS",  "GUI",          "ENTER",    "MENU",
+    "APP",      "DELETE",       "HOME",     "INSERT",
+    "PAGEUP",   "PAGEDOWN",     "UP",       "UPARROW",
+    "DOWN",     "DOWNARROW",    "LEFT",     "LEFTARROW",
+    "RIGHT",    "RIGHTARROW",   "TAB",      "END",
+    "ESC",      "ESCAPE",       "SPACE",    "PAUSE",
+    "BREAK",    "CAPSLOCK",     "NUMLOCK",  "PRINTSCREEN",
     "SCROLLLOCK",
 ];
 
-const translateKey = {
-    "CONTROL": "CTRL",
-    "UP": "UPARROW",
-    "DOWN": "DOWNARROW",
-    "LEFT": "LEFTARROW",
-    "RIGHT": "RIGHTARROW",
-    "ESCAPE": "ESC",
-    "BREAK": "PAUSE",
-};
+const translateKey = Object.freeze({
+    "UP":       "UPARROW",
+    "DOWN":     "DOWNARROW",
+    "LEFT":     "LEFTARROW",
+    "BREAK":    "PAUSE",
+    "RIGHT":    "RIGHTARROW",
+    "ESCAPE":   "ESC",
+    "CONTROL":  "CTRL",
+});
 
-const translate = {
-    "DEFAULT_DELAY": "DEFAULTDELAY",
-    "REPLAY": "REPEAT",
-};
+const translate = Object.freeze({
+    "DEFAULT_DELAY":    "DEFAULTDELAY",
+    "REPLAY":           "REPEAT",
+});
 
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -236,6 +238,7 @@ class BluetoothAPI {
 }
 
 class APIEventSource {
+
     constructor() {
         this.httpEventSource = null;
         this.listeners = {};
@@ -326,6 +329,8 @@ class API {
         BLUETOOTH:  3,
     });
 
+    static activeModule = null;
+
     static bluetooth = new BluetoothAPI();
     static wiFi      = new WiFiAPI();
 
@@ -354,8 +359,6 @@ class API {
         },
         ToggleButton.State.OFF
     );
-
-    static activeModule = null;
 
     static async enableBluetooth() {
         return new Promise((resolve, reject) => {
@@ -442,7 +445,7 @@ class Toast {
                 this.clearTimeout();
                 this.hide();
             },
-            ToggleButton.State.ON
+            ToggleButton.State.ON,
         );
     }
 
@@ -504,7 +507,7 @@ const status = {
         "theme-toggle",
         () => editor.setOption("theme", "darcula"),
         () => editor.setOption("theme", "default"),
-        ToggleButton.State.ON
+        ToggleButton.State.ON,
     ),
 };
 
