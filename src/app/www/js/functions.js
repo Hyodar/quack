@@ -104,17 +104,15 @@ class BluetoothAPI {
 
             eventSource.addEventListener("bt-right-pwd", () => {
                 toast.show("Successfully logged in bluetooth serial!", Toast.Mode.SUCCESS);
-                resolve();
-                eventSource.removeEventListener("bt-right-pwd");
                 eventSource.removeEventListener("bt-wrong-pwd");
-            });
+                resolve();
+            }, { once: true });
 
             eventSource.addEventListener("bt-wrong-pwd", () => {
                 toast.show("Wrong bluetooth password!", Toast.Mode.ERROR);
-                reject();
                 eventSource.removeEventListener("bt-right-pwd");
-                eventSource.removeEventListener("bt-wrong-pwd");
-            });
+                reject();
+            }, { once: true });
         });
     }
 
@@ -212,7 +210,7 @@ class BluetoothAPI {
 
         if(data.startsWith('E|')) {
             // Event
-            eventSource.bluetoothEmit(input);
+            eventSource.dispatchEvent(input);
         }
         else if(data.startsWith('R|')) {
             // Response
@@ -243,23 +241,28 @@ class APIEventSource {
         this.listeners = {};
     }
 
-    addEventListener(event, callback) {
+    addEventListener(event, callback, options=null) {
         this.listeners[event] = callback;
+        this.listeners[event].options = options;
     }
 
     removeEventListener(event) {
         this.listeners[event] = undefined;
     }
 
-    bluetoothEmit(event) {
+    dispatchEvent(event) {
         this.listeners[event] && this.listeners[event]();
+
+        if(this.listeners[event].options && this.listeners[event].options.once) {
+            this.removeEventListener(event);
+        }
     }
 
     enableWiFi() {
         this.httpEventSource = new EventSource("http://ESP32.local/events");
 
         for([event, callback] of this.listeners.entries()) {
-            this.httpEventSource.addEventListener(event, callback);
+            this.httpEventSource.addEventListener(event, callback, callback.options);
         }
     }
 
