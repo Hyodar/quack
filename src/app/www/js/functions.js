@@ -34,6 +34,13 @@ const translate = Object.freeze({
     "REPLAY":           "REPEAT",
 });
 
+const FRAME_PARAM_SIZE = 480;
+// IS_MOBILE is defined inside libs.min.js
+
+/*****************************************************************************
+ * General Functions
+*****************************************************************************/
+
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -42,13 +49,34 @@ function ID(id) {
     return document.getElementById(id);
 }
 
+/*****************************************************************************
+ * Classes
+*****************************************************************************/
+
+/**
+ * Represents a DOM clickable element which triggers a callback when pressed
+ * depending on its state.
+ */
+
 class ToggleButton {
 
+    /**
+     * @private {Object}
+     * Enumeration of the possible states of a push button by a boolean.
+     * It's not really necessary, but it's more descriptive to use those than
+     * just using the booleans when setting a ToggleButton state.
+     */
     static State = Object.freeze({
         ON:     true,
         OFF:    false,
     });
 
+    /**
+     * @param {String} id - DOM id of the element to be used as a toggle button
+     * @param {Function} callbackOn - Callback to be executed when it's toggled on
+     * @param {Function} callbackOff - Callback to be executed when it's toggled off
+     * @param {ToggleButton.State} state - Initial state of the button
+     */
     constructor(id, callbackOn, callbackOff, state=ToggleButton.State.OFF) {
         this.id = id;
         this.callbackOn = callbackOn;
@@ -56,22 +84,36 @@ class ToggleButton {
         this.state = state;
     }
 
+    /**
+     * Gets its DOM element by id.
+     */
     get element() {
         return ID(this.id);
     }
 
+    /**
+     * Toggles on.
+     * @param {boolean} [runCallback] - Whether it should run callbackOn
+     */
     on(runCallback=true) {
         this.element.classList.replace("toggle-off", "toggle-on");
         this.state = ToggleButton.State.ON;
         if(runCallback) this.callbackOn();
     }
 
+    /**
+     * Toggles off.
+     * @param {boolean} [runCallback] - Whether it should run callbackOff
+     */
     off(runCallback=true) {
         this.element.classList.replace("toggle-on", "toggle-off");
         this.state = ToggleButton.State.OFF;
         if(runCallback) this.callbackOff();
     }
 
+    /**
+     * Toggles; Click action.
+     */
     toggle() {
         if(this.state) {
             this.off();
@@ -82,6 +124,12 @@ class ToggleButton {
     }
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Bluetooth implementation of API communication
+ */
+
 class BluetoothAPI {
 
     constructor() {
@@ -90,6 +138,10 @@ class BluetoothAPI {
         this.promiseQueue = [];
     }
 
+    /**
+     * Sends the bluetooth password and waits for the response as an event.
+     * @returns {Promise<any>}
+     */
     async sendPassword() {
         return new Promise((resolve, reject) => {
             
@@ -118,17 +170,25 @@ class BluetoothAPI {
         });
     }
 
+    /**
+     * Subscribes to the bluetooth serial to wait for any responses and
+     * asks for the bluetooth password.
+     */
     async _enable() {
-        
         bluetoothSerial.subscribe(
             "\0",
             this.subscribeCallback,
-            this.error,
+            API.disableBluetooth,
         );
 
         return this.sendPassword();
     }
 
+    /**
+     * Enables the bluetooth API implementation.
+     * Checks if the ESP32 is already paired; if so, tries to connect to it.
+     * @returns {Promise<any>}
+     */
     async enable() {
         return new Promise((resolve, reject) => {
             bluetoothSerial.list((pairedDevices) => {
@@ -139,7 +199,9 @@ class BluetoothAPI {
                     () => {
                         this._enable()
                             .then(() => { 
-                                this.isEnabled = true; resolve();
+                                this.isEnabled = true;
+                                this.canSend = true;
+                                resolve();
                             })
                             .catch(() => { 
                                 bluetoothSerial.unsubscribe();
@@ -162,6 +224,9 @@ class BluetoothAPI {
         });
     }
 
+    /**
+     * Disables the bluetooth API implementation.
+     */
     disable() {
         bluetoothSerial.disconnect();
         bluetoothSerial.unsubscribe();
@@ -170,6 +235,11 @@ class BluetoothAPI {
         toast.show("Bluetooth Disabled!", Toast.Mode.INFO);
     }
 
+    /**
+     * Calls an API resource by bluetooth.
+     * @param {API.Resource} resource 
+     * @param {FormData} requestBody 
+     */
     async call(resource, requestBody) {
         return new Promise(async (resolve, reject) => {
             if(!this.canSend) {
@@ -199,22 +269,36 @@ class BluetoothAPI {
         });
     }
     
+    /**
+     * Prints an error on the toast as a bluetooth error.
+     * @param {String} [errorMessage]
+     */
     error(errorMessage = "") {
         toast.show(`Bluetooth Error! ${errorMessage}`, Toast.Mode.ERROR);
     }
 
+    /**
+     * Success callback to be used when calling bluetoothSerial functions.
+     */
     successCallback() {
         // no-op
     }
     
+    /**
+     * bluetoothSerial callback to gather data terminated by '\0'.
+     * When something is found, if it begins with "E|", it's recognized as an
+     * event. If it begins with "R|", it's recognized as a call response, and
+     * then one of the call Promise from the queue is resolved.
+     * @param {String} data 
+     */
     subscribeCallback(data) {
         const input = data.slice(2);
 
-        if(data.startsWith('E|')) {
+        if(data.startsWith("E|")) {
             // Event
             eventSource.dispatchEvent(input);
         }
-        else if(data.startsWith('R|')) {
+        else if(data.startsWith("R|")) {
             // Response
             const resolve = this.promiseQueue.pop();
 
@@ -224,6 +308,11 @@ class BluetoothAPI {
         }
     }
 
+    /**
+     * Splits a long string into multiple chunks and sends them with delay.
+     * It prevents the ESP32 bluetooth buffer from overflowing.
+     * @param {String} text 
+     */
     async delayedBluetoothSend(text) {
         const chunks = text.match(/.{1,80}/g);
 
@@ -237,30 +326,78 @@ class BluetoothAPI {
 
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Holds multiple events and callbacks and can be used by both Bluetooth
+ * and Wi-Fi modules.
+ * 
+ * When enableWiFi() is used, all stored events are replicated to a new
+ * EventSource that points to the EventSource hosted by the ESP32 on "/events".
+ * When the API bluetooth module is activated, each message that begins with "E|"
+ * is parsed as an event and dispatched internally.
+ */
+
 class APIEventSource {
 
     constructor() {
+        /**
+         * @private {EventSource}
+         * When enableWifi() is used, it points to an EventSource hosted by
+         * the ESP32 and receives events separately from normal responses.
+         */
         this.httpEventSource = null;
+
+        /**
+         * @private {Object}
+         * Matches each event key to a specific callback.
+         */
         this.listeners = {};
     }
 
+    /**
+     * Adds an event listener to a specific event.
+     * @param {String} event 
+     * @param {Function} callback 
+     * @param {Object} [options]
+     */
     addEventListener(event, callback, options=null) {
         this.listeners[event] = callback;
         this.listeners[event].options = options;
     }
 
+    /**
+     * Removes an event listener from the listeners object.
+     * @param {String} event 
+     */
     removeEventListener(event) {
+        if(this.httpEventSource) {
+            this.httpEventSource.removeEventListener(event, this.listeners[event]);
+        }
+
         this.listeners[event] = undefined;
     }
 
+    /**
+     * Dispatches an event. At the moment, only the option 'once' is supported
+     * internally - though if the event is dispatched automatically with
+     * httpEventSource, all options will be supported.
+     * @param {String} event 
+     */
     dispatchEvent(event) {
-        this.listeners[event] && this.listeners[event]();
+        if(this.listeners[event]) {
+            this.listeners[event]();
 
-        if(this.listeners[event].options && this.listeners[event].options.once) {
-            this.removeEventListener(event);
+            if(this.listeners[event].options && this.listeners[event].options.once) {
+                this.removeEventListener(event);
+            }
         }
     }
 
+    /**
+     * Setups httpEventSource when the network is available. Otherwise, trying
+     * to access http://ESP32.local would lead to an error.
+     */
     enableWiFi() {
         this.httpEventSource = new EventSource("http://ESP32.local/events");
 
@@ -269,18 +406,36 @@ class APIEventSource {
         }
     }
 
+    /**
+     * Closes httpEventSource, essentially disabling all callbacks and events
+     * that would be dispatched by it.
+     */
     disableWiFi() {
         this.httpEventSource.close();
         this.httpEventSource = null;
     }
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Network implementation of API communication
+ */
+
 class WiFiAPI {
 
     constructor() {
+        /**
+         * @private {boolean}
+         * Indicates whether the module is enabled.
+         */
         this.isEnabled = false;
     }
 
+    /**
+     * Enables the module.
+     * @returns {Promise<any>}
+     */
     enable() {
         return new Promise((resolve, reject) => {
             WifiWizard2.getConnectedSSID()
@@ -301,10 +456,19 @@ class WiFiAPI {
         });
     }
 
+    /**
+     * Disables the module.
+     */
     disable() {
         eventSource.disableWiFi();
     }
 
+    /**
+     * Sends an API call through the webserver hosted by ESP32.
+     * @param {API.Resource} resource
+     * @param {FormData} requestBody
+     * @returns {Promise<String>}
+     */
     async call(resource, requestBody) {
         return fetch(resource.url, {
             method: "POST",
@@ -313,8 +477,19 @@ class WiFiAPI {
     }
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Main API static class used for calling resources. Has both a Wi-Fi and a
+ * bluetooth implementation which are used as modules.
+ */
+
 class API {
 
+    /**
+     * @private {Object}
+     * Enumerates all API resources.
+     */
     static Resource = Object.freeze({
         STOP:       { bluetoothId: 1, url: "http://ESP32.local/stop"     },
         LIST:       { bluetoothId: 2, url: "http://ESP32.local/list"     },
@@ -324,17 +499,38 @@ class API {
         SAVE:       { bluetoothId: 6, url: "http://ESP32.local/save"     },
     });
 
+    /**
+     * @private {Object}
+     * Enumerates each possible active module.
+     */
     static Module = Object.freeze({
         NONE:       1,
         WIFI:       2,
         BLUETOOTH:  3,
     });
 
+    /**
+     * @private {WiFiAPI|BluetoothAPI}
+     * Active implementation of API calls.
+     */
     static activeModule = null;
 
+    /**
+     * @private {BluetoothAPI}
+     * Bluetooth module implementation.
+     */
     static bluetooth = new BluetoothAPI();
+
+    /**
+     * @private {WiFiAPI}
+     * Wi-Fi module implementation.
+     */
     static wiFi      = new WiFiAPI();
 
+    /**
+     * @public {ToggleButton}
+     * Bluetooth module toggle button.
+     */
     static bluetoothToggle = new ToggleButton(
         "bluetooth-toggle",
         () => {
@@ -348,6 +544,10 @@ class API {
         ToggleButton.State.OFF,
     );
 
+    /**
+     * @public {ToggleButton}
+     * Wi-Fi module toggle button.
+     */
     static wiFiToggle = new ToggleButton(
         "wifi-toggle",
         () => {
@@ -361,6 +561,10 @@ class API {
         ToggleButton.State.OFF,
     );
 
+    /**
+     * Enables the bluetooth API implementation.
+     * @returns {Promise<any>}
+     */
     static async enableBluetooth() {
         return new Promise((resolve, reject) => {
             if(API.wiFi.isEnabled) {
@@ -375,12 +579,19 @@ class API {
         });
     }
 
+    /**
+     * Disables the bluetooth API implementation.
+     */
     static disableBluetooth() {
         if(API.bluetooth.disable()) {
             API.activeModule = null;
         }
     }
 
+    /**
+     * Enables the Wi-Fi API implementation.
+     * @returns {Promise<any>}
+     */
     static async enableWiFi() {
         return new Promise((resolve, reject) => {
             if(API.bluetooth.isEnabled) {
@@ -395,12 +606,19 @@ class API {
         });
     }
 
+    /**
+     * Disables the Wi-Fi API implementation
+     */
     static disableWiFi() {
         if(API.wiFi.disable()) {
             API.activeModule = null;
         }
     }
 
+    /**
+     * Returns the active API implementation by an enumeration.
+     * @returns {API.Module}
+     */
     static getActiveModule() {
         if(API.activeModule instanceof WiFiAPI) {
             return API.Module.WIFI;
@@ -412,6 +630,11 @@ class API {
         return API.Module.NONE;
     }
 
+    /**
+     * Calls an API resource with the active implementation.
+     * @param {API.Resource} resource 
+     * @param {FormData} requestBody 
+     */
     static async call(resource, requestBody) {
         if(!API.activeModule) {
             toast.show("Enable bluetooth or Wi-Fi module first!", Toast.Mode.ERROR);
@@ -422,13 +645,23 @@ class API {
     }
 }
 
+// ---------------------------------------------------------------------------
+
 class Toast {
+
+    /**
+     * @private {Object}
+     * Background color enumeration for each Toast mode.
+     */
     static Mode = Object.freeze({
         SUCCESS: "rgba(16, 255, 0, 0.6)",
         ERROR: "rgba(255, 0, 0, 0.6)",
         INFO: "rgba(0, 185, 255, 0.6)",
     });
 
+    /**
+     * @param {String} id - DOM id of the toast element
+     */
     constructor(id) {
         this.el = ID(id);
         this.timeout = null;
@@ -450,10 +683,16 @@ class Toast {
         );
     }
 
+    /**
+     * Toast click action; Slides fast to the right.
+     */
     click() {
         this.el.style.right = "-60vw";
     }
 
+    /**
+     * Hides the toast.
+     */
     hide() {
         Object.assign(this.el.style, {
             width:      "0px",
@@ -464,6 +703,9 @@ class Toast {
         this.timeout = null;
     }
 
+    /**
+     * Resets the toast style.
+     */
     reset() {
         Object.assign(this.el.style, {
             width:      "",
@@ -473,12 +715,22 @@ class Toast {
         });
     }
 
+    /**
+     * Clears the hide timeout if there is an active timeout.
+     * This prevents the former message hide function to be activated when a
+     * new message is shown before the timeout ends.
+     */
     clearTimeout() {
         if(this.timeout) {
             clearTimeout(this.timeout);
         }
     }
 
+    /**
+     * Show a message in the toast.
+     * @param {String} text 
+     * @param {Toast.Mode} mode 
+     */
     show(text, mode) {
         if(!this.active) return;
 
@@ -492,7 +744,9 @@ class Toast {
     }
 }
 
-const FRAME_PARAM_SIZE = 480;
+/*****************************************************************************
+ * Status object
+*****************************************************************************/
 
 const status = {
     lastVersion: "",
@@ -537,6 +791,8 @@ function compareVersions(code) {
     }
 }
 
+// ---------------------------------------------------------------------------
+
 function setOpenOptions(newOptions) {
     const options = ID("filename-open").options;
 
@@ -549,6 +805,8 @@ function setOpenOptions(newOptions) {
     });
 }
 
+// ---------------------------------------------------------------------------
+
 function showOptionsMenu(childId) {
     Object.assign(ID("options-menu").style, {
         filter: "opacity(1)",
@@ -559,6 +817,8 @@ function showOptionsMenu(childId) {
     hideOtherOptions(childId);
 }
 
+// ---------------------------------------------------------------------------
+
 function hideOptionsMenu() {
     Object.assign(ID("options-menu").style, {
         filter: "opacity(0)",
@@ -568,6 +828,8 @@ function hideOptionsMenu() {
 
     hideOtherOptions();
 }
+
+// ---------------------------------------------------------------------------
 
 function hideOtherOptions(childId=null) {
     Array.from(ID("options-menu").children).forEach(
@@ -582,11 +844,15 @@ function hideOtherOptions(childId=null) {
     );
 }
 
+// ---------------------------------------------------------------------------
+
 function openFilenameInput() {
     showOptionsMenu("save-container");
 
     ID("filename-save").value = status.filename;
 }
+
+// ---------------------------------------------------------------------------
 
 function preProcessCode(content) {
     let lines = content.split('\n');
@@ -632,6 +898,8 @@ function preProcessCode(content) {
     return lines.join("\n");
 }
 
+// ---------------------------------------------------------------------------
+
 function deProcessCode(content) {
     let lines = content.split('\n');
 
@@ -648,15 +916,18 @@ function deProcessCode(content) {
     return lines.join('\n');
 }
 
+// ---------------------------------------------------------------------------
+
 function updateScriptList() {
     const form = new FormData();
 
     API.call(API.Resource.LIST, form)
-       .then(json => { 
-           alert('JSON: ' + json);
+       .then(json => {
            setOpenOptions(JSON.parse(json).dirFiles);
        });
 }
+
+// ---------------------------------------------------------------------------
 
 async function saveScript(filename) {
     if(!filename) {
@@ -699,15 +970,21 @@ async function saveScript(filename) {
               });
 }
 
+// ---------------------------------------------------------------------------
+
 function confirmSave() {
     saveScript(ID('filename-save').value);
 }
+
+// ---------------------------------------------------------------------------
 
 function hasLongLines(code) {
     return code.split("\n").some(line =>
         line.split(' ')[1].length >= FRAME_PARAM_SIZE
     );
 }
+
+// ---------------------------------------------------------------------------
 
 function runScript() {
     if(status.hasErrors) {
@@ -751,6 +1028,8 @@ function runScript() {
     }
 }
 
+// ---------------------------------------------------------------------------
+
 function stopScript() {
     const form = new FormData();
 
@@ -760,9 +1039,13 @@ function stopScript() {
     });
 }
 
+// ---------------------------------------------------------------------------
+
 function uploadScript() {
     ID("upload-input").click();
 }
+
+// ---------------------------------------------------------------------------
 
 function openScript() {
     let scriptName = ID("filename-open").value;
@@ -784,9 +1067,13 @@ function openScript() {
     hideOptionsMenu();
 }
 
+// ---------------------------------------------------------------------------
+
 function loadScriptList() {
     showOptionsMenu("open-container");
 }
+
+// ---------------------------------------------------------------------------
 
 function handleUpload(event) {
     const file = ID("upload-input").files[0];
