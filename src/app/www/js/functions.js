@@ -41,10 +41,18 @@ const FRAME_PARAM_SIZE = 480;
  * General Functions
 *****************************************************************************/
 
+/**
+ * Sleeps for `ms` milliseconds.
+ * @param {Number} ms - sleep duration in milliseconds
+ */
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/**
+ * The same as document.getElementById.
+ * @param {String} id 
+ */
 function ID(id) {
     return document.getElementById(id);
 }
@@ -797,6 +805,11 @@ const status = {
  * Functions
 *****************************************************************************/
 
+/**
+ * Compares the latest saved version of the script stored inside the global 
+ * variable `status` with the parameter `code`.
+ * @param {String} code - current editor code
+ */
 function compareVersions(code) {
     if(status.lastVersion.length != code.length) {
         status.isSaved = false;
@@ -808,6 +821,11 @@ function compareVersions(code) {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Sets the options of the DOM Select with '#filename-open' to the array of
+ * filenames passed by parameter.
+ * @param {Array<String>} newOptions 
+ */
 function setOpenOptions(newOptions) {
     const options = ID("filename-open").options;
 
@@ -822,6 +840,10 @@ function setOpenOptions(newOptions) {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Shows '#options-menu' and a child of it, passed through `childId`.
+ * @param {String} childId - id of whichever child element should be visible
+ */
 function showOptionsMenu(childId) {
     Object.assign(ID("options-menu").style, {
         filter: "opacity(1)",
@@ -834,6 +856,9 @@ function showOptionsMenu(childId) {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Hides '#options-menu' and all its children.
+ */
 function hideOptionsMenu() {
     Object.assign(ID("options-menu").style, {
         filter: "opacity(0)",
@@ -846,6 +871,11 @@ function hideOptionsMenu() {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Hides all options menu children except for the one with the id passed as
+ * parameter. If childId is not set, it will hide all '#options-menu' elements.
+ * @param {String} [childId]
+ */
 function hideOtherOptions(childId=null) {
     Array.from(ID("options-menu").children).forEach(
         child => {
@@ -861,6 +891,9 @@ function hideOtherOptions(childId=null) {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Opens the filename input to save a file.
+ */
 function openFilenameInput() {
     showOptionsMenu("save-container");
 
@@ -869,6 +902,22 @@ function openFilenameInput() {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Preprocesses code to make it standard and make processing it faster.
+ * Basically:
+ *  * Trim all lines
+ *  * Translate commands and keys that have multiple names to one standard
+ *    name.
+ *  * If no command is found, replace command as 'KEYS', as it is a
+ *    sequence of keys to press
+ *  * Remove REM lines (comment) and whichever line doesn't have any
+ *    command or the command is not recognized.
+ *  * Swap the sequence of the REPEAT command: normally, in Duckyscript,
+ *    REPEAT refers to the command before it. To make processing it easier,
+ *    REPEAT is swapped with the line above and now refers to the command
+ *    after it.
+ * @param {String} content 
+ */
 function preProcessCode(content) {
     let lines = content.split('\n');
 
@@ -915,6 +964,15 @@ function preProcessCode(content) {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Undos some of the changes of `preProcessCode` to show the script as if in
+ * normal Duckyscript.
+ * The main changes are:
+ *  * REPEAT command is reversed back to its normal order (see `preProcessCode`)
+ *  * KEYS command is omitted
+ * This, however, doesn't restore any comments.
+ * @param {String} content 
+ */
 function deProcessCode(content) {
     let lines = content.split('\n');
 
@@ -933,6 +991,11 @@ function deProcessCode(content) {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Calls the API and requests a JSON with all the files inside ESP32's
+ * filesystem. When it receives the response, it sets the new open options
+ * with `setOpenOptions`.
+ */
 function updateScriptList() {
     const form = API.createRequestForm();
 
@@ -944,6 +1007,11 @@ function updateScriptList() {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Saves the current editor code as a file inside ESP32 through an API SAVE 
+ * call.
+ * @param {String} filename 
+ */
 async function saveScript(filename) {
     if(!filename) {
         return;
@@ -988,12 +1056,21 @@ async function saveScript(filename) {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Function which runs when the 'Go' button is clicked after inserting a
+ * filename with which to save the script.
+ */
 function confirmSave() {
     saveScript(ID('filename-save').value);
 }
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Check if any line needs to be split between multiple lines for parsing.
+ * If so, the script can't be ran through the RUN_RAW API resource.
+ * @param {String} code 
+ */
 function hasLongLines(code) {
     return code.split("\n").some(line =>
         line.split(' ')[1].length >= FRAME_PARAM_SIZE
@@ -1002,6 +1079,11 @@ function hasLongLines(code) {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Runs the script.
+ * It checkes if it can be ran with RUN_RAW. If not, it runs it as a file,
+ * saving the file changes first if it's needed.
+ */
 function runScript() {
     if(status.hasErrors) {
         toast.show("There are errors in your script! Solve them before running.", Toast.Mode.ERROR);
@@ -1054,6 +1136,9 @@ function runScript() {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Stops the current script's execution through a call to the API STOP resource.
+ */
 function stopScript() {
     const form = API.createRequestForm();
 
@@ -1065,12 +1150,19 @@ function stopScript() {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Mimicks a click to a hidden file input when a user wants to upload a script
+ * through the UPLOAD button of the side menu.
+ */
 function uploadScript() {
     ID("upload-input").click();
 }
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Loads a script that is stored inside ESP32.
+ */
 function openScript() {
     let scriptName = ID("filename-open").value;
     if(!scriptName.startsWith("/")) {
@@ -1094,12 +1186,20 @@ function openScript() {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * Shows the options menu and with the '#open-container' element.
+ * It runs when the OPEN button of the side menu is clicked.
+ */
 function loadScriptList() {
     showOptionsMenu("open-container");
 }
 
 // ---------------------------------------------------------------------------
 
+/**
+ * File upload callback for the '#upload-input' file input element.
+ * @param {Event} event 
+ */
 function handleUpload(event) {
     const file = ID("upload-input").files[0];
 
