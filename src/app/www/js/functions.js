@@ -631,6 +631,21 @@ class API {
     }
 
     /**
+     * Creates a FormData object using an Object
+     * @param {Object} [obj] - requestForm properties
+     * @returns {FormData}
+     */
+    static createRequestForm(obj=null) {
+        const formData = new FormData();
+
+        for([key, value] of Object.entries(obj)) {
+            formData.append(key, value);
+        }
+
+        return formData;
+    }
+
+    /**
      * Calls an API resource with the active implementation.
      * @param {API.Resource} resource 
      * @param {FormData} requestBody 
@@ -919,7 +934,7 @@ function deProcessCode(content) {
 // ---------------------------------------------------------------------------
 
 function updateScriptList() {
-    const form = new FormData();
+    const form = API.createRequestForm();
 
     API.call(API.Resource.LIST, form)
        .then(json => {
@@ -943,8 +958,9 @@ async function saveScript(filename) {
 
     const preProcessedCode = preProcessCode(editor.getValue());
 
-    const form = new FormData();
-    form.append("Filename", filename);
+    const form = API.createRequestForm({
+        Filename: filename
+    });
 
     if(API.getActiveModule() == API.Module.BLUETOOTH) {
         form.append("File-Bytes", preProcessedCode);
@@ -992,13 +1008,13 @@ function runScript() {
         return;
     }
 
-    const form = new FormData();
     const code = preProcessCode(editor.getValue());
-
     console.log(`Resulting Duckyscript:\n${code}`);
 
     if(code.length <= 450) {
-        form.append("Code", code);
+        const form = API.createRequestForm({
+            Code: preProcessCode(editor.getValue())
+        });
         
         API.call(API.Resource.RUN_RAW, form)
            .then(() => {
@@ -1011,16 +1027,24 @@ function runScript() {
     if(!status.isSaved) {
         saveScript(status.filename)
         .then(() => {
+            const form = API.createRequestForm({
+                Filename: status.filename
+            });
+
             API.call(API.Resource.RUN_FILE, form)
                .then(() => {
-                toast.show("Received command!", Toast.Mode.SUCCESS);
-            });
+                    toast.show("Received command!", Toast.Mode.SUCCESS);
+                });
         })
         .catch(() => {
             toast.show("Error saving script!", Toast.Mode.ERROR);
         });
     }
     else {
+        const form = API.createRequestForm({
+            Filename: status.filename
+        });
+
         API.call(API.Resource.RUN_FILE, form)
            .then(() => {
             toast.show("Received command!", Toast.Mode.SUCCESS);
@@ -1031,12 +1055,12 @@ function runScript() {
 // ---------------------------------------------------------------------------
 
 function stopScript() {
-    const form = new FormData();
+    const form = API.createRequestForm();
 
     API.call(API.Resource.STOP, form)
         .then(() => {
-        toast.show("Stopped script execution!", Toast.Mode.SUCCESS);
-    });
+            toast.show("Stopped script execution!", Toast.Mode.SUCCESS);
+        });
 }
 
 // ---------------------------------------------------------------------------
@@ -1053,8 +1077,9 @@ function openScript() {
         scriptName = "/" + scriptName;
     }
 
-    const form = new FormData();
-    form.append("Filename", scriptName);
+    const form = API.createRequestForm({
+        Filename: scriptName
+    });
 
     API.call(API.Resource.OPEN, form)
        .then(text => {
