@@ -34,7 +34,30 @@ const translate = Object.freeze({
     "REPLAY":           "REPEAT",
 });
 
+const FRAME_PARAM_SIZE = 480;
+
+/*****************************************************************************
+ * General Functions
+*****************************************************************************/
+
+/**
+ * The same as document.getElementById.
+ * @param {String} id 
+ */
+function ID(id) {
+    return document.getElementById(id);
+}
+
+/*****************************************************************************
+ * Classes
+*****************************************************************************/
+
 class API {
+    
+    /**
+     * @private {Object}
+     * Enumerates all API resources.
+     */
     static Resource = Object.freeze({
         STOP:       "/stop",
         SAVE:       "/save",
@@ -44,6 +67,11 @@ class API {
         OPEN:       "/open"
     });
 
+    /**
+     * Calls an API resource.
+     * @param {API.Resource} resource 
+     * @param {FormData} requestBody 
+     */
     static async call(resource, requestBody) {
         return fetch(resource, {
             method: "POST",
@@ -56,7 +84,14 @@ class API {
     }
 }
 
+// ---------------------------------------------------------------------------
+
 class Toast {
+
+    /**
+     * @private {Object}
+     * Background color enumeration for each Toast mode.
+     */
     static Mode = Object.freeze({
         SUCCESS: "#10ff0061",
         ERROR: "#ff000094",
@@ -64,6 +99,9 @@ class Toast {
         ARDUINO_OTA: "#00ffff6b",
     });
 
+    /**
+     * @param {String} id - DOM id of the toast element
+     */
     constructor(id) {
         this.el = ID(id);
         this.timeout = null;
@@ -72,6 +110,9 @@ class Toast {
         this.el.onclick = this.click.bind(this);
     }
 
+    /**
+     * Toggle function for the '#notifications-toggle' button.
+     */
     toggle() {
         toggle(ID("notifications-toggle"),
             () => { 
@@ -85,32 +126,54 @@ class Toast {
         );
     }
 
+    /**
+     * Toast click action; Slides fast to the right.
+     */
     click() {
         this.el.style.right = "-60vw";
     }
 
+    /**
+     * Hides the toast.
+     */
     hide() {
-        this.el.style.opacity = "0";
-        this.el.style.width = "0px";
-        this.el.style.visibility = "hidden";
+        Object.assign(this.el.style, {
+            width:      "0px",
+            opacity:    "0",
+            visibility: "hidden",
+        });
         
         this.timeout = null;
     }
 
+    /**
+     * Resets the toast style.
+     */
     reset() {
-        this.el.style.right = "0px";
-
-        this.el.style.opacity = "1";
-        this.el.style.width = "";
-        this.el.style.visibility = "visible";
+        Object.assign(this.el.style, {
+            width:      "",
+            right:      "0px",
+            opacity:    "1",
+            visibility: "visible",
+        });
     }
 
+    /**
+     * Clears the hide timeout if there is an active timeout.
+     * This prevents the former message hide function to be activated when a
+     * new message is shown before the timeout ends.
+     */
     clearTimeout() {
         if(this.timeout) {
             clearTimeout(this.timeout);
         }
     }
 
+    /**
+     * Show a message in the toast.
+     * @param {String} text 
+     * @param {Toast.Mode} mode 
+     */
     show(text, mode) {
         if(!this.active) return;
 
@@ -124,7 +187,9 @@ class Toast {
     }
 }
 
-const FRAME_PARAM_SIZE = 480;
+/*****************************************************************************
+ * Status object
+*****************************************************************************/
 
 const status = {
     lastVersion: "",
@@ -144,6 +209,11 @@ const toast = new Toast("toast");
  * Functions
 *****************************************************************************/
 
+/**
+ * Compares the latest saved version of the script stored inside the global 
+ * variable `status` with the parameter `code`.
+ * @param {String} code - current editor code
+ */
 function compareVersions(code) {
     if(status.lastVersion.length != code.length) {
         status.isSaved = false;
@@ -153,10 +223,13 @@ function compareVersions(code) {
     }
 }
 
-function ID(id) {
-    return document.getElementById(id);
-}
+// ---------------------------------------------------------------------------
 
+/**
+ * Sets the options of the DOM Select with '#filename-open' to the array of
+ * filenames passed by parameter.
+ * @param {Array<String>} newOptions 
+ */
 function setOpenOptions(newOptions) {
     const options = ID("filename-open").options;
 
@@ -169,6 +242,12 @@ function setOpenOptions(newOptions) {
     });
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Shows '#options-menu' and a child of it, passed through `childId`.
+ * @param {String} childId - id of whichever child element should be visible
+ */
 function showOptionsMenu(childId) {
     Object.assign(ID("options-menu").style, {
         filter: "opacity(1)",
@@ -179,6 +258,11 @@ function showOptionsMenu(childId) {
     hideOtherOptions(childId);
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Hides '#options-menu' and all its children.
+ */
 function hideOptionsMenu() {
     Object.assign(ID("options-menu").style, {
         filter: "opacity(0)",
@@ -189,6 +273,13 @@ function hideOptionsMenu() {
     hideOtherOptions();
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Hides all options menu children except for the one with the id passed as
+ * parameter. If childId is not set, it will hide all '#options-menu' elements.
+ * @param {String} [childId]
+ */
 function hideOtherOptions(childId=null) {
     Array.from(ID("options-menu").children).forEach(
         child => {
@@ -202,12 +293,35 @@ function hideOtherOptions(childId=null) {
     );
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Opens the filename input to save a file.
+ */
 function openFilenameInput() {
     showOptionsMenu("save-container");
 
     ID("filename-save").value = status.filename;
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Preprocesses code to make it standard and make processing it faster.
+ * Basically:
+ *  * Trim all lines
+ *  * Translate commands and keys that have multiple names to one standard
+ *    name.
+ *  * If no command is found, replace command as 'KEYS', as it is a
+ *    sequence of keys to press
+ *  * Remove REM lines (comment) and whichever line doesn't have any
+ *    command or the command is not recognized.
+ *  * Swap the sequence of the REPEAT command: normally, in Duckyscript,
+ *    REPEAT refers to the command before it. To make processing it easier,
+ *    REPEAT is swapped with the line above and now refers to the command
+ *    after it.
+ * @param {String} content 
+ */
 function preProcessCode(content) {
     let lines = content.split('\n');
 
@@ -252,6 +366,17 @@ function preProcessCode(content) {
     return lines.join("\n");
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Undos some of the changes of `preProcessCode` to show the script as if in
+ * normal Duckyscript.
+ * The main changes are:
+ *  * REPEAT command is reversed back to its normal order (see `preProcessCode`)
+ *  * KEYS command is omitted
+ * This, however, doesn't restore any comments.
+ * @param {String} content 
+ */
 function deProcessCode(content) {
     let lines = content.split('\n');
 
@@ -263,11 +388,23 @@ function deProcessCode(content) {
             lines[i + 1] = lines[i];
             lines[i] = temp;
         }
+        else if(command == "KEYS") {
+            const line = lines[i].split(' ');
+            line.shift();
+            lines[i] = line.join(' ');
+        }
     }
 
     return lines.join('\n');
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Calls the API and requests a JSON with all the files inside ESP32's
+ * filesystem. When it receives the response, it sets the new open options
+ * with `setOpenOptions`.
+ */
 function updateScriptList() {
     const form = new FormData();
 
@@ -277,6 +414,13 @@ function updateScriptList() {
        .then(json => setOpenOptions(json.dirFiles));
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Saves the current editor code as a file inside ESP32 through an API SAVE 
+ * call.
+ * @param {String} filename 
+ */
 function saveScript(filename) {
     if(!filename) {
         return;
@@ -312,16 +456,36 @@ function saveScript(filename) {
        });
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Function which runs when the 'Go' button is clicked after inserting a
+ * filename with which to save the script.
+ */
 function confirmSave() {
     saveScript(ID('filename-save').value);
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Check if any line needs to be split between multiple lines for parsing.
+ * If so, the script can't be ran through the RUN_RAW API resource.
+ * @param {String} code 
+ */
 function hasLongLines(code) {
     return code.split("\n").some(line =>
         line.split(' ')[1].length >= FRAME_PARAM_SIZE
     );
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Runs the script.
+ * It checkes if it can be ran with RUN_RAW. If not, it runs it as a file,
+ * saving the file changes first if it's needed.
+ */
 function runScript() {
     if(status.hasErrors) {
         toast.show("There are errors in your script! Solve them before running.", Toast.Mode.ERROR);
@@ -361,6 +525,11 @@ function runScript() {
     }, timeoutDelay);
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Stops the current script's execution through a call to the API STOP resource.
+ */
 function stopScript() {
     const form = new FormData();
 
@@ -370,10 +539,21 @@ function stopScript() {
        .then(text => console.log(`/stop response: ${text}`));
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Mimicks a click to a hidden file input when a user wants to upload a script
+ * through the UPLOAD button of the side menu.
+ */
 function uploadScript() {
     ID("upload-input").click();
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Loads a script that is stored inside ESP32.
+ */
 function openScript() {
     let scriptName = ID("filename-open").value;
     if(!scriptName.startsWith("/")) {
@@ -394,10 +574,22 @@ function openScript() {
     hideOptionsMenu();
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Shows the options menu and with the '#open-container' element.
+ * It runs when the OPEN button of the side menu is clicked.
+ */
 function loadScriptList() {
     showOptionsMenu("open-container");
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * File upload callback for the '#upload-input' file input element.
+ * @param {Event} event 
+ */
 function handleUpload(event) {
     const file = ID("upload-input").files[0];
 
@@ -417,6 +609,16 @@ function handleUpload(event) {
     fileReader.readAsText(file, "UTF-8");
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Toggle function for '.toggle' DOM elements.
+ * Note: `element` should have 'toggle' and either 'toggle-on' or 'toggle-off'
+ * in its classList.
+ * @param {Element} element - DOM toggle button element
+ * @param {Function} toggleOn - Callback when its state goes to on
+ * @param {Function} toggleOff - Callback when its state goes to off
+ */
 function toggle(element, toggleOn, toggleOff) {
     const classes = element.classList;
     if(classes.replace("toggle-on", "toggle-off")) {
@@ -428,10 +630,21 @@ function toggle(element, toggleOn, toggleOff) {
     }
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Sets CodeMirror editor theme.
+ * @param {String} newTheme - theme name ("default" or "darcula")
+ */
 function setTheme(newTheme) {
     editor.setOption("theme", newTheme);
 }
 
+// ---------------------------------------------------------------------------
+
+/**
+ * Toggle function for the DARK MODE button in the side menu.
+ */
 function toggleTheme() {
     toggle(ID("theme-toggle"),
         () => setTheme("darcula"), 
