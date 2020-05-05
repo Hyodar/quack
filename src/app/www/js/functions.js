@@ -984,6 +984,11 @@ function deProcessCode(content) {
             lines[i + 1] = lines[i];
             lines[i] = temp;
         }
+        else if(command == "KEYS") {
+            const line = lines[i].split(' ');
+            line.shift();
+            lines[i] = line.join(' ');
+        }
     }
 
     return lines.join('\n');
