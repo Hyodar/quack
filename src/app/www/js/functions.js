@@ -101,7 +101,7 @@ class BluetoothAPI {
                 },
                 "Bluetooth Password",
                 ["Enter"],
-                "moe moe kyun"
+                "moe moe kyun",
             );
 
             eventSource.addEventListener("bt-right-pwd", () => {
@@ -314,6 +314,7 @@ class WiFiAPI {
 }
 
 class API {
+
     static Resource = Object.freeze({
         STOP:       { bluetoothId: 1, url: "http://ESP32.local/stop"     },
         LIST:       { bluetoothId: 2, url: "http://ESP32.local/list"     },
@@ -344,7 +345,7 @@ class API {
         () => {
             API.disableBluetooth();
         },
-        ToggleButton.State.OFF
+        ToggleButton.State.OFF,
     );
 
     static wiFiToggle = new ToggleButton(
@@ -357,7 +358,7 @@ class API {
         () => {
             API.disableWiFi();
         },
-        ToggleButton.State.OFF
+        ToggleButton.State.OFF,
     );
 
     static async enableBluetooth() {
@@ -505,8 +506,20 @@ const status = {
 
     theme: new ToggleButton(
         "theme-toggle",
-        () => editor.setOption("theme", "darcula"),
-        () => editor.setOption("theme", "default"),
+        () => {
+            document.querySelector(".CodeMirror").style.opacity = "0";
+            setTimeout(() => {
+                editor.setOption("theme", "darcula");
+                document.querySelector(".CodeMirror").style.opacity = "1";
+            }, 350);
+        },
+        () => {
+            document.querySelector(".CodeMirror").style.opacity = "0";
+            setTimeout(() => {
+                editor.setOption("theme", "default");
+                document.querySelector(".CodeMirror").style.opacity = "1";
+            }, 350);
+        },
         ToggleButton.State.ON,
     ),
 };
@@ -832,7 +845,7 @@ function main() {
     editor.on("change", () => compareVersions(editor.getValue()));
     // set attribute on editor to ignore slideout touch event inside it
     document.querySelector(".CodeMirror").setAttribute("data-slideout-ignore", "");
-    document.querySelector(".CodeMirror").style.transition = "background 0.5s ease-in-out, color 0.5s ease-in-out";
+    document.querySelector(".CodeMirror").style.transition = "opacity 350ms";
 
     // Slideout ------------------------------------------------------------------
 
