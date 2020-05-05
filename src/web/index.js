@@ -389,9 +389,7 @@ function deProcessCode(content) {
             lines[i] = temp;
         }
         else if(command == "KEYS") {
-            const line = lines[i].split(' ');
-            line.shift();
-            lines[i] = line.join(' ');
+            lines[i] = lines[i].slice("KEYS ".length);
         }
     }
 
