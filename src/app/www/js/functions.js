@@ -361,7 +361,7 @@ class APIEventSource {
      * @param {Function} callback 
      * @param {Object} [options]
      */
-    addEventListener(event, callback, options=null) {
+    addEventListener(event, callback, options={}) {
         this.listeners[event] = callback;
         this.listeners[event].options = options;
     }
@@ -635,7 +635,7 @@ class API {
      * @param {Object} [obj] - requestForm properties
      * @returns {FormData}
      */
-    static createRequestForm(obj=null) {
+    static createRequestForm(obj={}) {
         const formData = new FormData();
 
         for([key, value] of Object.entries(obj)) {
@@ -1018,8 +1018,8 @@ function runScript() {
         
         API.call(API.Resource.RUN_RAW, form)
            .then(() => {
-            toast.show("Received command!", Toast.Mode.SUCCESS);
-        });
+                toast.show("Received command!", Toast.Mode.SUCCESS);
+            });
 
         return;
     }
@@ -1047,8 +1047,8 @@ function runScript() {
 
         API.call(API.Resource.RUN_FILE, form)
            .then(() => {
-            toast.show("Received command!", Toast.Mode.SUCCESS);
-        });
+                toast.show("Received command!", Toast.Mode.SUCCESS);
+            });
     }
 }
 
@@ -1087,7 +1087,7 @@ function openScript() {
             status.lastVersion = text;
             status.isSaved = true;
             status.filename = scriptName;
-    });
+        });
 
     hideOptionsMenu();
 }
