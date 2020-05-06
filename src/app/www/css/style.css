@@ -38,8 +38,7 @@ body {
     background-image: linear-gradient(145deg, #1D1F20, #404348);
     touch-action: pan-x pan-y;
     font-family: Consolas, "Liberation Mono", Monaco, "Lucida Console", monospace;
-    margin-top: 0;
-    margin-bottom: 0;
+    margin: 0px;
 }
 
 .btn {
