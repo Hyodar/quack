@@ -273,7 +273,7 @@ class BluetoothAPI {
             bluetoothSerial.write('\0', this.bluetoothSuccess.bind(this), this.error.bind(this));
             
             toast.show("Sent command.", Toast.Mode.INFO);
-            this.canSendBluetooth = true;
+            this.canSend = true;
         });
     }
     
