@@ -460,6 +460,7 @@ class WiFiAPI {
             })
             .catch((err) => {
                 toast.show(`Wi-Fi connection error: ${err}`, Toast.Mode.ERROR);
+                reject();
             });
         });
     }
@@ -646,7 +647,7 @@ class API {
     static createRequestForm(obj={}) {
         const formData = new FormData();
 
-        for([key, value] of Object.entries(obj)) {
+        for(const [key, value] of Object.entries(obj)) {
             formData.append(key, value);
         }
 
@@ -1005,7 +1006,8 @@ function updateScriptList() {
     API.call(API.Resource.LIST, form)
        .then(json => {
            setOpenOptions(JSON.parse(json).dirFiles);
-       });
+       })
+       .catch(() => {});
 }
 
 // ---------------------------------------------------------------------------
@@ -1054,7 +1056,8 @@ async function saveScript(filename) {
                    if(!Array.from(options).find(el => el.value == filename)) {
                        options.add(new Option(filename, filename));
                    }
-              });
+              })
+              .catch(() => {});
 }
 
 // ---------------------------------------------------------------------------
@@ -1104,7 +1107,8 @@ function runScript() {
         API.call(API.Resource.RUN_RAW, form)
            .then(() => {
                 toast.show("Received command!", Toast.Mode.SUCCESS);
-            });
+            })
+            .catch(() => {});
 
         return;
     }
@@ -1119,7 +1123,8 @@ function runScript() {
             API.call(API.Resource.RUN_FILE, form)
                .then(() => {
                     toast.show("Received command!", Toast.Mode.SUCCESS);
-                });
+                })
+                .catch(() => {});
         })
         .catch(() => {
             toast.show("Error saving script!", Toast.Mode.ERROR);
@@ -1133,7 +1138,8 @@ function runScript() {
         API.call(API.Resource.RUN_FILE, form)
            .then(() => {
                 toast.show("Received command!", Toast.Mode.SUCCESS);
-            });
+            })
+            .catch(() => {});
     }
 }
 
@@ -1148,7 +1154,8 @@ function stopScript() {
     API.call(API.Resource.STOP, form)
         .then(() => {
             toast.show("Stopped script execution!", Toast.Mode.SUCCESS);
-        });
+        })
+        .catch(() => {});
 }
 
 // ---------------------------------------------------------------------------
@@ -1182,7 +1189,8 @@ function openScript() {
             status.lastVersion = text;
             status.isSaved = true;
             status.filename = scriptName;
-        });
+        })
+        .catch(() => {});
 
     hideOptionsMenu();
 }
