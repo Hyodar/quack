@@ -69,10 +69,10 @@ function ID(id) {
 class ToggleButton {
 
     /**
-     * @private {Object}
      * Enumeration of the possible states of a push button by a boolean.
      * It's not really necessary, but it's more descriptive to use those than
      * just using the booleans when setting a ToggleButton state.
+     * @public {Object}
      */
     static State = Object.freeze({
         ON:     true,
@@ -350,15 +350,15 @@ class APIEventSource {
 
     constructor() {
         /**
-         * @private {EventSource}
          * When enableWifi() is used, it points to an EventSource hosted by
          * the ESP32 and receives events separately from normal responses.
+         * @private {EventSource}
          */
         this.httpEventSource = null;
 
         /**
-         * @private {Object}
          * Matches each event key to a specific callback.
+         * @private {Object}
          */
         this.listeners = {};
     }
@@ -434,8 +434,8 @@ class WiFiAPI {
 
     constructor() {
         /**
-         * @private {boolean}
          * Indicates whether the module is enabled.
+         * @private {boolean}
          */
         this.isEnabled = false;
     }
@@ -496,8 +496,8 @@ class WiFiAPI {
 class API {
 
     /**
-     * @private {Object}
      * Enumerates all API resources.
+     * @public {Object}
      */
     static Resource = Object.freeze({
         STOP:       { bluetoothId: 1, url: "http://ESP32.local/stop"     },
@@ -509,8 +509,8 @@ class API {
     });
 
     /**
-     * @private {Object}
      * Enumerates each possible active module.
+     * @public {Object}
      */
     static Module = Object.freeze({
         NONE:       1,
@@ -519,26 +519,26 @@ class API {
     });
 
     /**
-     * @private {WiFiAPI|BluetoothAPI}
      * Active implementation of API calls.
+     * @private {WiFiAPI|BluetoothAPI}
      */
     static activeModule = null;
 
     /**
-     * @private {BluetoothAPI}
      * Bluetooth module implementation.
+     * @private {BluetoothAPI}
      */
     static bluetooth = new BluetoothAPI();
 
     /**
-     * @private {WiFiAPI}
      * Wi-Fi module implementation.
+     * @private {WiFiAPI}
      */
     static wiFi      = new WiFiAPI();
 
     /**
-     * @public {ToggleButton}
      * Bluetooth module toggle button.
+     * @public {ToggleButton}
      */
     static bluetoothToggle = new ToggleButton(
         "bluetooth-toggle",
@@ -554,8 +554,8 @@ class API {
     );
 
     /**
-     * @public {ToggleButton}
      * Wi-Fi module toggle button.
+     * @public {ToggleButton}
      */
     static wiFiToggle = new ToggleButton(
         "wifi-toggle",
@@ -674,8 +674,8 @@ class API {
 class Toast {
 
     /**
-     * @private {Object}
      * Background color enumeration for each Toast mode.
+     * @public {Object}
      */
     static Mode = Object.freeze({
         SUCCESS: "rgba(16, 255, 0, 0.6)",

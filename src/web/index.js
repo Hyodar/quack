@@ -55,8 +55,8 @@ function ID(id) {
 class API {
     
     /**
-     * @private {Object}
      * Enumerates all API resources.
+     * @public {Object}
      */
     static Resource = Object.freeze({
         STOP:       "/stop",
@@ -89,8 +89,8 @@ class API {
 class Toast {
 
     /**
-     * @private {Object}
      * Background color enumeration for each Toast mode.
+     * @public {Object}
      */
     static Mode = Object.freeze({
         SUCCESS: "#10ff0061",
