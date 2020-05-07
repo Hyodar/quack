@@ -108,7 +108,7 @@ QuackBluetooth::loop() {
 
 void
 QuackBluetooth::readResourceParams() {
-    if(activeResource <= LIST) {
+    if(activeResource <= LOG_OFF) {
         state = WAITING_END; // no parameters
     }
     else {
@@ -131,6 +131,11 @@ QuackBluetooth::readResourceParams() {
 void
 QuackBluetooth::respondRequest() {
     switch(activeResource) {
+        case LOG_OFF:
+            state = READING_PASSWORD;
+            passwordTries = 0;
+            bufSize = 0;
+            break;
         case RUN_FILE:
             parser->setFile((char *) buf);
             break;

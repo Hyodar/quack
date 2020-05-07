@@ -27,17 +27,20 @@ enum Resource {
     // Params: None | Return: Json
     LIST        = 2,
 
+    // Params: None | Return: None
+    LOG_OFF     = 3,
+
     // Params: (Code:char[]) | Return: Event
-    RUN_RAW     = 3,
+    RUN_RAW     = 4,
 
     // Params: (Filename:char[]) | Return: Event
-    RUN_FILE    = 4,
+    RUN_FILE    = 5,
 
     // Params: (Filename: char[]) | Return: stream
-    OPEN        = 5,
+    OPEN        = 6,
 
     // Params: (Filename:char[], FileBytes:stream) | Return: Event
-    SAVE        = 6,
+    SAVE        = 7,
 };
 
 private:

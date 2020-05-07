@@ -234,13 +234,20 @@ class BluetoothAPI {
 
     /**
      * Disables the bluetooth API implementation.
+     * @returns {Promise<any>}
      */
     disable() {
-        bluetoothSerial.disconnect();
-        bluetoothSerial.unsubscribe();
-        this.isEnabled = false;
+        return API.call(API.Resource.LOG_OFF, API.createRequestForm())
+        .then(() => {
+            bluetoothSerial.disconnect(this.successCallback.bind(this), this.error.bind(this));
+            bluetoothSerial.unsubscribe(this.successCallback.bind(this), this.error.bind(this));
+            this.isEnabled = false;
 
-        toast.show("Bluetooth Disabled!", Toast.Mode.INFO);
+            toast.show("Bluetooth Disabled!", Toast.Mode.INFO);
+        })
+        .catch(() => {
+            this.error("Couldn't get any response from LOG_OFF request!");
+        });
     }
 
     /**
@@ -502,10 +509,11 @@ class API {
     static Resource = Object.freeze({
         STOP:       { bluetoothId: 1, url: "http://ESP32.local/stop"     },
         LIST:       { bluetoothId: 2, url: "http://ESP32.local/list"     },
-        RUN_RAW:    { bluetoothId: 3, url: "http://ESP32.local/run_raw"  },
-        RUN_FILE:   { bluetoothId: 4, url: "http://ESP32.local/run_file" },
-        OPEN:       { bluetoothId: 5, url: "http://ESP32.local/open"     },
-        SAVE:       { bluetoothId: 6, url: "http://ESP32.local/save"     },
+        LOG_OFF:    { bluetoothId: 3, url: null                          },
+        RUN_RAW:    { bluetoothId: 4, url: "http://ESP32.local/run_raw"  },
+        RUN_FILE:   { bluetoothId: 5, url: "http://ESP32.local/run_file" },
+        OPEN:       { bluetoothId: 6, url: "http://ESP32.local/open"     },
+        SAVE:       { bluetoothId: 7, url: "http://ESP32.local/save"     },
     });
 
     /**
@@ -592,9 +600,10 @@ class API {
      * Disables the bluetooth API implementation.
      */
     static disableBluetooth() {
-        if(API.bluetooth.disable()) {
+        API.bluetooth.disable()
+        .then(() => {
             API.activeModule = null;
-        }
+        });
     }
 
     /**
