@@ -1,6 +1,8 @@
 
 #include "quack_webserver.h"
 
+#ifdef WEBSERVER_ENABLED
+
 #include <Arduino.h>
 #include <SPIFFS.h>
 #include <FS.h>
@@ -201,3 +203,5 @@ QuackWebserver::begin(QuackParser* _parser, QuackEventLauncher* quackEventLaunch
 
     server.begin();
 }
+
+#endif

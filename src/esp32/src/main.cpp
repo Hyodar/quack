@@ -14,7 +14,7 @@ QuackWebserver quackWebserver;
 
 void
 loop2(void* params) {
-    DEBUGGING_PRINTF("[THREADING] Initializing loop2");
+    DEBUGGING_PRINTF("[THREADING] Initializing loop2.\n");
     for(;;) {
         quack.runInterface();
         delay(1); // watchdog
@@ -23,7 +23,7 @@ loop2(void* params) {
 
 void
 loop3(void* params) {
-    DEBUGGING_PRINTF("[THREADING] Initializing loop3");
+    DEBUGGING_PRINTF("[THREADING] Initializing loop3.\n");
     for(;;) {
         quack.runDisplay();
         delay(7);
@@ -33,10 +33,10 @@ loop3(void* params) {
 #ifdef BLUETOOTH_ENABLED
 void
 loop4(void* params) {
-    DEBUGGING_PRINTF("[THREADING] Initializing loop4");
+    DEBUGGING_PRINTF("[THREADING] Initializing loop4.\n");
 
     while(!quack.checkBluetooth()) {
-        delay(100);
+        delay(10);
     }
 
     for(;;) {
@@ -58,10 +58,10 @@ setup() {
 #endif
 
     // create new tasks in FreeRTOS API
-    xTaskCreatePinnedToCore(loop2, "loop2", 8192, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore(loop3, "loop3", 8192, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(loop2, "loop2", 2000, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(loop3, "loop3", 2000, NULL, 1, NULL, 1);
 #ifdef BLUETOOTH_ENABLED
-    xTaskCreatePinnedToCore(loop4, "loop4", 8192, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(loop4, "loop4", 5000, NULL, 1, NULL, 0);
 #endif
 }
 

@@ -25,9 +25,11 @@ QuackEventLauncher::begin() {
 #endif
     // Events ================================================================
 
+#ifdef WEBSERVER_ENABLED
     eventSource.onConnect([](AsyncEventSourceClient* client) {
         client->send("hello!", NULL, millis(), 1000);
     });
+#endif
 }
 
 void
@@ -54,7 +56,11 @@ QuackEventLauncher::launch(const char* const event, const char* const data) {
 #endif
 }
 
+#ifdef WEBSERVER_ENABLED
+
 AsyncEventSource*
 QuackEventLauncher::getEventSource() {
     return &eventSource;
 }
+
+#endif

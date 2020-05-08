@@ -1,12 +1,14 @@
 
 #include "quack_bluetooth.h"
 
+#ifdef BLUETOOTH_ENABLED
+
 #include <cstring>
 
 #include <quack_utils.h>
 #include "quack_parser.h"
 
-QuackBluetooth::QuackBluetooth() : parser{nullptr}, state{READING_PASSWORD},
+QuackBluetooth::QuackBluetooth() : parser{nullptr}, state{NONE},
                                    buf{0}, bufSize{0}, passwordTries{1} {
     // no-op
 }
@@ -28,17 +30,26 @@ void
 QuackBluetooth::loop() {
     while(serial.available()) {
         switch(state) {
+            case NONE:
+                if(!serial.read()) {
+                    DEBUGGING_PRINTF("[BLUETOOTH] Received first null byte! Starting parsing.\n");
+                    state = READING_PASSWORD;
+                }
+                break;
             case READING_PASSWORD:
                 buf[bufSize++] = serial.read();
+                DEBUGGING_PRINTF("%c", buf[bufSize - 1]);
 
                 if(!buf[bufSize - 1]) {
                     // string ended
                     if(strcmp((char*) buf, BLUETOOTH_PASSWORD) == 0) {
                         sendEvent("bt-right-pwd", nullptr);
+                        DEBUGGING_PRINTF("-> Right password!\n");
                         state = CONNECTED;
                     }
                     else {
                         sendEvent("bt-wrong-pwd", nullptr);
+                        DEBUGGING_PRINTF("-> Wrong password!\n");
                         bufSize = 0;
                         if(passwordTries >= BLUETOOTH_MAX_PASSWORD_TRIES) {
                             sendEvent("bt-max-pwd-tries", nullptr);
@@ -97,9 +108,9 @@ QuackBluetooth::loop() {
                 if(!serial.read()) {
                     buf[bufSize++] = '\0';
                     DEBUGGING_PRINTF("[BLUETOOTH] End command.\n");
+                    state = CONNECTED;
                     respondRequest();
                     DEBUGGING_PRINTF("[BLUETOOTH] Responded to request.\n");
-                    state = CONNECTED;
                 }
                 break;
         }
@@ -132,8 +143,8 @@ void
 QuackBluetooth::respondRequest() {
     switch(activeResource) {
         case LOG_OFF:
-            state = READING_PASSWORD;
-            passwordTries = 0;
+            state = NONE;
+            passwordTries = 1;
             bufSize = 0;
             break;
         case RUN_FILE:
@@ -148,11 +159,13 @@ QuackBluetooth::respondRequest() {
         case SAVE:
             break;
         case LIST: {
+            DEBUGGING_PRINTF("[BLUETOOTH] Listing directory.\n");
             fs::File root = SPIFFS.open("/");
             String json = "{\n\"dirFiles\": [";
 
             File file = root.openNextFile();
             
+            DEBUGGING_PRINTF("[BLUETOOTH] Going through all files inside root.\n");
             while(file){
                 if(!file.isDirectory()){
                     json += '"';
@@ -204,3 +217,5 @@ const bool
 QuackBluetooth::hasClient() {
     return serial.hasClient();
 }
+
+#endif

@@ -2,6 +2,10 @@
 #ifndef QUACK_WEBSERVER_H_
 #define QUACK_WEBSERVER_H_
 
+#include <quack_config.h>
+
+#ifdef WEBSERVER_ENABLED
+
 #include <ESPAsyncWebServer.h>
 
 class QuackParser;
@@ -26,5 +30,7 @@ public:
                const size_t len) const;
 
 };
+
+#endif
 
 #endif

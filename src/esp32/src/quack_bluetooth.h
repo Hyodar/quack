@@ -2,6 +2,10 @@
 #ifndef QUACK_BLUETOOTH_H_
 #define QUACK_BLUETOOTH_H_
 
+#include <quack_config.h>
+
+#ifdef BLUETOOTH_ENABLED
+
 #include <BluetoothSerial.h>
 #include <SPIFFS.h>
 
@@ -12,12 +16,13 @@ class QuackParser;
 class QuackBluetooth {
 
 enum State {
-    READING_PASSWORD    = 0,
-    CONNECTED           = 1,
-    STREAM_START        = 2,
-    READING             = 3,
-    CONTINUOUS_READ     = 4,
-    WAITING_END         = 5,
+    NONE                = 0,
+    READING_PASSWORD    = 1,
+    CONNECTED           = 2,
+    STREAM_START        = 3,
+    READING             = 4,
+    CONTINUOUS_READ     = 5,
+    WAITING_END         = 6,
 };
 
 enum Resource {
@@ -71,5 +76,7 @@ public:
     const bool hasClient();
 
 };
+
+#endif
 
 #endif
