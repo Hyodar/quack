@@ -36,6 +36,7 @@ const translate = Object.freeze({
 
 const FRAME_PARAM_SIZE = 480;
 // IS_MOBILE is defined inside libs.min.js
+const MAGIC = 0xF00DBEEF;
 
 /*****************************************************************************
  * General Functions
@@ -55,6 +56,28 @@ async function sleep(ms) {
  */
 function ID(id) {
     return document.getElementById(id);
+}
+
+/**
+ * Fetches data from a URL.
+ * @param {String} url
+ * @param {Object} options
+ * @returns {Promise<any>}
+ */
+function fetch(url, options) {
+    return new Promise((resolve, reject) => {
+        
+        let sendRequest = cordova.plugin.http.get;
+
+        if(options.method === "POST") {
+            sendRequest = cordova.plugin.http.post;
+        }
+        
+        sendRequest(url, Object.fromEntries(options.body.entries()), {},
+            (response) => { resolve(response.data); },
+            (response) => { reject(response.data); }
+        );
+    });
 }
 
 /*****************************************************************************
@@ -418,7 +441,7 @@ class APIEventSource {
      * to access http://ESP32.local would lead to an error.
      */
     enableWiFi() {
-        this.httpEventSource = new EventSource("http://ESP32.local/events");
+        this.httpEventSource = new EventSource(`http://${API.wiFi.espIP}/events`);
 
         for([event, callback] of this.listeners.entries()) {
             this.httpEventSource.addEventListener(event, callback, callback.options);
@@ -449,6 +472,12 @@ class WiFiAPI {
          * @private {boolean}
          */
         this.isEnabled = false;
+
+        /**
+         * The IP address of ESP32.
+         * @private {boolean}
+         */
+        this.espIP = null;
     }
 
     /**
@@ -459,15 +488,35 @@ class WiFiAPI {
         return new Promise((resolve, reject) => {
             WifiWizard2.getConnectedSSID()
             .then((ssid) => {
-                if(ssid === "NW_ESP32") {
-                    eventSource.enableWiFi();
-                    toast.show("Wi-Fi module is enabled!", Toast.Mode.SUCCESS);
-                    resolve();
-                }
-                else {
-                    toast.show("Please connect yourself to NW_ESP32!", Toast.Mode.ERROR);
+                cordova.plugins.zeroconf.reInit(
+                () => {
+                    setTimeout(() => {
+                        if(!this.espIP) {
+                            cordova.plugins.zeroconf.unwatch('_http._tcp.', 'local.');
+                            toast.show("Wi-Fi error: ESP32 DNS not found.", Toast.Mode.ERROR);
+                            reject();
+                        }
+                    }, 3000);
+    
+                    cordova.plugins.zeroconf.watch('_http._tcp.', 'local.',
+                    (result) => {
+                        const action = result.action;
+                        const service = result.service;
+    
+                        if(action === "resolved") {
+                            if(service.name === "ESP32") {
+                                this.espIP = service.ipv4Addresses[0];
+                                cordova.plugins.zeroconf.unwatch('_http._tcp.', 'local.');
+                                toast.show("Wi-Fi connected!.", Toast.Mode.SUCCESS);
+                                resolve();
+                            }
+                        }
+                    });
+                },
+                () => {
+                    toast.show("Zeroconf error: could not reinit services.", Toast.Mode.ERROR);
                     reject();
-                }
+                });
             })
             .catch((err) => {
                 toast.show(`Wi-Fi connection error: ${err}`, Toast.Mode.ERROR);
@@ -490,10 +539,10 @@ class WiFiAPI {
      * @returns {Promise<String>}
      */
     async call(resource, requestBody) {
-        return fetch(resource.url, {
+        return fetch(resource.url.replace("ESP32.local", this.espIP), {
             method: "POST",
             body: requestBody,
-        }).then(response => response.text());
+        });
     }
 }
 
@@ -1014,7 +1063,9 @@ function deProcessCode(content) {
  * with `setOpenOptions`.
  */
 function updateScriptList() {
-    const form = API.createRequestForm();
+    const form = API.createRequestForm({
+        Magic: MAGIC,
+    });
 
     API.call(API.Resource.LIST, form)
        .then(json => {
@@ -1162,7 +1213,9 @@ function runScript() {
  * Stops the current script's execution through a call to the API STOP resource.
  */
 function stopScript() {
-    const form = API.createRequestForm();
+    const form = API.createRequestForm({
+        Magic: MAGIC,
+    });
 
     API.call(API.Resource.STOP, form)
         .then(() => {
@@ -1342,4 +1395,5 @@ function main() {
     eventSource.addEventListener("bt-max-pwd-tries", () => {
         toast.show("Maximum number of bluetooth password tries exceeded! Reset the device.", Toast.Mode.ERROR);
     });
+
 }

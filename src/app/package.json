@@ -16,7 +16,11 @@
       "cordova-plugin-bluetooth-serial": {},
       "cordova-plugin-statusbar": {},
       "cordova-plugin-splashscreen": {},
-      "wifiwizard2": {}
+      "wifiwizard2": {},
+      "cordova-plugin-zeroconf": {},
+      "cordova-plugin-advanced-http": {
+        "OKHTTP_VERSION": "3.10.0"
+      }
     },
     "platforms": [
       "browser",
@@ -26,11 +30,14 @@
   "dependencies": {
     "cordova-android": "^8.1.0",
     "cordova-browser": "^6.0.0",
+    "cordova-plugin-add-swift-support": "2.0.2",
+    "cordova-plugin-advanced-http": "2.4.1",
     "cordova-plugin-bluetooth-serial": "0.4.7",
     "cordova-plugin-dialog": "0.0.1",
     "cordova-plugin-splashscreen": "git+https://github.com/goinnn/cordova-plugin-splashscreen.git#4.0.0#colors",
     "cordova-plugin-statusbar": "2.4.3",
     "cordova-plugin-wifiwizard2": "3.1.1",
+    "cordova-plugin-zeroconf": "1.4.2",
     "es6-promise-plugin": "4.1.0"
   }
 }

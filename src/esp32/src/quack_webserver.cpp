@@ -62,6 +62,7 @@ QuackWebserver::beginWifi() {
     }
 
     DEBUGGING_PRINT(WiFi.localIP());
+    DEBUGGING_PRINT("\n");
 }
 
 void

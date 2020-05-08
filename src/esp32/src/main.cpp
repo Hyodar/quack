@@ -49,10 +49,10 @@ loop4(void* params) {
 void
 setup() {
     SPIFFS.begin();
+    quack.begin();
 #ifdef WEBSERVER_ENABLED
     quackWebserver.beginWifi();
 #endif
-    quack.begin();
 #ifdef WEBSERVER_ENABLED
     quackWebserver.begin(quack.getParser(), quack.getEventLauncher());
 #endif
