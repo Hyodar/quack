@@ -152,18 +152,6 @@ class BluetoothAPI {
      */
     async sendPassword() {
         return new Promise((resolve, reject) => {
-            
-            navigator.notification.prompt(
-                "Please enter the bluetooth password.",
-                (results) => {
-                    bluetoothSerial.write(results.input1, this.bluetoothSuccess.bind(this), this.error.bind(this));
-                    bluetoothSerial.write('\0', this.bluetoothSuccess.bind(this), this.error.bind(this));
-                },
-                "Bluetooth Password",
-                ["Enter"],
-                "moe moe kyun",
-            );
-
             eventSource.addEventListener("bt-right-pwd", () => {
                 toast.show("Successfully logged in bluetooth serial!", Toast.Mode.SUCCESS);
                 eventSource.removeEventListener("bt-wrong-pwd");
@@ -175,6 +163,18 @@ class BluetoothAPI {
                 eventSource.removeEventListener("bt-right-pwd");
                 reject();
             }, { once: true });
+
+            navigator.notification.prompt(
+                "Please enter the bluetooth password.",
+                (results) => {
+                    bluetoothSerial.write('\0', this.successCallback.bind(this), this.error.bind(this));
+                    bluetoothSerial.write(results.input1, this.successCallback.bind(this), this.error.bind(this));
+                    bluetoothSerial.write('\0', this.successCallback.bind(this), this.error.bind(this));
+                },
+                "Bluetooth Password",
+                ["Enter"],
+                "moe moe kyun",
+            );
         });
     }
 
@@ -184,8 +184,8 @@ class BluetoothAPI {
      */
     async _enable() {
         bluetoothSerial.subscribe(
-            "\0",
-            this.subscribeCallback,
+            '\0',
+            this.subscribeCallback.bind(this),
             API.disableBluetooth,
         );
 
@@ -266,18 +266,18 @@ class BluetoothAPI {
             this.canSend = false;
             this.promiseQueue.unshift(resolve);
 
-            bluetoothSerial.write(`\0${resource.bluetoothId}`, this.bluetoothSuccess.bind(this), this.error.bind(this));
+            bluetoothSerial.write(`\0${resource.bluetoothId}`, this.successCallback.bind(this), this.error.bind(this));
             
             for(const [key, val] of requestBody.entries()) {
                 if(key == "File-Bytes") {
                     await this.delayedBluetoothSend(val);
                 }
                 else {
-                    bluetoothSerial.write(`${val}\0`, this.bluetoothSuccess.bind(this), this.error.bind(this));
+                    bluetoothSerial.write(`${val}\0`, this.successCallback.bind(this), this.error.bind(this));
                 }
             }
 
-            bluetoothSerial.write('\0', this.bluetoothSuccess.bind(this), this.error.bind(this));
+            bluetoothSerial.write('\0', this.successCallback.bind(this), this.error.bind(this));
             
             toast.show("Sent command.", Toast.Mode.INFO);
             this.canSend = true;
@@ -307,7 +307,7 @@ class BluetoothAPI {
      * @param {String} data 
      */
     subscribeCallback(data) {
-        const input = data.slice(2);
+        const input = data.slice(2, -1);
 
         if(data.startsWith("E|")) {
             // Event
@@ -406,6 +406,10 @@ class APIEventSource {
             if(this.listeners[event].options && this.listeners[event].options.once) {
                 this.removeEventListener(event);
             }
+        }
+        else {
+            toast.show(`Received unknown event: ${event}.`, Toast.Mode.ERROR);
+            console.log(Array.from(event))
         }
     }
 
@@ -507,13 +511,13 @@ class API {
      * @public {Object}
      */
     static Resource = Object.freeze({
-        STOP:       { bluetoothId: 1, url: "http://ESP32.local/stop"     },
-        LIST:       { bluetoothId: 2, url: "http://ESP32.local/list"     },
-        LOG_OFF:    { bluetoothId: 3, url: null                          },
-        RUN_RAW:    { bluetoothId: 4, url: "http://ESP32.local/run_raw"  },
-        RUN_FILE:   { bluetoothId: 5, url: "http://ESP32.local/run_file" },
-        OPEN:       { bluetoothId: 6, url: "http://ESP32.local/open"     },
-        SAVE:       { bluetoothId: 7, url: "http://ESP32.local/save"     },
+        STOP:       { bluetoothId: '1', url: "http://ESP32.local/stop"     },
+        LIST:       { bluetoothId: '2', url: "http://ESP32.local/list"     },
+        LOG_OFF:    { bluetoothId: '3', url: null                          },
+        RUN_RAW:    { bluetoothId: '4', url: "http://ESP32.local/run_raw"  },
+        RUN_FILE:   { bluetoothId: '5', url: "http://ESP32.local/run_file" },
+        OPEN:       { bluetoothId: '6', url: "http://ESP32.local/open"     },
+        SAVE:       { bluetoothId: '7', url: "http://ESP32.local/save"     },
     });
 
     /**
