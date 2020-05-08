@@ -62,7 +62,7 @@ function ID(id) {
  * Fetches data from a URL.
  * @param {String} url
  * @param {Object} options
- * @returns {Promise<any>}
+ * @returns {Promise.<any>}
  */
 function fetch(url, options) {
     return new Promise((resolve, reject) => {
@@ -78,6 +78,17 @@ function fetch(url, options) {
             (response) => { reject(response.data); }
         );
     });
+}
+
+/**
+ * Promisifies a function which takes a success callback and an error callback
+ * as last arguments.
+ * @param {...any} args
+ */
+Function.prototype.promisify = function(...args) {
+    return new Promise((resolve, reject) => {
+        this(...args, resolve, reject);
+    })
 }
 
 /*****************************************************************************
@@ -170,8 +181,18 @@ class BluetoothAPI {
     }
 
     /**
+     * Sends a string through bluetooth serial.
+     * @param {String} str 
+     */
+    bluetoothSend(str) {
+        bluetoothSerial.write.promisify(str)
+            .then(this.successCallback.bind(this))
+            .catch(this.error.bind(this));
+    }
+
+    /**
      * Sends the bluetooth password and waits for the response as an event.
-     * @returns {Promise<any>}
+     * @returns {Promise.<any>}
      */
     async sendPassword() {
         return new Promise((resolve, reject) => {
@@ -190,9 +211,9 @@ class BluetoothAPI {
             navigator.notification.prompt(
                 "Please enter the bluetooth password.",
                 (results) => {
-                    bluetoothSerial.write('\0', this.successCallback.bind(this), this.error.bind(this));
-                    bluetoothSerial.write(results.input1, this.successCallback.bind(this), this.error.bind(this));
-                    bluetoothSerial.write('\0', this.successCallback.bind(this), this.error.bind(this));
+                    this.bluetoothSend('\0');
+                    this.bluetoothSend(results.input1);
+                    this.bluetoothSend('\0');
                 },
                 "Bluetooth Password",
                 ["Enter"],
@@ -218,7 +239,7 @@ class BluetoothAPI {
     /**
      * Enables the bluetooth API implementation.
      * Checks if the ESP32 is already paired; if so, tries to connect to it.
-     * @returns {Promise<any>}
+     * @returns {Promise.<any>}
      */
     async enable() {
         return new Promise((resolve, reject) => {
@@ -226,8 +247,8 @@ class BluetoothAPI {
                 const device = pairedDevices.find((el) => el.name === "MyESP32");
 
                 if(device) {
-                    bluetoothSerial.connect(device.address,
-                    () => {
+                    bluetoothSerial.connect.promisify(device.address)
+                    .then(() => {
                         this._enable()
                             .then(() => { 
                                 this.isEnabled = true;
@@ -239,8 +260,8 @@ class BluetoothAPI {
                                 bluetoothSerial.disconnect();
                                 reject();
                             });
-                    },
-                    (err) => {
+                    })
+                    .catch((err) => {
                         this.error(err);
                         reject();
                     });
@@ -257,26 +278,36 @@ class BluetoothAPI {
 
     /**
      * Disables the bluetooth API implementation.
-     * @returns {Promise<any>}
+     * @returns {Promise.<any>}
      */
     disable() {
-        return API.call(API.Resource.LOG_OFF, API.createRequestForm())
-        .then(() => {
-            bluetoothSerial.disconnect(this.successCallback.bind(this), this.error.bind(this));
-            bluetoothSerial.unsubscribe(this.successCallback.bind(this), this.error.bind(this));
-            this.isEnabled = false;
-
-            toast.show("Bluetooth Disabled!", Toast.Mode.INFO);
-        })
-        .catch(() => {
-            this.error("Couldn't get any response from LOG_OFF request!");
+        return new Promise((resolve, reject) => {
+            API.call(API.Resource.LOG_OFF, API.createRequestForm())
+            .then(() => {
+                bluetoothSerial.disconnect.promisify()
+                .then(() => {
+                    bluetoothSerial.unsubscribe.promisify()
+                    .then(() => {
+                        this.successCallback()
+                        this.isEnabled = false;
+                        toast.show("Bluetooth Disabled!", Toast.Mode.INFO);
+                        resolve();
+                    })
+                    .catch(reject);
+                })
+                .catch(reject);
+            })
+            .catch(() => {
+                reject("Couldn't get any response from LOG_OFF request!");
+            });
         });
     }
 
     /**
      * Calls an API resource by bluetooth.
      * @param {API.Resource} resource 
-     * @param {FormData} requestBody 
+     * @param {FormData} requestBody
+     * @returns {Promise.<any>}
      */
     async call(resource, requestBody) {
         return new Promise(async (resolve, reject) => {
@@ -289,18 +320,18 @@ class BluetoothAPI {
             this.canSend = false;
             this.promiseQueue.unshift(resolve);
 
-            bluetoothSerial.write(`\0${resource.bluetoothId}`, this.successCallback.bind(this), this.error.bind(this));
+            this.bluetoothSend(`\0${resource.bluetoothId}`);
             
             for(const [key, val] of requestBody.entries()) {
                 if(key == "File-Bytes") {
                     await this.delayedBluetoothSend(val);
                 }
                 else {
-                    bluetoothSerial.write(`${val}\0`, this.successCallback.bind(this), this.error.bind(this));
+                    this.bluetoothSend(`${val}\0`);
                 }
             }
 
-            bluetoothSerial.write('\0', this.successCallback.bind(this), this.error.bind(this));
+            this.bluetoothSend('\0');
             
             toast.show("Sent command.", Toast.Mode.INFO);
             this.canSend = true;
@@ -355,11 +386,11 @@ class BluetoothAPI {
         const chunks = text.match(/.{1,80}/g);
 
         for(let i = 0; i < chunks.length; i++) {
-            bluetoothSerial.write(chunks[i], this.successCallback.bind(this), this.error.bind(this));
+            this.bluetoothSend(chunks[i]);
             await sleep(300);
         }
 
-        bluetoothSerial.write('\0', this.successCallback.bind(this), this.error.bind(this));
+        this.bluetoothSend('\0');
     }
 
 }
@@ -432,7 +463,6 @@ class APIEventSource {
         }
         else {
             toast.show(`Received unknown event: ${event}.`, Toast.Mode.ERROR);
-            console.log(Array.from(event))
         }
     }
 
@@ -482,14 +512,16 @@ class WiFiAPI {
 
     /**
      * Enables the module.
-     * @returns {Promise<any>}
+     * @returns {Promise.<any>}
      */
     enable() {
         return new Promise((resolve, reject) => {
             WifiWizard2.getConnectedSSID()
             .then((ssid) => {
-                cordova.plugins.zeroconf.reInit(
-                () => {
+                cordova.plugins.zeroconf.reInit
+                .bind(cordova.plugins.zeroconf)
+                .promisify()
+                .then(() => {
                     setTimeout(() => {
                         if(!this.espIP) {
                             cordova.plugins.zeroconf.unwatch('_http._tcp.', 'local.');
@@ -511,10 +543,14 @@ class WiFiAPI {
                                 resolve();
                             }
                         }
+                    },
+                    (err) => {
+                        toast.show(`Zeroconf error: ${err}`, Toast.Mode.ERROR);
+                        reject();
                     });
-                },
-                () => {
-                    toast.show("Zeroconf error: could not reinit services.", Toast.Mode.ERROR);
+                })
+                .catch((err) => {
+                    toast.show(`Zeroconf error: ${err}`, Toast.Mode.ERROR);
                     reject();
                 });
             })
@@ -633,7 +669,7 @@ class API {
 
     /**
      * Enables the bluetooth API implementation.
-     * @returns {Promise<any>}
+     * @returns {Promise.<any>}
      */
     static async enableBluetooth() {
         return new Promise((resolve, reject) => {
@@ -656,12 +692,15 @@ class API {
         API.bluetooth.disable()
         .then(() => {
             API.activeModule = null;
+        })
+        .catch((err) => {
+            toast.show(`Error disconnecting bluetooth: ${err}`);
         });
     }
 
     /**
      * Enables the Wi-Fi API implementation.
-     * @returns {Promise<any>}
+     * @returns {Promise.<any>}
      */
     static async enableWiFi() {
         return new Promise((resolve, reject) => {
@@ -724,7 +763,7 @@ class API {
     static async call(resource, requestBody) {
         if(!API.activeModule) {
             toast.show("Enable bluetooth or Wi-Fi module first!", Toast.Mode.ERROR);
-            return new Promise((resolve, reject) => { reject(); });
+            return Promise.reject();
         }
 
         return API.activeModule.call(resource, requestBody);
