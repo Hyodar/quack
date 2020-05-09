@@ -32,6 +32,8 @@ QuackBluetooth::loop() {
         switch(state) {
             case NONE:
                 if(!serial.read()) {
+                    bufSize = 0;
+                    passwordTries = 1;
                     DEBUGGING_PRINTF("[BLUETOOTH] Received first null byte! Starting parsing.\n");
                     state = READING_PASSWORD;
                 }
@@ -40,7 +42,11 @@ QuackBluetooth::loop() {
                 buf[bufSize++] = serial.read();
                 DEBUGGING_PRINTF("%c", buf[bufSize - 1]);
 
-                if(!buf[bufSize - 1]) {
+                if(bufSize >= sizeof(buf)) {
+                    sendEvent("bt-pwd-overflow", nullptr);
+                    serial.end();
+                }
+                else if(!buf[bufSize - 1]) {
                     // string ended
                     if(strcmp((char*) buf, BLUETOOTH_PASSWORD) == 0) {
                         sendEvent("bt-right-pwd", nullptr);
@@ -74,8 +80,17 @@ QuackBluetooth::loop() {
 
             case STREAM_START:
                 activeResource = Resource(serial.read() - '0');
-                DEBUGGING_PRINTF("[BLUETOOTH] Going to READING. activeResource: %d\n", activeResource);
-                state = READING;
+
+                if(activeResource > SAVE || activeResource < STOP) {
+                    // invalid command, return to NONE
+                    state = NONE;
+                    sendEvent("bt-invalid-command", nullptr);
+                    DEBUGGING_PRINTF("[BLUETOOTH] Invalid command. Going back to NONE state.");
+                }
+                else {
+                    DEBUGGING_PRINTF("[BLUETOOTH] Going to READING. activeResource: %d\n", activeResource);
+                    state = READING;
+                }
                 break;
 
             case READING:
@@ -144,8 +159,6 @@ QuackBluetooth::respondRequest() {
     switch(activeResource) {
         case LOG_OFF:
             state = NONE;
-            passwordTries = 1;
-            bufSize = 0;
             break;
         case RUN_FILE:
             parser->setFile((char *) buf);
