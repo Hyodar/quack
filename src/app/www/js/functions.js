@@ -186,6 +186,7 @@ class BluetoothAPI {
      */
     bluetoothSend(str) {
         bluetoothSerial.write.promisify(str)
+            .bind(bluetoothSerial)
             .then(this.successCallback.bind(this))
             .catch(this.error.bind(this));
     }
@@ -247,7 +248,9 @@ class BluetoothAPI {
                 const device = pairedDevices.find((el) => el.name === "MyESP32");
 
                 if(device) {
-                    bluetoothSerial.connect.promisify(device.address)
+                    bluetoothSerial.connect
+                    .bind(bluetoothSerial)
+                    .promisify(device.address)
                     .then(() => {
                         this._enable()
                             .then(() => { 
@@ -284,7 +287,9 @@ class BluetoothAPI {
         return new Promise((resolve, reject) => {
             API.call(API.Resource.LOG_OFF, API.createRequestForm())
             .then(() => {
-                bluetoothSerial.disconnect.promisify()
+                bluetoothSerial.disconnect
+                .bind(bluetoothSerial)
+                .promisify()
                 .then(() => {
                     bluetoothSerial.unsubscribe.promisify()
                     .then(() => {
